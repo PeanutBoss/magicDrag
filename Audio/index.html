@@ -5,28 +5,129 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Audio</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.47/vue.global.js"></script>
     <style>
-        #container {
-            padding-top: 50px;
-        }
+      html, body {
+        padding: 0;
+        margin: 0;
+      }
+      #app {
+        padding: 20px;
+      }
+      .player {
+        width: 1022px;
+        height: 670px;
+        border-radius: 6px;
+        box-shadow: 0 0 10px  gray;
+      }
+      .player-header {
+        box-sizing: border-box;
+        padding: 6px;
+        height: 60px;
+        background-color: rgb(77, 239, 202);
+        color: rgb(250, 250, 250);
+        font-size: 17px;
+        line-height: 48px;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+      }
+      .player-body {
+        display: flex;
+        height: calc(100% - 60px - 70px);
+      }
+      .player-body-list {
+        width: 200px;
+        height: 100%;
+        background-color: aliceblue;
+      }
+      .player-body-detail {
+        height: 100%;
+        flex: 1;
+        background-color: aquamarine;
+      }
+      .player-footer {
+        display: flex;
+        justify-content: space-between;
+        height: 70px;
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+      }
+      .player-footer-control {
+        width: 470px;
+        background-color: azure;
+      }
+      .player-footer-control > .control {
+        display: flex;
+        justify-content: space-between;
+        cursor: pointer;
+      }
     </style>
 </head>
 <body>
 
-<div id="container" style="height: 200px"></div>
+<div id="app"></div>
 
-<div class="list"></div>
+<script type="module">
+  import { AudioTool, getMusicName } from './base.js'
+  const { createApp, onMounted } = Vue
 
-<div class="action">
-    <button class="play">play</button>
-    <button class="pause">pause</button>
-    <button class="prev">prev</button>
-    <button class="next">next</button>
-    <button class="forward">Fast forward</button>
-    <button class="backward">Fast backward</button>
-</div>
+  const Component = {
+    template: `
+    <div class="player">
+      <div class="player-header">
+        <div class="player-header-name">音乐播放器</div>
+      </div>
+      <div class="player-body">
+        <!-- 音频列表 -->
+        <div class="player-body-list"></div>
+        <!-- 播放详情 - 可视化信息 -->
+        <div class="player-body-detail"></div>
+      </div>
+      <div class="player-footer">
+        <div class="player-footer-info"></div>
+        <div class="player-footer-control">
+          <div class="control">
+            <div class="loop-way">循环方式</div>
+            <div class="prev">prev</div>
+            <div class="play">play</div>
+            <div class="pause">pause</div>
+            <div class="next">next</div>
+            <div class="words">words</div>
+          </div>
+          <div class="process"></div>
+        </div>
+        <div class="player-footer-other"></div>
+      </div>
+    </div>
+    `,
+    setup () {
 
-<script type="module" src="./base.js"></script>
+      onMounted(createPlayr)
+
+      function createPlayr () {
+        new AudioTool(
+          `./assets/${getMusicName()}`,
+          '.player-body-detail',
+          {
+            autoplay: true,
+            show: true,
+            buttonTarget: {
+              play: '.play',
+              pause: '.pause',
+              prev: '.prev',
+              next: '.next',
+              forward: '.forward',
+              backward: '.backward'
+            }
+          }
+        )
+      }
+
+    }
+  }
+  const app = createApp(Component)
+  app.mount('#app')
+</script>
 
 </body>
 </html>

@@ -10,7 +10,7 @@ const musicNameList = [
 
 const INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown']
 
-function getMusicName () {
+export function getMusicName () {
 	const randomIndex = Math.ceil(Math.random() * 7) - 1
 	const musicName = musicNameList[randomIndex]
 	console.log(`开始播放：${musicName.split('.')[0]}`)
@@ -60,7 +60,7 @@ function throttle (fn: any, delay: number) {
 	}
 }
 
-class AudioTool {
+export class AudioTool {
 	// 音频的上下文对象
 	audioContext: any
 	// 音频的源信息（arrayBuffer）
@@ -71,7 +71,7 @@ class AudioTool {
 	constructor(url: string, container: HTMLElement | string, private options?: any) {
 		this._initAudioContext = throttle(this.initAudioContext.bind(this), 100)
 
-		// this.initContainer(container)
+    options.show && this.initContainer(container)
 
 		this.bindBtnListener()
 
@@ -157,19 +157,3 @@ class AudioTool {
 		})
 	}
 }
-
-new AudioTool(
-	`./assets/${getMusicName()}`,
-	'#container',
-	{
-		autoplay: true,
-		buttonTarget: {
-			play: '.play',
-			pause: '.pause',
-			prev: '.prev',
-			next: '.next',
-			forward: '.forward',
-			backward: '.backward'
-		}
-	}
-)
