@@ -1,44 +1,63 @@
-const musicNameList = [
-	'ADVENTURE_PARTY.mp3',
-	'像你这样的大师.mp3',
-	'十二生肖闯江湖.mp3',
-	'春风不解意.mp3',
-	'果宝特攻.mp3',
-	'横冲直撞.mp3',
-	'绿色的旋律.mp3'
-]
+class Watcher<T extends string> {
+	private readonly eventMap: any
+	constructor() {
+		this.eventMap = {}
+	}
+	on (event: T, callback: Function) {
+		let cbs = this.eventMap[event]
+		if (!cbs || !cbs.length) cbs = this.eventMap[event] = []
+		cbs.push(callback)
+	}
+	once (event: T, callback: Function) {
+		let cbs = this.eventMap[event]
+		if (!cbs || !cbs.length) cbs = this.eventMap[event] = []
+		const newCB = () => {
+			callback()
+			this.eventMap[event] = cbs.filter((cb: Function) => {
+				return cb !== newCB
+			})
+		}
+		cbs.push(newCB)
+	}
+	emit (event: T) {
+		if (!(event in this.eventMap)) return
+		const cbs = this.eventMap[event]
+		cbs.forEach((cb: Function) => cb())
+	}
+}
 
 const INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown']
 
-export function getMusicName () {
-	const randomIndex = Math.ceil(Math.random() * 7) - 1
-	const musicName = musicNameList[randomIndex]
-	console.log(`开始播放：${musicName.split('.')[0]}`)
-	return musicName
-}
-
 const eventStrategy: any = {
-	play (el: HTMLElement, audioEle: HTMLAudioElement) {
+	play (el: HTMLElement, audio: Player, key: string) {
+		const audioEle = audio.audioEle
+		const { buttonAfterCallback } = audio.options
+		let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
 		el.addEventListener('click', () => {
 			audioEle.play()
+			buttonAfterCB && buttonAfterCB()
 		})
 	},
-	pause (el: HTMLElement, audioEle: HTMLAudioElement) {
+	pause (el: HTMLElement, audio: Player, key: string) {
+		const audioEle = audio.audioEle
+		const { buttonAfterCallback } = audio.options
+		let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
 		el.addEventListener('click', () => {
 			audioEle.pause()
+			buttonAfterCB && buttonAfterCB()
 		})
 	},
-	prev (el: HTMLElement, audioEle: HTMLAudioElement) {
+	prev (el: HTMLElement, _: Player) {
 		el.addEventListener('click', () => {
 			console.log('prev')
 		})
 	},
-	next (el: HTMLElement, audioEle: HTMLAudioElement) {
+	next (el: HTMLElement, _: Player) {
 		el.addEventListener('click', () => {
 			console.log('next')
 		})
 	},
-	// forward (el: HTMLElement, _: HTMLAudioElement, audio: AudioTool) {
+	// forward (el: HTMLElement, _: HTMLAudioElement, audio: Player) {
 	// 	const audioBuffer = audio.audioContext.decodeAudioData(audio.audioSource.arrayBuffer)
 	// 	const source = audio.audioContext.createBufferSource()
 	// 	source.buffer = audioBuffer
@@ -60,26 +79,106 @@ function throttle (fn: any, delay: number) {
 	}
 }
 
-export class AudioTool {
+enum State {
+	PLAYING = 'PLAYING',
+	ENDED = 'ENDED',
+	PAUSE = 'PAUSE',
+}
+
+/*
+* TODO
+* arrayBuffer和audioContext都创建完毕后创建source
+* fetch('audio.mp3')
+  .then(response => response.arrayBuffer())
+  .then(buffer => audioContext.decodeAudioData(buffer))
+  .then(audioBuffer => {
+    // 创建音频源
+    const audioBufferSource = audioContext.createBufferSource();
+    audioBufferSource.buffer = audioBuffer;
+
+    // 在特定时间点开始播放音频
+    audioBufferSource.start(10); // 在 10 秒的位置开始播放音频
+
+    // 在特定时间点停止播放音频
+    audioBufferSource.stop(20); // 在 20 秒的位置停止播放音频
+
+    // 播放结束时触发事件
+    audioBufferSource.onended = () => {
+      console.log('音频播放结束');
+    };
+  });
+* */
+export class Player {
+	private sourceLoaded: boolean = false // 音频资源是否加载完毕
+	state = State.ENDED // 播放器当前状态
+	private audioBufferSource: any
+	private watcher: Watcher<'ended' | 'pause' | 'playing'> = new Watcher()
 	// 音频的上下文对象
 	audioContext: any
 	// 音频的源信息（arrayBuffer）
 	audioSource: any = {}
 	// 音频元素
 	audioEle: HTMLAudioElement = document.createElement('audio')
-	private _initAudioContext
-	constructor(url: string, container: HTMLElement | string, private options?: any) {
+	private readonly _initAudioContext
+	constructor(url: string, container: HTMLElement | string, public options?: any) {
 		this._initAudioContext = throttle(this.initAudioContext.bind(this), 100)
-
     options.show && this.initContainer(container)
 
 		this.bindBtnListener()
+		this.startWatch()
 
 		this.createBlobUrl(url)
 			.then(audioUrl => {
 				this.audioEle.src = audioUrl
 				this.listenInteraction()
 			})
+	}
+
+	startWatch () {
+		this.watcher.on('playing', () => {
+			console.log('playing')
+			this.state = State.PLAYING
+		})
+		this.watcher.on('pause', () => {
+			console.log('pause')
+			this.state = State.PAUSE
+		})
+		this.watcher.on('ended', () => {
+			console.log('ended')
+			this.state = State.ENDED
+		})
+		this.audioEle.addEventListener('playing', () => {
+			this.watcher.emit('playing')
+		})
+		this.audioEle.addEventListener('pause', () => {
+			this.watcher.emit('pause')
+		})
+		this.audioEle.addEventListener('ended', () => {
+			this.watcher.emit('ended')
+		})
+	}
+
+	// 开始播放
+	play () {
+		this.audioEle.play()
+	}
+	// 暂停播放
+	pause () {
+		this.audioEle.pause()
+	}
+	// 停止播放
+	ended () {
+		this.audioEle.pause()
+		setTimeout(() => {
+			this.watcher.emit('ended')
+		})
+	}
+	// 切换播放的音频
+	async changeAudio (url: string) {
+		this.audioEle.src = await this.createBlobUrl(url)
+		this.audioEle.addEventListener('loadeddata', () => {
+			this.audioEle.play()
+		})
 	}
 
 	showList (el: HTMLElement | string) {
@@ -98,13 +197,14 @@ export class AudioTool {
 				target = document.querySelector(target)
 			}
 			const strategyMethod = eventStrategy[btnName]
-			strategyMethod && strategyMethod(target, this.audioEle, this)
+			strategyMethod && strategyMethod(target, this, btnName)
 		})
 	}
 
 	// 创建音频上下文对象
 	private initAudioContext () {
 		// 创建audioContext前必须与文档有交互（点击/移动鼠标），否则音频无法播放
+		console.log('---')
 		this.audioContext = new window.AudioContext()
 		// audioContext创建完毕，停止监听与文档的交互
 		this.stopListenInteraction()

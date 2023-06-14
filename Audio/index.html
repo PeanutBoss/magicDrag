@@ -24,7 +24,7 @@
         box-sizing: border-box;
         padding: 6px;
         height: 60px;
-        background-color: rgb(77, 239, 202);
+        background-color: rgba(77, 239, 202, 0.3);
         color: rgb(250, 250, 250);
         font-size: 17px;
         line-height: 48px;
@@ -43,7 +43,7 @@
       .player-body-detail {
         height: 100%;
         flex: 1;
-        background-color: aquamarine;
+        background-color: rgba(127, 255, 212, 0.2);
       }
       .player-footer {
         display: flex;
@@ -57,9 +57,14 @@
         background-color: azure;
       }
       .player-footer-control > .control {
+        padding-top: 5px;
         display: flex;
-        justify-content: space-between;
+        justify-content: space-around;
         cursor: pointer;
+      }
+      .control > .control-icon {
+          width: 30px;
+          height: 30px;
       }
     </style>
 </head>
@@ -67,9 +72,20 @@
 
 <div id="app"></div>
 
+<script>
+  /*
+  * 暂停&播放切换
+  * 列表
+  * 上一首/下一首
+  * 停止
+  * 进度条
+  * */
+</script>
+
 <script type="module">
-  import { AudioTool, getMusicName } from './base.js'
-  const { createApp, onMounted } = Vue
+  import { Player } from './base.js'
+  import { getMusicName } from './tool.js'
+  const { createApp, onMounted, ref, reactive } = Vue
 
   const Component = {
     template: `
@@ -87,12 +103,12 @@
         <div class="player-footer-info"></div>
         <div class="player-footer-control">
           <div class="control">
-            <div class="loop-way">循环方式</div>
-            <div class="prev">prev</div>
-            <div class="play">play</div>
-            <div class="pause">pause</div>
-            <div class="next">next</div>
-            <div class="words">words</div>
+            <img class="loop-way control-icon" src="./assets/icon/loop.png">
+            <img class="prev control-icon" src="./assets/icon/prev.png">
+            <img v-show="!isPlaying" @click="play" class="play control-icon" src="./assets/icon/play.png">
+            <img v-show="isPlaying" class="pause control-icon" src="./assets/icon/pause.png">
+            <img class="next control-icon" @click="changeAudio()" src="./assets/icon/next.png">
+            <img class="words control-icon" src="./assets/icon/loop.png">
           </div>
           <div class="process"></div>
         </div>
@@ -101,28 +117,50 @@
     </div>
     `,
     setup () {
+      let player, isPlaying = ref(false)
+      onMounted(() => {
+        player = createPlayer()
+        window.player = player
+      })
 
-      onMounted(createPlayr)
-
-      function createPlayr () {
-        new AudioTool(
+      function createPlayer () {
+        return new Player(
           `./assets/${getMusicName()}`,
           '.player-body-detail',
           {
-            autoplay: true,
-            show: true,
+            show: false,
             buttonTarget: {
-              play: '.play',
-              pause: '.pause',
-              prev: '.prev',
-              next: '.next',
-              forward: '.forward',
-              backward: '.backward'
+              // play: '.play',
+              // pause: '.pause',
+              // prev: '.prev',
+              // next: '.next',
+              // forward: '.forward',
+              // backward: '.backward'
+            },
+            buttonAfterCallback: {
+              play () {
+                isPlaying.value = true
+                console.log(isPlaying.value)
+              },
+              pause () {
+                isPlaying.value = false
+                console.log(isPlaying.value)
+              }
             }
           }
         )
       }
-
+      function play () {
+        player.play()
+      }
+      function changeAudio() {
+        player.changeAudio(`./assets/${getMusicName()}`)
+      }
+      return {
+        isPlaying,
+        play,
+        changeAudio
+      }
     }
   }
   const app = createApp(Component)
