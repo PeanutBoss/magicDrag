@@ -249,7 +249,8 @@ export class Player {
 
     // 视频资源加载完毕
     this.sourceLoaded = true
-    this.createBufferSource()
+    // FIXME 打开后切换音频出错
+    // await this.createBufferSource()
 
 		// const blob = await response.blob()
 		const blob = new Blob([this.audioSource.arrayBuffer], { type: 'audio/mp3' })
