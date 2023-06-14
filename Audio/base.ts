@@ -85,34 +85,12 @@ enum State {
 	PAUSE = 'PAUSE',
 }
 
-/*
-* TODO
-* arrayBuffer和audioContext都创建完毕后创建source
-* fetch('audio.mp3')
-  .then(response => response.arrayBuffer())
-  .then(buffer => audioContext.decodeAudioData(buffer))
-  .then(audioBuffer => {
-    // 创建音频源
-    const audioBufferSource = audioContext.createBufferSource();
-    audioBufferSource.buffer = audioBuffer;
-
-    // 在特定时间点开始播放音频
-    audioBufferSource.start(10); // 在 10 秒的位置开始播放音频
-
-    // 在特定时间点停止播放音频
-    audioBufferSource.stop(20); // 在 20 秒的位置停止播放音频
-
-    // 播放结束时触发事件
-    audioBufferSource.onended = () => {
-      console.log('音频播放结束');
-    };
-  });
-* */
 export class Player {
+  private loopWay = '' // 策略模式处理
 	private sourceLoaded: boolean = false // 音频资源是否加载完毕
 	state = State.ENDED // 播放器当前状态
-	private audioBufferSource: any
-	private watcher: Watcher<'ended' | 'pause' | 'playing'> = new Watcher()
+	private audioBufferSource: any // 音频源
+	watcher = new Watcher<'ended' | 'pause' | 'playing'>()
 	// 音频的上下文对象
 	audioContext: any
 	// 音频的源信息（arrayBuffer）
@@ -156,6 +134,21 @@ export class Player {
 		this.audioEle.addEventListener('ended', () => {
 			this.watcher.emit('ended')
 		})
+    // 播放发生错误
+		this.audioEle.addEventListener('error', error => {
+      console.log(error, 'error')
+			// this.watcher.emit('ended')
+		})
+    // 停止播放（例如切换下一个音频，当前音频就会终止播放）
+		this.audioEle.addEventListener('abort', abort => {
+      console.log(abort, 'abort')
+			// this.watcher.emit('ended')
+		})
+    // 加载中止
+		this.audioEle.addEventListener('stalled ', stalled => {
+      console.log(stalled, 'stalled')
+			// this.watcher.emit('ended')
+		})
 	}
 
 	// 开始播放
@@ -173,6 +166,17 @@ export class Player {
 			this.watcher.emit('ended')
 		})
 	}
+  /*
+  * KNOW 使用 audioBufferSource 控制音频与audio是独立的两个播放器
+  * */
+  // 快进
+  forward () {
+    // this.audioBufferSource.start(20)
+    console.log('forward')
+    // this.audioBufferSource.playbackRate.value = 2
+    this.audioBufferSource.connect(this.audioContext.destination)
+    this.audioBufferSource.start(this.audioContext.currentTime + 10)
+  }
 	// 切换播放的音频
 	async changeAudio (url: string) {
 		this.audioEle.src = await this.createBlobUrl(url)
@@ -206,6 +210,7 @@ export class Player {
 		// 创建audioContext前必须与文档有交互（点击/移动鼠标），否则音频无法播放
 		console.log('---')
 		this.audioContext = new window.AudioContext()
+    this.createBufferSource()
 		// audioContext创建完毕，停止监听与文档的交互
 		this.stopListenInteraction()
 
@@ -215,6 +220,15 @@ export class Player {
 		source.connect(gainNode)
 		gainNode.connect(this.audioContext.destination)
 	}
+  async createBufferSource () {
+    if (this.sourceLoaded && this.audioContext) {
+      console.log(this.audioSource.arrayBuffer, 'this.audioSource.arrayBuffer')
+      this.audioSource.audioBuffer = await this.audioContext.decodeAudioData(this.audioSource.arrayBuffer)
+      console.log(this.audioSource.audioBuffer, 'this.audioSource.audioBuffer')
+      this.audioBufferSource = this.audioContext.createBufferSource()
+      this.audioBufferSource.buffer = this.audioSource.audioBuffer
+    }
+  }
 
 	// 将音频播放器添加到页面中
 	private initContainer (container: HTMLElement | string) {
@@ -227,10 +241,16 @@ export class Player {
 		this.audioEle.setAttribute('controls', '')
 	}
 
+
 	// 根据相对路径创建文件url
 	async createBlobUrl (url: string) {
 		const response = await fetch(url)
 		this.audioSource.arrayBuffer = await response.arrayBuffer() // 保存音频对应的arrayBuffer
+
+    // 视频资源加载完毕
+    this.sourceLoaded = true
+    this.createBufferSource()
+
 		// const blob = await response.blob()
 		const blob = new Blob([this.audioSource.arrayBuffer], { type: 'audio/mp3' })
 

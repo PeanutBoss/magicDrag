@@ -7,9 +7,12 @@
     <title>Audio</title>
     <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.2.47/vue.global.js"></script>
     <style>
-      html, body {
+      html, body, ul, li {
         padding: 0;
         margin: 0;
+      }
+      li {
+        list-style-type: none;
       }
       #app {
         padding: 20px;
@@ -24,8 +27,9 @@
         box-sizing: border-box;
         padding: 6px;
         height: 60px;
-        background-color: rgba(77, 239, 202, 0.3);
-        color: rgb(250, 250, 250);
+        background-color: rgba(77, 239, 202, 0.8);
+        /*color: rgb(250, 250, 250);*/
+        color: #fff;
         font-size: 17px;
         line-height: 48px;
         border-top-left-radius: 6px;
@@ -36,9 +40,25 @@
         height: calc(100% - 60px - 70px);
       }
       .player-body-list {
+        box-sizing: border-box;
+        padding: 10px 5px;
         width: 200px;
         height: 100%;
-        background-color: aliceblue;
+        background-color: rgba(117, 183, 239, 0.3);
+        overflow: auto;
+      }
+      .player-body-list::-webkit-scrollbar {
+        width: 0;
+      }
+      .player-body-list-item {
+        margin: 3px;
+        padding: 2px;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+      }
+      .player-body-list-item:hover, .player-body-list-item-playing {
+        background-color: rgba(117, 183, 239, 0.2);
       }
       .player-body-detail {
         height: 100%;
@@ -78,14 +98,15 @@
   * 列表
   * 上一首/下一首
   * 停止
+  * 循环方式
   * 进度条
   * */
 </script>
 
 <script type="module">
   import { Player } from './base.js'
-  import { getMusicName } from './tool.js'
-  const { createApp, onMounted, ref, reactive } = Vue
+  import { getMusicName, musicNameList } from './tool.js'
+  const { createApp, onMounted, ref } = Vue
 
   const Component = {
     template: `
@@ -95,7 +116,16 @@
       </div>
       <div class="player-body">
         <!-- 音频列表 -->
-        <div class="player-body-list"></div>
+        <ul class="player-body-list">
+          <template v-for="(name, index) in musicNameList" :key="name">
+            <li
+              :class="{ 'player-body-list-item-playing': audioIndex === index }"
+              class="player-body-list-item"
+              @click="changeAudio(index)">
+              {{ name.split('.')[0] }}
+            </li>
+          </template>
+        </ul>
         <!-- 播放详情 - 可视化信息 -->
         <div class="player-body-detail"></div>
       </div>
@@ -104,11 +134,11 @@
         <div class="player-footer-control">
           <div class="control">
             <img class="loop-way control-icon" src="./assets/icon/loop.png">
-            <img class="prev control-icon" src="./assets/icon/prev.png">
+            <img class="prev control-icon" @click="changeAudio(audioIndex - 1)" src="./assets/icon/prev.png">
             <img v-show="!isPlaying" @click="play" class="play control-icon" src="./assets/icon/play.png">
-            <img v-show="isPlaying" class="pause control-icon" src="./assets/icon/pause.png">
-            <img class="next control-icon" @click="changeAudio()" src="./assets/icon/next.png">
-            <img class="words control-icon" src="./assets/icon/loop.png">
+            <img v-show="isPlaying" @click="pause" class="pause control-icon" src="./assets/icon/pause.png">
+            <img class="next control-icon" @click="changeAudio(audioIndex + 1)" src="./assets/icon/next.png">
+            <img class="words control-icon" @click="forward" src="./assets/icon/forward.png">
           </div>
           <div class="process"></div>
         </div>
@@ -121,6 +151,7 @@
       onMounted(() => {
         player = createPlayer()
         window.player = player
+        watchAction()
       })
 
       function createPlayer () {
@@ -128,7 +159,7 @@
           `./assets/${getMusicName()}`,
           '.player-body-detail',
           {
-            show: false,
+            show: true,
             buttonTarget: {
               // play: '.play',
               // pause: '.pause',
@@ -150,15 +181,46 @@
           }
         )
       }
+
+      function watchAction() {
+        /*
+        * 点击播放可能会播放失败（或直接操作controls控件），所以如果直接在点击播放后修改 isPlaying 状态可能不会同步更新
+        * 通过 player.watcher 通过监听audio元素的事件来通知是否播放
+        * 避免播放失败的情况下播放状态未同步的问题
+        * */
+        player.watcher.on('playing', () => {
+          isPlaying.value = true
+        })
+        player.watcher.on('pause', () => {
+          isPlaying.value = false
+        })
+      }
       function play () {
         player.play()
       }
-      function changeAudio() {
-        player.changeAudio(`./assets/${getMusicName()}`)
+      function pause () {
+        player.pause()
+      }
+      function forward() {
+        player.forward()
+      }
+
+      const audioIndex = ref(0)
+      function changeAudio(index) {
+        if (audioIndex.value === index) return
+        if (index === undefined) return
+        audioIndex.value = index
+        name = getMusicName(index)
+        player.changeAudio(`./assets/${name}`)
       }
       return {
         isPlaying,
+        musicNameList,
+        audioIndex,
+
         play,
+        pause,
+        forward,
         changeAudio
       }
     }
