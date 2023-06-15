@@ -56,15 +56,7 @@ const eventStrategy: any = {
 		el.addEventListener('click', () => {
 			console.log('next')
 		})
-	},
-	// forward (el: HTMLElement, _: HTMLAudioElement, audio: Player) {
-	// 	const audioBuffer = audio.audioContext.decodeAudioData(audio.audioSource.arrayBuffer)
-	// 	const source = audio.audioContext.createBufferSource()
-	// 	source.buffer = audioBuffer
-	// 	el.addEventListener('click', () => {
-	// 		source.start(audio.audioContext.currentTime + 10)
-	// 	})
-	// }
+	}
 }
 
 function throttle (fn: any, delay: number) {
@@ -90,11 +82,12 @@ export class Player {
 	private sourceLoaded: boolean = false // 音频资源是否加载完毕
 	state = State.ENDED // 播放器当前状态
 	private audioBufferSource: any // 音频源
+  private audioSource: any // 音频源
 	watcher = new Watcher<'ended' | 'pause' | 'playing'>()
 	// 音频的上下文对象
 	audioContext: any
 	// 音频的源信息（arrayBuffer）
-	audioSource: any = {}
+	audioData: any = {}
 	// 音频元素
 	audioEle: HTMLAudioElement = document.createElement('audio')
 	private readonly _initAudioContext
@@ -171,11 +164,7 @@ export class Player {
   * */
   // 快进
   forward () {
-    // this.audioBufferSource.start(20)
-    console.log('forward')
-    // this.audioBufferSource.playbackRate.value = 2
-    this.audioBufferSource.connect(this.audioContext.destination)
-    this.audioBufferSource.start(this.audioContext.currentTime + 10)
+    this.audioEle.currentTime = this.audioEle.currentTime + 1
   }
 	// 切换播放的音频
 	async changeAudio (url: string) {
@@ -210,23 +199,22 @@ export class Player {
 		// 创建audioContext前必须与文档有交互（点击/移动鼠标），否则音频无法播放
 		console.log('---')
 		this.audioContext = new window.AudioContext()
-    this.createBufferSource()
+    // this.createBufferSource()
 		// audioContext创建完毕，停止监听与文档的交互
 		this.stopListenInteraction()
 
-		const source = this.audioContext.createMediaElementSource(this.audioEle)
+    this.audioSource = this.audioContext.createMediaElementSource(this.audioEle)
 		const gainNode = this.audioContext.createGain()
 		gainNode.gain.value = 0.3
-		source.connect(gainNode)
+    this.audioSource.connect(gainNode)
 		gainNode.connect(this.audioContext.destination)
 	}
   async createBufferSource () {
     if (this.sourceLoaded && this.audioContext) {
-      console.log(this.audioSource.arrayBuffer, 'this.audioSource.arrayBuffer')
-      this.audioSource.audioBuffer = await this.audioContext.decodeAudioData(this.audioSource.arrayBuffer)
-      console.log(this.audioSource.audioBuffer, 'this.audioSource.audioBuffer')
+      // 解码后arrayBuffer会被清空
+      this.audioData.audioBuffer = await this.audioContext.decodeAudioData(this.audioData.arrayBuffer)
       this.audioBufferSource = this.audioContext.createBufferSource()
-      this.audioBufferSource.buffer = this.audioSource.audioBuffer
+      this.audioBufferSource.buffer = this.audioData.audioBuffer
     }
   }
 
@@ -245,22 +233,14 @@ export class Player {
 	// 根据相对路径创建文件url
 	async createBlobUrl (url: string) {
 		const response = await fetch(url)
-		this.audioSource.arrayBuffer = await response.arrayBuffer() // 保存音频对应的arrayBuffer
+		this.audioData.arrayBuffer = await response.arrayBuffer() // 保存音频对应的arrayBuffer
 
+    // const blob = await response.blob()
+    const blob = new Blob([this.audioData.arrayBuffer], { type: 'audio/mp3' })
     // 视频资源加载完毕
     this.sourceLoaded = true
-    // FIXME 打开后切换音频出错
+
     // await this.createBufferSource()
-
-		// const blob = await response.blob()
-		const blob = new Blob([this.audioSource.arrayBuffer], { type: 'audio/mp3' })
-
-		// let base64
-		// const reader = new FileReader()
-		// reader.onloadend = () => {
-		// 	base64 = reader.result
-		// }
-		// reader.readAsDataURL(blob)
 
 		// TODO 切换音频时应该销毁该url 或 将该url缓存，关闭页面时再销毁
 	  return URL.createObjectURL(blob)
