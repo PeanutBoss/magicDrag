@@ -156,7 +156,7 @@
 
       function createPlayer () {
         return new Player(
-          `./assets/${getMusicName()}`,
+          `./assets/music/${getMusicName()}`,
           '.player-body-detail',
           {
             show: true,
@@ -211,7 +211,7 @@
         if (index === undefined) return
         audioIndex.value = index
         name = getMusicName(index)
-        player.changeAudio(`./assets/${name}`)
+        player.changeAudio(`./assets/music/${name}`)
       }
       return {
         isPlaying,
