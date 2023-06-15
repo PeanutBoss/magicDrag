@@ -174,12 +174,6 @@ export class Player {
 		})
 	}
 
-	showList (el: HTMLElement | string) {
-		if (typeof el === 'string') {
-			document.querySelector(el)
-		}
-	}
-
 	// 为按钮绑定click事件
 	private bindBtnListener () {
 		const { buttonTarget } = this.options
@@ -205,7 +199,7 @@ export class Player {
 
     this.audioSource = this.audioContext.createMediaElementSource(this.audioEle)
 		const gainNode = this.audioContext.createGain()
-		gainNode.gain.value = 0.3
+		gainNode.gain.value = 0.5
     this.audioSource.connect(gainNode)
 		gainNode.connect(this.audioContext.destination)
 	}

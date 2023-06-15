@@ -1,0 +1,17 @@
+{
+  "name": "interesting-api",
+  "version": "1.0.0",
+  "description": "一些有趣的Web API的应用",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "syncMusic": "node Audio/syncMusic.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/hc1106/interesting-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
