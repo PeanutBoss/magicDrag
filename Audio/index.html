@@ -191,14 +191,14 @@
       onMounted(() => {
         player = createPlayer()
         window.player = player
+        // 获取进度条最左端与窗口的距离
         skewProcess = instance.$refs.process.offsetLeft
+        // 滚动条滚动时重新计算（进度条最左端与窗口的距离可能会发生变化）
         window.addEventListener('scroll', () => {
           skewProcess = instance.$refs.process.offsetLeft - window.scrollX
-          console.log(skewProcess)
         })
 
-        window.process = instance.$refs.process
-        console.log(instance.$refs.process.getBoundingClientRect())
+        // 开始监听播放器
         watchAction()
       })
 
@@ -245,6 +245,10 @@
         player.watcher.on('pause', () => {
           isPlaying.value = false
         })
+        player.watcher.on('ended', () => {
+          audioIndex.value = audioIndex.value + 1
+          changeAudio(audioIndex.value)
+        })
         player.watcher.on('timeupdate', ({ currentTime, duration }) => {
           const val = currentTime / duration
           playProcess.value = getPercent(val)
@@ -255,11 +259,13 @@
       const totalTime = ref(0) // 音频总时长
       let skewProcess = 0 // 进度条左边的相对位置
       let startOffset = 0 // 按下鼠标时鼠标的相对位置
-      let skewDistance = 0 // 按下鼠标时的偏移距离
-      const isPress = ref(false)
+      let skewDistance = 0 // 按下鼠标时与当前位置的距离
+      let pauseBeforeStatus // 调整进度时需要暂停，用来记录调整进度之前的状态
+      const isPress = ref(false) // 是否按下 TODO 不需要响应式
       function getPercent (val) {
         return (val * 100).toFixed(1) + '%'
       }
+      // 根据进度条已播放区域的距离计算当前播放进度（时间）
       function getCurrentPositionTime (offset) {
         const percent = offset / instance.$refs.process.offsetWidth
         return percent * totalTime.value
@@ -272,25 +278,36 @@
       }
       // 点击进度指示点
       function downPointer (event) {
+        // 调整进度时暂停播放
+        pauseBeforeStatus = isPlaying.value
         pause()
+
         isPress.value = true
         // 鼠标按下时修改相对位置
         startOffset = event.clientX
         skewDistance = 0
 
-        window.addEventListener('mousemove', movePointer)
-        window.addEventListener('mouseup', () => {
+        // window.addEventListener('mousemove', movePointer)
+        // window.addEventListener('mouseup', () => {
+        //   isPress.value = false
+        //   console.log(isPlaying.value, 'isPlaying.value')
+        //   if (pauseBeforeStatus) play()
+        //   pauseBeforeStatus = false
+        // })
+        window.onmousemove = movePointer
+        window.onmouseup = () => {
           isPress.value = false
           console.log(isPlaying.value, 'isPlaying.value')
-          if (isPlaying.value) play()
-        })
+          if (pauseBeforeStatus) play()
+          pauseBeforeStatus = false
+        }
       }
       // 移动进度指示点
       function movePointer (event) {
         if (!isPress.value) return
         skewDistance += event.movementX
+        // 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
         const currentPointX = startOffset - skewProcess + skewDistance
-        console.log(currentPointX)
         const targetTime = getCurrentPositionTime(currentPointX)
         player.changePlayProcess(targetTime)
       }
@@ -326,8 +343,7 @@
         forward,
         changeAudio,
         downProcess,
-        downPointer,
-        movePointer
+        downPointer
       }
     }
   }
