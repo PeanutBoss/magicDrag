@@ -29,32 +29,32 @@ class Watcher {
         };
         cbs.push(newCB);
     }
-    emit(event) {
+    emit(event, ...rest) {
         if (!(event in this.eventMap))
             return;
         const cbs = this.eventMap[event];
-        cbs.forEach((cb) => cb());
+        cbs.forEach((cb) => cb(...rest));
     }
 }
 const INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown'];
 const eventStrategy = {
     play(el, audio, key) {
-        const audioEle = audio.audioEle;
-        const { buttonAfterCallback } = audio.options;
-        let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key];
-        el.addEventListener('click', () => {
-            audioEle.play();
-            buttonAfterCB && buttonAfterCB();
-        });
+        // const audioEle = audio.audioEle
+        // const { buttonAfterCallback } = audio.options
+        // let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
+        // el.addEventListener('click', () => {
+        // 	audioEle.play()
+        // 	buttonAfterCB && buttonAfterCB()
+        // })
     },
     pause(el, audio, key) {
-        const audioEle = audio.audioEle;
-        const { buttonAfterCallback } = audio.options;
-        let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key];
-        el.addEventListener('click', () => {
-            audioEle.pause();
-            buttonAfterCB && buttonAfterCB();
-        });
+        // const audioEle = audio.audioEle
+        // const { buttonAfterCallback } = audio.options
+        // let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
+        // el.addEventListener('click', () => {
+        // 	audioEle.pause()
+        // 	buttonAfterCB && buttonAfterCB()
+        // })
     },
     prev(el, _) {
         el.addEventListener('click', () => {
@@ -108,16 +108,16 @@ export class Player {
     }
     startWatch() {
         this.watcher.on('playing', () => {
-            console.log('playing');
             this.state = State.PLAYING;
         });
         this.watcher.on('pause', () => {
-            console.log('pause');
             this.state = State.PAUSE;
         });
         this.watcher.on('ended', () => {
-            console.log('ended');
             this.state = State.ENDED;
+        });
+        this.audioEle.addEventListener('loadeddata', () => {
+            this.watcher.emit('loadeddata', { duration: this.audioEle.duration });
         });
         this.audioEle.addEventListener('playing', () => {
             this.watcher.emit('playing');
@@ -127,6 +127,10 @@ export class Player {
         });
         this.audioEle.addEventListener('ended', () => {
             this.watcher.emit('ended');
+        });
+        this.audioEle.addEventListener('timeupdate', event => {
+            const { currentTime, duration } = this.audioEle;
+            this.watcher.emit('timeupdate', { currentTime, duration });
         });
         // 播放发生错误
         this.audioEle.addEventListener('error', error => {
@@ -158,6 +162,10 @@ export class Player {
         setTimeout(() => {
             this.watcher.emit('ended');
         });
+    }
+    // 调整播放进度
+    changePlayProcess(time) {
+        this.audioEle.currentTime = time;
     }
     /*
     * KNOW 使用 audioBufferSource 控制音频与audio是独立的两个播放器

@@ -95,7 +95,6 @@
         border-radius: 2px;
       }
       .process-played {
-        width: 10px;
         height: 4px;
         background-color: gray;
       }
@@ -115,8 +114,8 @@
       .process-pointer {
         display: none;
         position: absolute;
+          left: -4px;
         top: -1px;
-        left: 6px;
         width: 8px;
         height: 8px;
         border-radius: 50%;
@@ -142,7 +141,7 @@
 <script type="module">
   import { Player } from './base.js'
   import { musicNameList, getMusicName }  from './musicNameList.js'
-  const { createApp, onMounted, ref } = Vue
+  const { createApp, onMounted, ref, getCurrentInstance } = Vue
 
   const Component = {
     template: `
@@ -176,9 +175,9 @@
             <img class="next control-icon" @click="changeAudio(audioIndex + 1)" src="./assets/icon/next.png">
             <img class="words control-icon" @click="forward" src="./assets/icon/forward.png">
           </div>
-          <div class="process">
-            <div class="process-played"></div>
-            <div class="process-pointer"></div>
+          <div class="process" @mousedown="downProcess" ref="process">
+            <div class="process-played" :style="{ width: playProcess }"></div>
+            <div class="process-pointer" @mousedown="downPointer" :style="{ left: 'calc(' + playProcess + ' - 4px)' }"></div>
           </div>
         </div>
         <div class="player-footer-other"></div>
@@ -186,10 +185,20 @@
     </div>
     `,
     setup () {
+      const instance = getCurrentInstance().proxy
+
       let player, isPlaying = ref(false)
       onMounted(() => {
         player = createPlayer()
         window.player = player
+        skewProcess = instance.$refs.process.offsetLeft
+        window.addEventListener('scroll', () => {
+          skewProcess = instance.$refs.process.offsetLeft - window.scrollX
+          console.log(skewProcess)
+        })
+
+        window.process = instance.$refs.process
+        console.log(instance.$refs.process.getBoundingClientRect())
         watchAction()
       })
 
@@ -198,7 +207,7 @@
           `./assets/music/${getMusicName(0)}`,
           '.player-body-detail',
           {
-            show: true,
+            show: false,
             buttonTarget: {
               // play: '.play',
               // pause: '.pause',
@@ -227,13 +236,65 @@
         * 通过 player.watcher 通过监听audio元素的事件来通知是否播放
         * 避免播放失败的情况下播放状态未同步的问题
         * */
+        player.watcher.on('loadeddata', ({ duration }) => {
+          totalTime.value = duration
+        })
         player.watcher.on('playing', () => {
           isPlaying.value = true
         })
         player.watcher.on('pause', () => {
           isPlaying.value = false
         })
+        player.watcher.on('timeupdate', ({ currentTime, duration }) => {
+          const val = currentTime / duration
+          playProcess.value = getPercent(val)
+        })
       }
+
+      const playProcess = ref(0) // 播放进度
+      const totalTime = ref(0) // 音频总时长
+      let skewProcess = 0 // 进度条左边的相对位置
+      let startOffset = 0 // 按下鼠标时鼠标的相对位置
+      let skewDistance = 0 // 按下鼠标时的偏移距离
+      const isPress = ref(false)
+      function getPercent (val) {
+        return (val * 100).toFixed(1) + '%'
+      }
+      function getCurrentPositionTime (offset) {
+        const percent = offset / instance.$refs.process.offsetWidth
+        return percent * totalTime.value
+      }
+      // 点击进度条调整进度
+      function downProcess (event) {
+        if (event.target.className === 'process-pointer') return
+        const targetTime = getCurrentPositionTime(event.offsetX)
+        player.changePlayProcess(targetTime)
+      }
+      // 点击进度指示点
+      function downPointer (event) {
+        pause()
+        isPress.value = true
+        // 鼠标按下时修改相对位置
+        startOffset = event.clientX
+        skewDistance = 0
+
+        window.addEventListener('mousemove', movePointer)
+        window.addEventListener('mouseup', () => {
+          isPress.value = false
+          console.log(isPlaying.value, 'isPlaying.value')
+          if (isPlaying.value) play()
+        })
+      }
+      // 移动进度指示点
+      function movePointer (event) {
+        if (!isPress.value) return
+        skewDistance += event.movementX
+        const currentPointX = startOffset - skewProcess + skewDistance
+        console.log(currentPointX)
+        const targetTime = getCurrentPositionTime(currentPointX)
+        player.changePlayProcess(targetTime)
+      }
+
       function play () {
         player.play()
       }
@@ -252,15 +313,21 @@
         name = getMusicName(index)
         player.changeAudio(`./assets/music/${name}`)
       }
+
       return {
         isPlaying,
         musicNameList,
         audioIndex,
+        playProcess,
+        isPress,
 
         play,
         pause,
         forward,
-        changeAudio
+        changeAudio,
+        downProcess,
+        downPointer,
+        movePointer
       }
     }
   }

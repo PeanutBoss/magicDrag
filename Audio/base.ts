@@ -19,10 +19,10 @@ class Watcher<T extends string> {
 		}
 		cbs.push(newCB)
 	}
-	emit (event: T) {
+	emit (event: T, ...rest: any[]) {
 		if (!(event in this.eventMap)) return
 		const cbs = this.eventMap[event]
-		cbs.forEach((cb: Function) => cb())
+		cbs.forEach((cb: Function) => cb(...rest))
 	}
 }
 
@@ -30,22 +30,22 @@ const INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown']
 
 const eventStrategy: any = {
 	play (el: HTMLElement, audio: Player, key: string) {
-		const audioEle = audio.audioEle
-		const { buttonAfterCallback } = audio.options
-		let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
-		el.addEventListener('click', () => {
-			audioEle.play()
-			buttonAfterCB && buttonAfterCB()
-		})
+		// const audioEle = audio.audioEle
+		// const { buttonAfterCallback } = audio.options
+		// let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
+		// el.addEventListener('click', () => {
+		// 	audioEle.play()
+		// 	buttonAfterCB && buttonAfterCB()
+		// })
 	},
 	pause (el: HTMLElement, audio: Player, key: string) {
-		const audioEle = audio.audioEle
-		const { buttonAfterCallback } = audio.options
-		let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
-		el.addEventListener('click', () => {
-			audioEle.pause()
-			buttonAfterCB && buttonAfterCB()
-		})
+		// const audioEle = audio.audioEle
+		// const { buttonAfterCallback } = audio.options
+		// let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
+		// el.addEventListener('click', () => {
+		// 	audioEle.pause()
+		// 	buttonAfterCB && buttonAfterCB()
+		// })
 	},
 	prev (el: HTMLElement, _: Player) {
 		el.addEventListener('click', () => {
@@ -83,13 +83,13 @@ export class Player {
 	state = State.ENDED // 播放器当前状态
 	private audioBufferSource: any // 音频源
   private audioSource: any // 音频源
-	watcher = new Watcher<'ended' | 'pause' | 'playing'>()
+	watcher = new Watcher<'ended' | 'pause' | 'playing' | 'timeupdate' | 'loadeddata' | 'canplay'>()
 	// 音频的上下文对象
 	audioContext: any
 	// 音频的源信息（arrayBuffer）
 	audioData: any = {}
 	// 音频元素
-	audioEle: HTMLAudioElement = document.createElement('audio')
+	private audioEle: HTMLAudioElement = document.createElement('audio')
 	private readonly _initAudioContext
 	constructor(url: string, container: HTMLElement | string, public options?: any) {
 		this._initAudioContext = throttle(this.initAudioContext.bind(this), 100)
@@ -107,16 +107,16 @@ export class Player {
 
 	startWatch () {
 		this.watcher.on('playing', () => {
-			console.log('playing')
 			this.state = State.PLAYING
 		})
 		this.watcher.on('pause', () => {
-			console.log('pause')
 			this.state = State.PAUSE
 		})
 		this.watcher.on('ended', () => {
-			console.log('ended')
 			this.state = State.ENDED
+		})
+		this.audioEle.addEventListener('loadeddata', () => {
+			this.watcher.emit('loadeddata', { duration: this.audioEle.duration })
 		})
 		this.audioEle.addEventListener('playing', () => {
 			this.watcher.emit('playing')
@@ -126,6 +126,10 @@ export class Player {
 		})
 		this.audioEle.addEventListener('ended', () => {
 			this.watcher.emit('ended')
+		})
+		this.audioEle.addEventListener('timeupdate', event => {
+			const { currentTime, duration } = this.audioEle
+			this.watcher.emit('timeupdate', { currentTime, duration })
 		})
     // 播放发生错误
 		this.audioEle.addEventListener('error', error => {
@@ -158,6 +162,10 @@ export class Player {
 		setTimeout(() => {
 			this.watcher.emit('ended')
 		})
+	}
+	// 调整播放进度
+	changePlayProcess (time: number) {
+		this.audioEle.currentTime = time
 	}
   /*
   * KNOW 使用 audioBufferSource 控制音频与audio是独立的两个播放器
