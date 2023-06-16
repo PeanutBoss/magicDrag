@@ -8,7 +8,7 @@ const getNameMethodStr = 'export function getMusicName(index) {\n' +
   '    console.log(`开始播放：${musicName.split(\'.\')[0]}`);\n' +
   '    return musicName;\n' +
   '  }\n' +
-  '  const randomIndex = Math.ceil(Math.random() * 7) - 1;\n' +
+  '  const randomIndex = Math.ceil(Math.random() * musicNameList.length) - 1;\n' +
   '  musicName = musicNameList[randomIndex];\n' +
   '  console.log(`开始播放：${musicName.split(\'.\')[0]}`);\n' +
   '  return musicName;\n' +

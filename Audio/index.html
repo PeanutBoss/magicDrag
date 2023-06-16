@@ -77,7 +77,7 @@
         background-color: azure;
       }
       .player-footer-control > .control {
-        padding-top: 5px;
+        padding-top: 8px;
         display: flex;
         justify-content: space-around;
         cursor: pointer;
@@ -85,6 +85,42 @@
       .control > .control-icon {
           width: 30px;
           height: 30px;
+      }
+      .process {
+        width: 350px;
+        height: 4px;
+        background-color: rgb(229, 229, 229);
+        margin: 15px auto 0;
+        position: relative;
+        border-radius: 2px;
+      }
+      .process-played {
+        width: 10px;
+        height: 4px;
+        background-color: gray;
+      }
+      .process:hover {
+        height: 6px;
+        border-radius: 3px;
+        box-shadow: 0 0 5px rgb(229, 229, 229);
+      }
+      .process:hover > .process-played {
+        height: 6px;
+        border-radius: 3px;
+        box-shadow: 0 0 5px gray;
+      }
+      .process:hover > .process-pointer {
+        display: block;
+      }
+      .process-pointer {
+        display: none;
+        position: absolute;
+        top: -1px;
+        left: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: gray;
       }
     </style>
 </head>
@@ -140,7 +176,10 @@
             <img class="next control-icon" @click="changeAudio(audioIndex + 1)" src="./assets/icon/next.png">
             <img class="words control-icon" @click="forward" src="./assets/icon/forward.png">
           </div>
-          <div class="process"></div>
+          <div class="process">
+            <div class="process-played"></div>
+            <div class="process-pointer"></div>
+          </div>
         </div>
         <div class="player-footer-other"></div>
       </div>
@@ -156,7 +195,7 @@
 
       function createPlayer () {
         return new Player(
-          `./assets/music/${getMusicName()}`,
+          `./assets/music/${getMusicName(0)}`,
           '.player-body-detail',
           {
             show: true,

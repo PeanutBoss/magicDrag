@@ -6,7 +6,7 @@ export function getMusicName(index) {
     console.log(`开始播放：${musicName.split('.')[0]}`);
     return musicName;
   }
-  const randomIndex = Math.ceil(Math.random() * 7) - 1;
+  const randomIndex = Math.ceil(Math.random() * musicNameList.length) - 1;
   musicName = musicNameList[randomIndex];
   console.log(`开始播放：${musicName.split('.')[0]}`);
   return musicName;
