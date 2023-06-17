@@ -85,6 +85,7 @@ var State;
     State["ENDED"] = "ENDED";
     State["PAUSE"] = "PAUSE";
 })(State || (State = {}));
+// 播放器
 export class Player {
     constructor(url, container, options) {
         this.options = options;
@@ -256,6 +257,7 @@ export class Player {
         });
     }
 }
+// 控制器
 class PlayerControl {
     constructor(player) {
         this.player = player;
@@ -279,4 +281,8 @@ class PlayerControl {
     pause() { }
     // 切换循环方式
     toggleLoopWay() { }
+}
+// 可视化
+class PlayerVisual {
+    constructor() { }
 }

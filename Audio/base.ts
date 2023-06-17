@@ -77,6 +77,7 @@ enum State {
 	PAUSE = 'PAUSE',
 }
 
+// 播放器
 export class Player {
   private loopWay = '' // 策略模式处理
 	private sourceLoaded: boolean = false // 音频资源是否加载完毕
@@ -259,6 +260,7 @@ export class Player {
 	}
 }
 
+// 控制器
 class PlayerControl {
   constructor (private player: Player) {
     this.player = player
@@ -281,4 +283,9 @@ class PlayerControl {
   pause () {}
   // 切换循环方式
   toggleLoopWay () {}
+}
+
+// 可视化
+class PlayerVisual {
+  constructor() {}
 }

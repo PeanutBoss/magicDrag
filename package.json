@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "syncMusic": "node Audio/syncMusic.js"
+    "syncMusic": "node Audio/syncMusic.js",
+    "syncMusicV2": "node AudioV2/syncMusic.js"
   },
   "repository": {
     "type": "git",
