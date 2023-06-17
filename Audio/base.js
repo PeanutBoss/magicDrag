@@ -135,17 +135,17 @@ export class Player {
         // 播放发生错误
         this.audioEle.addEventListener('error', error => {
             console.log(error, 'error');
-            // this.watcher.emit('ended')
+            // this.watcher.emit('error')
         });
         // 停止播放（例如切换下一个音频，当前音频就会终止播放）
         this.audioEle.addEventListener('abort', abort => {
             console.log(abort, 'abort');
-            // this.watcher.emit('ended')
+            // this.watcher.emit('abort')
         });
         // 加载中止
         this.audioEle.addEventListener('stalled ', stalled => {
             console.log(stalled, 'stalled');
-            // this.watcher.emit('ended')
+            // this.watcher.emit('stalled')
         });
     }
     // 开始播放
@@ -177,10 +177,8 @@ export class Player {
     // 切换播放的音频
     changeAudio(url) {
         return __awaiter(this, void 0, void 0, function* () {
+            this.audioEle.onloadeddata = this.play.bind(this);
             this.audioEle.src = yield this.createBlobUrl(url);
-            this.audioEle.addEventListener('loadeddata', () => {
-                this.audioEle.play();
-            });
         });
     }
     // 为按钮绑定click事件
@@ -200,7 +198,7 @@ export class Player {
     // 创建音频上下文对象
     initAudioContext() {
         // 创建audioContext前必须与文档有交互（点击/移动鼠标），否则音频无法播放
-        console.log('---');
+        console.log('创建上下文对象');
         this.audioContext = new window.AudioContext();
         // this.createBufferSource()
         // audioContext创建完毕，停止监听与文档的交互
@@ -257,4 +255,28 @@ export class Player {
             window.removeEventListener(eventName, this._initAudioContext);
         });
     }
+}
+class PlayerControl {
+    constructor(player) {
+        this.player = player;
+        this.player = player;
+    }
+    // 下一个音频
+    nextAudio() {
+        // this.player.changeAudio()
+    }
+    // 上一个音频
+    prevAudio() { }
+    // 切换音频
+    changeAudio() { }
+    // 控制声音
+    controlVolume() { }
+    // 调整进度
+    changePlayProcess() { }
+    // 播放
+    play() { }
+    // 暂停
+    pause() { }
+    // 切换循环方式
+    toggleLoopWay() { }
 }

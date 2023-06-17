@@ -246,8 +246,7 @@
           isPlaying.value = false
         })
         player.watcher.on('ended', () => {
-          audioIndex.value = audioIndex.value + 1
-          changeAudio(audioIndex.value)
+          changeAudioByIndex(++audioIndex.value)
         })
         player.watcher.on('timeupdate', ({ currentTime, duration }) => {
           const val = currentTime / duration
@@ -278,7 +277,7 @@
       }
       // 点击进度指示点
       function downPointer (event) {
-        // 调整进度时暂停播放
+        // 调整进度时暂停播放，记录播放前的状态
         pauseBeforeStatus = isPlaying.value
         pause()
 
@@ -287,18 +286,12 @@
         startOffset = event.clientX
         skewDistance = 0
 
-        // window.addEventListener('mousemove', movePointer)
-        // window.addEventListener('mouseup', () => {
-        //   isPress.value = false
-        //   console.log(isPlaying.value, 'isPlaying.value')
-        //   if (pauseBeforeStatus) play()
-        //   pauseBeforeStatus = false
-        // })
         window.onmousemove = movePointer
         window.onmouseup = () => {
           isPress.value = false
-          console.log(isPlaying.value, 'isPlaying.value')
+          // 如果调整进度前是播放中状态，继续播放
           if (pauseBeforeStatus) play()
+          // 然后重置状态
           pauseBeforeStatus = false
         }
       }
@@ -324,9 +317,13 @@
 
       const audioIndex = ref(0)
       function changeAudio(index) {
+        console.log(index, audioIndex.value)
         if (audioIndex.value === index) return
         if (index === undefined) return
         audioIndex.value = index
+        changeAudioByIndex(index)
+      }
+      function changeAudioByIndex (index) {
         name = getMusicName(index)
         player.changeAudio(`./assets/music/${name}`)
       }
