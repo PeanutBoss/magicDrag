@@ -110,10 +110,10 @@ class Player {
         // context创建完毕，停止监听与文档的交互
         this.stopListenInteraction();
         const source = this.playerContext.createMediaElementSource(this.playerDom);
-        const gainNode = this.playerContext.createGain();
-        gainNode.gain.value = 0.5;
-        source.connect(gainNode);
-        gainNode.connect(this.playerContext.destination);
+        this.gainNode = this.playerContext.createGain();
+        this.gainNode.gain.value = 0.5;
+        source.connect(this.gainNode);
+        this.gainNode.connect(this.playerContext.destination);
     }
     listenInteraction() {
         this.INTERACTION_EVENT.forEach(eventName => {
@@ -316,7 +316,10 @@ export class PlayerControls {
         this.player.watcher.emit('changePlay', { playIndex: this.playIndex });
     }
     // 控制声音
-    controlVolume() { }
+    controlVolume(volume) {
+        this.player.watcher.emit('volumeupdate', { volume });
+        this.player.gainNode.gain.value = volume;
+    }
     // 调整进度
     changePlayProcess(currentTime) {
         this.player.setCurrentTime(currentTime);
@@ -356,7 +359,9 @@ export class PlayerControls {
 }
 // 可视化
 class PlayerVisual {
-    constructor() { }
+    constructor(player) {
+        this.player = player;
+    }
 }
 function getMaxNumber(max) {
     return Math.ceil(Math.random() * max);

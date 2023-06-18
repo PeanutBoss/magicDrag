@@ -72,6 +72,9 @@
       border-bottom-left-radius: 6px;
       border-bottom-right-radius: 6px;
     }
+    .player-footer-info {
+      flex: 1;
+    }
     .player-footer-control {
       width: 470px;
       background-color: azure;
@@ -121,6 +124,50 @@
       border-radius: 50%;
       background-color: gray;
     }
+    .player-footer-other {
+      flex: 1;
+      text-align: center;
+    }
+    .volume-process {
+      position: relative;
+      width: 4px;
+      height: 50px;
+      background-color: rgb(229, 229, 229);
+      margin: 10px auto 0;
+      border-radius: 2px;
+      display: flex;
+      align-items: flex-end;
+    }
+    .volume-process-played {
+      position: absolute;
+      width: 4px;
+      height: 0;
+      background-color: gray;
+      border-radius: 2px;
+    }
+    .volume-process-pointer {
+      display: none;
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: gray;
+      left: -1px;
+      top: 46px;
+    }
+    .volume-process:hover {
+      width: 6px;
+      border-radius: 3px;
+      box-shadow: 0 0 5px rgb(229, 229, 229);
+    }
+    .volume-process:hover > .volume-process-played {
+      width: 6px;
+      border-radius: 3px;
+      box-shadow: 0 0 5px gray;
+    }
+    .volume-process:hover > .volume-process-pointer {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -129,19 +176,15 @@
 
 <script>
   /*
-  * 暂停&播放切换
-  * 列表
-  * 上一首/下一首
-  * 停止
-  * 循环方式
-  * 进度条
+  * 声音
+  * 可视化
   * */
 </script>
 
 <script type="module">
   import { AudioPlayer, PlayerControls } from './player.js'
   import { getMusicList }  from './musicNameList.js'
-  const { createApp, onMounted, ref, reactive, getCurrentInstance } = Vue
+  const { createApp, onMounted, ref, reactive, getCurrentInstance, computed } = Vue
   const musicList = reactive(getMusicList())
   const Component = {
     template: `
@@ -180,7 +223,12 @@
             <div class="process-pointer" @mousedown="downPointer" :style="{ left: 'calc(' + playProcess + ' - 4px)' }"></div>
           </div>
         </div>
-        <div class="player-footer-other"></div>
+        <div class="player-footer-other">
+          <div class="volume-process" @mousedown="downVolumeProcess" ref="volumeProcess">
+            <div class="volume-process-played" :style="{ height: volumeProcess }"></div>
+            <div class="volume-process-pointer" @mousedown="downVolumePointer" :style="{ top: 'calc(' + pointTop + ' - 4px)' }"></div>
+          </div>
+        </div>
       </div>
     </div>
     `,
@@ -194,6 +242,7 @@
       // 创建播放器实例
       const player = new AudioPlayer(musicList, 'AUDIO')
       const controls = new PlayerControls(player, { autoplay: false })
+      window.controls = controls
 
       // 开始监听播放器
       watchAction()
@@ -206,6 +255,11 @@
         // 滚动条滚动时重新计算（进度条最左端与窗口的距离可能会发生变化）
         window.addEventListener('scroll', () => {
           skewProcess = instance.$refs.process.offsetLeft - window.scrollX
+        })
+
+        skewVolumeProcess = instance.$refs.volumeProcess.offsetTop
+        window.addEventListener('scroll', () => {
+          skewVolumeProcess = instance.$refs.volumeProcess.offsetTop
         })
       })
 
@@ -228,11 +282,14 @@
           const val = currentTime / duration
           playProcess.value = getPercent(val)
         })
+        player.watcher.on('volumeupdate', ({ volume }) => {
+          volumeProcess.value = getPercent(volume / 1)
+          pointTop.value = getPercent(1 - volume)
+        })
         player.watcher.on('changePlay', ({ playIndex }) => {
           audioIndex.value = playIndex
         })
         player.watcher.on('loopWay', loopWay => {
-          console.log(loopWay)
           loopWayIcon.value = `../Audio/assets/icon/${loopWay.toLowerCase()}.png`
         })
       }
@@ -251,6 +308,14 @@
       function getCurrentPositionTime (offset) {
         const percent = offset / instance.$refs.process.offsetWidth
         return percent * totalTime.value
+      }
+      // 根据进度条已播放区域的距离计算当前播放进度（时间）
+      function getCurrentPositionVolume (offset, maxVolume = 1) {
+        const percent = offset / instance.$refs.volumeProcess.offsetHeight
+        const volume = 1 - percent
+        if (volume <= 0) return 0
+        if (volume >= 1) return 1
+        return volume * maxVolume
       }
       // 点击进度条调整进度
       function downProcess (event) {
@@ -288,6 +353,40 @@
         controls.changePlayProcess(targetTime)
       }
 
+      const volumeProcess = ref(0) // 当前音量
+      const pointTop = ref(0)
+      let skewVolumeProcess = 0 // 进度条左边的相对位置
+      let startVolumeOffset = 0 // 按下鼠标时鼠标的相对位置
+      let skewVolumeDistance = 0 // 按下鼠标时与当前位置的距离
+      let isVolumePress = false // 是否按下
+      // 点击音量进度条调整音量
+      function downVolumeProcess (event) {
+        if (event.target.className === 'volume-process-pointer') return
+        const targetVolume = getCurrentPositionVolume(event.offsetY)
+        controls.controlVolume(targetVolume)
+      }
+      // 点击音量进度指示点
+      function downVolumePointer (event) {
+        isVolumePress = true
+        // 鼠标按下时修改相对位置
+        startOffset = event.clientY
+        skewDistance = 0
+
+        window.onmousemove = moveVolumePointer
+        window.onmouseup = () => {
+          isVolumePress = false
+        }
+      }
+      // 移动音量进度指示点
+      function moveVolumePointer (event) {
+        if (!isVolumePress) return
+        skewVolumeDistance += event.movementY
+        // 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
+        const currentPointY = startOffset - skewVolumeProcess + skewVolumeDistance
+        const targetVolume = getCurrentPositionVolume(currentPointY)
+        controls.controlVolume(targetVolume)
+      }
+
       return {
         isPlaying,
         musicList,
@@ -295,9 +394,13 @@
         playProcess,
         controls,
         loopWayIcon,
+        volumeProcess,
+        pointTop,
 
         downProcess,
-        downPointer
+        downPointer,
+        downVolumeProcess,
+        downVolumePointer
       }
     }
   }

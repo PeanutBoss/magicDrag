@@ -74,7 +74,7 @@ enum State {
   ENDED = 'ENDED',
   PAUSE = 'PAUSE',
 }
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'loadeddata' | 'canplay' | 'changePlay' | 'loopWay'
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'volumeupdate' | 'loadeddata' | 'canplay' | 'changePlay' | 'loopWay'
 abstract class Player {
   watcher = new Watcher<WatcherEmit>()
   // 监听用户与浏览器的手势交互事件
@@ -82,6 +82,7 @@ abstract class Player {
   private readonly _initContext
   playerContext: any
   playerDom: HTMLAudioElement | HTMLVideoElement // 音频播放器元素
+  gainNode: any
   protected constructor (private playerType: 'AUDIO' | 'VIDEO') {
     // 创建播放器元素
     if (this.playerType === 'AUDIO') {
@@ -106,10 +107,10 @@ abstract class Player {
     this.stopListenInteraction()
 
     const source = this.playerContext.createMediaElementSource(this.playerDom)
-    const gainNode = this.playerContext.createGain()
-    gainNode.gain.value = 0.5
-    source.connect(gainNode)
-    gainNode.connect(this.playerContext.destination)
+    this.gainNode = this.playerContext.createGain()
+    this.gainNode.gain.value = 0.5
+    source.connect(this.gainNode)
+    this.gainNode.connect(this.playerContext.destination)
   }
   listenInteraction () {
     this.INTERACTION_EVENT.forEach(eventName => {
@@ -317,7 +318,10 @@ export class PlayerControls {
     this.player.watcher.emit('changePlay', { playIndex: this.playIndex })
   }
   // 控制声音
-  controlVolume () {}
+  controlVolume (volume: number) {
+    this.player.watcher.emit('volumeupdate', { volume })
+    this.player.gainNode.gain.value = volume
+  }
   // 调整进度
   changePlayProcess (currentTime: number) {
     this.player.setCurrentTime(currentTime)
@@ -355,7 +359,7 @@ export class PlayerControls {
 
 // 可视化
 class PlayerVisual {
-  constructor() {}
+  constructor (private player: Player) {}
 }
 
 function getMaxNumber (max: number) {
