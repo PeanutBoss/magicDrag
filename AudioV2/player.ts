@@ -74,9 +74,9 @@ enum State {
   ENDED = 'ENDED',
   PAUSE = 'PAUSE',
 }
-
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'loadeddata' | 'canplay' | 'changePlay' | 'loopWay'
 abstract class Player {
-  watcher = new Watcher<'ended' | 'pause' | 'playing' | 'timeupdate' | 'loadeddata' | 'canplay' | 'changePlay'>()
+  watcher = new Watcher<WatcherEmit>()
   // 监听用户与浏览器的手势交互事件
   private readonly INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown']
   private readonly _initContext
@@ -141,7 +141,7 @@ export class AudioPlayer extends Player {
     setTimeout(() => {
       this.playerDom.setAttribute('controls', '');
       (document.querySelector('.player-body-detail') as HTMLElement).appendChild(this.playerDom)
-    }, 1000)
+    }, 500)
   }
 
   // 调整播放进度
@@ -229,17 +229,19 @@ enum LoopWay {
 const PlayStrategy = {
   // 顺序播放
   SEQUENCE (currentIndex: number, totalCount: number, action: 'prev' | 'next'): number {
-    const index = action === 'next' ? currentIndex + 1 : currentIndex - 1
-    if (isContinue(currentIndex, totalCount)) {
-      return index
+    if (action === 'next') {
+      if (currentIndex === totalCount - 1) return currentIndex
+      return currentIndex + 1
+    } else {
+      if (currentIndex === 0) return 0
+      return currentIndex - 1
     }
-    return index
   },
   // 随机播放
   RANDOM (currentIndex: number, totalCount: number, action: 'prev' | 'next'): number {
     let randomIndex = getMaxNumber(totalCount) - 1
     if (randomIndex === currentIndex) {
-      this.RANDOM(currentIndex, totalCount, action)
+      PlayStrategy.RANDOM(currentIndex, totalCount, action)
     }
     return randomIndex
   },
@@ -249,12 +251,14 @@ const PlayStrategy = {
   },
   // 列表循环
   LOOP (currentIndex: number, totalCount: number, action: 'prev' | 'next'): number {
-    if (currentIndex === totalCount - 1) {
-      return 0
-    } else if (currentIndex === 0) {
-      return totalCount - 1
+    // 电极上一个
+    if (action === 'prev') {
+      if (currentIndex === 0) return totalCount - 1
+      return currentIndex - 1
+    } else {
+      if (currentIndex === totalCount - 1) return 0
+      return currentIndex + 1
     }
-    return currentIndex + 1
   }
 }
 
@@ -294,12 +298,16 @@ export class PlayerControls {
   playNext () {
     const getIndex = this.getStrategy()
     const nextIndex = getIndex(this.playIndex, this.player.getPlayListCount(), 'next')
+    // 如果将要播放的下一个音视频的索引等于当前索引，不执行操作
+    if (nextIndex === this.playIndex) return
     this.changeAudio(nextIndex)
   }
   // TODO 上一个音频
   playPrev () {
     const getIndex = this.getStrategy()
     const prevIndex = getIndex(this.playIndex, this.player.getPlayListCount(), 'prev')
+    // 如果将要播放的上一个音视频的索引等于当前索引，不执行操作
+    if (prevIndex === this.playIndex) return
     this.changeAudio(prevIndex)
   }
   // 切换音频
@@ -327,7 +335,18 @@ export class PlayerControls {
     this.player.playerDom.pause()
   }
   // TODO 切换循环方式
-  toggleLoopWay () {}
+  toggleLoopWay () {
+    if (this.loopWay === LoopWay.SEQUENCE) {
+      this.loopWay = LoopWay.LOOP
+    } else if (this.loopWay === LoopWay.LOOP) {
+      this.loopWay = LoopWay.SINGLE
+    } else if (this.loopWay === LoopWay.SINGLE) {
+      this.loopWay = LoopWay.RANDOM
+    } else if (this.loopWay === LoopWay.RANDOM) {
+      this.loopWay = LoopWay.SEQUENCE
+    }
+    this.player.watcher.emit('loopWay', this.loopWay)
+  }
   // 获取下一个播放下标的方法
   private getStrategy () {
     return PlayStrategy[this.loopWay]

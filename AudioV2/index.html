@@ -156,7 +156,7 @@
             <li
               :class="{ 'player-body-list-item-playing': audioIndex === index }"
               class="player-body-list-item"
-              @click="control.changeAudio(index)">
+              @click="controls.changeAudio(index)">
               {{ music.name.split('.')[0] }}
             </li>
           </template>
@@ -168,11 +168,11 @@
         <div class="player-footer-info"></div>
         <div class="player-footer-control">
           <div class="control">
-            <img class="loop-way control-icon" src="../Audio/assets/icon/loop.png">
-            <img class="prev control-icon" @click="control.playPrev()" src="../Audio/assets/icon/prev.png">
-            <img v-show="!isPlaying" @click="control.play()" class="play control-icon" src="../Audio/assets/icon/play.png">
-            <img v-show="isPlaying" @click="control.pause()" class="pause control-icon" src="../Audio/assets/icon/pause.png">
-            <img class="next control-icon" @click="control.playNext()" src="../Audio/assets/icon/next.png">
+            <img class="loop-way control-icon" @click="controls.toggleLoopWay()" :src="loopWayIcon">
+            <img class="prev control-icon" @click="controls.playPrev()" src="../Audio/assets/icon/prev.png">
+            <img v-show="!isPlaying" @click="controls.play()" class="play control-icon" src="../Audio/assets/icon/play.png">
+            <img v-show="isPlaying" @click="controls.pause()" class="pause control-icon" src="../Audio/assets/icon/pause.png">
+            <img class="next control-icon" @click="controls.playNext()" src="../Audio/assets/icon/next.png">
             <img class="words control-icon" src="../Audio/assets/icon/forward.png">
           </div>
           <div class="process" @mousedown="downProcess" ref="process">
@@ -186,19 +186,19 @@
     `,
     setup () {
       const instance = getCurrentInstance().proxy
-
       const audioIndex = ref(0)
-
       let isPlaying = ref(false)
+
+      const loopWayIcon = ref('../Audio/assets/icon/sequence.png')
 
       // 创建播放器实例
       const player = new AudioPlayer(musicList, 'AUDIO')
-      const control = new PlayerControls(player, { autoplay: false })
+      const controls = new PlayerControls(player, { autoplay: false })
 
       // 开始监听播放器
       watchAction()
 
-      control.start()
+      controls.start()
 
       onMounted(() => {
         // 获取进度条最左端与窗口的距离
@@ -231,6 +231,10 @@
         player.watcher.on('changePlay', ({ playIndex }) => {
           audioIndex.value = playIndex
         })
+        player.watcher.on('loopWay', loopWay => {
+          console.log(loopWay)
+          loopWayIcon.value = `../Audio/assets/icon/${loopWay.toLowerCase()}.png`
+        })
       }
 
       const playProcess = ref(0) // 播放进度
@@ -239,7 +243,7 @@
       let startOffset = 0 // 按下鼠标时鼠标的相对位置
       let skewDistance = 0 // 按下鼠标时与当前位置的距离
       let pauseBeforeStatus // 调整进度时需要暂停，用来记录调整进度之前的状态
-      const isPress = ref(false) // 是否按下 TODO 不需要响应式
+      let isPress = false // 是否按下
       function getPercent (val) {
         return (val * 100).toFixed(1) + '%'
       }
@@ -252,36 +256,36 @@
       function downProcess (event) {
         if (event.target.className === 'process-pointer') return
         const targetTime = getCurrentPositionTime(event.offsetX)
-        control.changePlayProcess(targetTime)
+        controls.changePlayProcess(targetTime)
       }
       // 点击进度指示点
       function downPointer (event) {
         // 调整进度时暂停播放，记录播放前的状态
         pauseBeforeStatus = isPlaying.value
-        control.pause()
+        controls.pause()
 
-        isPress.value = true
+        isPress = true
         // 鼠标按下时修改相对位置
         startOffset = event.clientX
         skewDistance = 0
 
         window.onmousemove = movePointer
         window.onmouseup = () => {
-          isPress.value = false
+          isPress = false
           // 如果调整进度前是播放中状态，继续播放
-          if (pauseBeforeStatus) control.play()
+          if (pauseBeforeStatus) controls.play()
           // 然后重置状态
           pauseBeforeStatus = false
         }
       }
       // 移动进度指示点
       function movePointer (event) {
-        if (!isPress.value) return
+        if (!isPress) return
         skewDistance += event.movementX
         // 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
         const currentPointX = startOffset - skewProcess + skewDistance
         const targetTime = getCurrentPositionTime(currentPointX)
-        control.changePlayProcess(targetTime)
+        controls.changePlayProcess(targetTime)
       }
 
       return {
@@ -289,8 +293,8 @@
         musicList,
         audioIndex,
         playProcess,
-        isPress,
-        control,
+        controls,
+        loopWayIcon,
 
         downProcess,
         downPointer
