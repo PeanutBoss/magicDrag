@@ -74,13 +74,14 @@ enum State {
   ENDED = 'ENDED',
   PAUSE = 'PAUSE',
 }
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'volumeupdate' | 'loadeddata' | 'canplay' | 'changePlay' | 'loopWay'
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'progress' | 'volumeupdate' | 'loadeddata' | 'canLoadBuffer' | 'canplay' | 'changePlay' | 'loopWay'
 abstract class Player {
   watcher = new Watcher<WatcherEmit>()
   // 监听用户与浏览器的手势交互事件
   private readonly INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown']
   private readonly _initContext
   playerContext: any
+  playerData: any = {} // 当前音频数据
   playerDom: HTMLAudioElement | HTMLVideoElement // 音频播放器元素
   gainNode: any
   protected constructor (private playerType: 'AUDIO' | 'VIDEO') {
@@ -105,10 +106,13 @@ abstract class Player {
     this.playerContext = new window.AudioContext()
     // context创建完毕，停止监听与文档的交互
     this.stopListenInteraction()
+    // 可以加载Buffer
+    this.watcher.emit('canLoadBuffer')
 
     const source = this.playerContext.createMediaElementSource(this.playerDom)
     this.gainNode = this.playerContext.createGain()
     this.gainNode.gain.value = 0.5
+    this.watcher.emit('volumeupdate', { volume: 0.5 })
     source.connect(this.gainNode)
     this.gainNode.connect(this.playerContext.destination)
   }
@@ -131,7 +135,6 @@ export class AudioPlayer extends Player {
 
   // -----------------------
 
-  audioData: any = {} // 当前音频数据
   private audioContext: any // 音频的上下文对象
 
   constructor(private playList: any[], playerType: 'AUDIO' | 'VIDEO') {
@@ -139,10 +142,10 @@ export class AudioPlayer extends Player {
     this.playList = playList
     this.startWatch()
 
-    setTimeout(() => {
-      this.playerDom.setAttribute('controls', '');
-      (document.querySelector('.player-body-detail') as HTMLElement).appendChild(this.playerDom)
-    }, 500)
+    // setTimeout(() => {
+    //   this.playerDom.setAttribute('controls', '');
+    //   (document.querySelector('.player-body-detail') as HTMLElement).appendChild(this.playerDom)
+    // }, 500)
   }
 
   // 调整播放进度
@@ -152,8 +155,14 @@ export class AudioPlayer extends Player {
 
   // 切换播放的音频
   changeCurrentPlaying (index: number) {
-    this.audioData = this.playList[index]
-    this.playerDom.src = this.audioData.url
+    this.playerData = this.playList[index]
+    this.playerDom.src = this.playerData.url
+    this.getBufferByUrl()
+  }
+
+  async getBufferByUrl () {
+    const response = await fetch(this.playerData.url)
+    this.playerData.arraybuffer = await response.arrayBuffer()
   }
 
   // 播放列表条数
@@ -192,24 +201,28 @@ export class AudioPlayer extends Player {
     this.playerDom.addEventListener('stalled ', stalled => {
       // this.watcher.emit('stalled')
     })
+    // 加载进度
+    this.playerDom.addEventListener('progress', event => {
+      // this.watcher.emit('stalled')
+    })
   }
 
   async createBufferSource () {
     if (this.sourceLoaded && this.audioContext) {
       // 解码后arrayBuffer会被清空
-      this.audioData.audioBuffer = await this.audioContext.decodeAudioData(this.audioData.arrayBuffer)
+      this.playerData.audioBuffer = await this.audioContext.decodeAudioData(this.playerData.arrayBuffer)
       this.audioBufferSource = this.audioContext.createBufferSource()
-      this.audioBufferSource.buffer = this.audioData.audioBuffer
+      this.audioBufferSource.buffer = this.playerData.audioBuffer
     }
   }
 
   // 根据相对路径创建文件url
   async createBlobUrl (url: string) {
     const response = await fetch(url)
-    this.audioData.arrayBuffer = await response.arrayBuffer() // 保存音频对应的arrayBuffer
+    this.playerData.arrayBuffer = await response.arrayBuffer() // 保存音频对应的arrayBuffer
 
     // const blob = await response.blob()
-    const blob = new Blob([this.audioData.arrayBuffer], { type: 'audio/mp3' })
+    const blob = new Blob([this.playerData.arrayBuffer], { type: 'audio/mp3' })
     // 视频资源加载完毕
     this.sourceLoaded = true
 
@@ -358,8 +371,95 @@ export class PlayerControls {
 }
 
 // 可视化
-class PlayerVisual {
-  constructor (private player: Player) {}
+export class PlayerVisual {
+  private bufferLength: any
+  private dataArray: any
+  private analyserNode: any
+  private canvas: any
+  private canvasCtx: any
+  constructor (private player: Player, private options?: any) {
+    this.player.watcher.on('canLoadBuffer', this.createAnalyser.bind(this))
+  }
+  // 创建分析器
+  async createAnalyser () {
+    this.createCanvasContext()
+
+    const audioBuffer = await this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer)
+    const audioBufferSource = this.player.playerContext.createBufferSource()
+    audioBufferSource.buffer = audioBuffer
+    // 创建音频分析器
+    this.analyserNode = this.player.playerContext.createAnalyser()
+    this.analyserNode.fftSize = 2048 // 设置 FFT 大小
+    // 连接音频源和音频分析器
+    audioBufferSource.connect(this.analyserNode)
+    this.analyserNode.connect(this.player.playerContext.destination)
+    // 创建一个数组用于保存频谱数据
+    this.bufferLength = this.analyserNode.frequencyBinCount
+    this.dataArray = new Uint8Array(this.bufferLength)
+    this.draw()
+  }
+  // 获取canvas和上下文对象
+  createCanvasContext () {
+    this.canvas = document.querySelector(this.options.canvasSelector)
+    this.canvasCtx = this.canvas.getContext('2d')
+  }
+  draw () {
+    // 请求下一帧动画
+    requestAnimationFrame(this.draw.bind(this))
+    // 获取频谱数据
+    this.analyserNode.getByteFrequencyData(this.dataArray)
+    // 清空画布
+    this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+
+    this.createFalls()
+  }
+
+  createSpectrum () {
+    const bufferLength = this.analyserNode.frequencyBinCount
+    const barWidth = (this.canvas.width / bufferLength) * 2.5;
+    let x = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = this.dataArray[i] / 2;
+      this.canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
+      this.canvasCtx.fillRect(x, this.canvas.height - barHeight, barWidth, barHeight);
+      x += barWidth + 1;
+    }
+  }
+
+  createFalls () {
+    const bufferLength = this.analyserNode.frequencyBinCount
+    const fallsWidth = this.canvas.width / bufferLength;
+    let fallsX = 0
+    for (let i = 0; i < bufferLength; i++) {
+      const barHeight = (this.dataArray[i] / 255) * this.canvas.height;
+      const hue = (i / bufferLength) * 360;
+      this.canvasCtx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+      this.canvasCtx.fillRect(fallsX, this.canvas.height - barHeight, fallsWidth, barHeight);
+      fallsX += fallsWidth;
+    }
+  }
+
+  createWave () {
+    this.analyserNode.getByteTimeDomainData(this.dataArray);
+    const bufferLength = this.analyserNode.frequencyBinCount
+    this.canvasCtx.lineWidth = 1;
+    this.canvasCtx.strokeStyle = 'rgb(0, 255, 255)';
+    this.canvasCtx.beginPath();
+    const sliceWidth = this.canvas.width / bufferLength;
+    let waveX = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const v = this.dataArray[i] / 128.0;
+      const y = (v * this.canvas.height) / 2;
+      if (i === 0) {
+        this.canvasCtx.moveTo(waveX, y);
+      } else {
+        this.canvasCtx.lineTo(waveX, y);
+      }
+      waveX += sliceWidth;
+    }
+    this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
+    this.canvasCtx.stroke();
+  }
 }
 
 function getMaxNumber (max: number) {

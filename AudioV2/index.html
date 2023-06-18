@@ -64,6 +64,8 @@
       height: 100%;
       flex: 1;
       background-color: rgba(127, 255, 212, 0.2);
+      padding: 10px;
+      box-sizing: border-box;
     }
     .player-footer {
       display: flex;
@@ -176,15 +178,18 @@
 
 <script>
   /*
-  * 声音
-  * 可视化
+  * TODO 声音（上下文创建前记录当前音量，创建完成后再调整音量）
+  *  调整声音时，如果事件对象是 volume-process-played/volume-process-point，计算策略需要更新
+  *  可视化
+  *  已加载进度
+  *  进度条 已播放时间/总时间
   * */
 </script>
 
 <script type="module">
-  import { AudioPlayer, PlayerControls } from './player.js'
+  import { AudioPlayer, PlayerControls, PlayerVisual } from './player.js'
   import { getMusicList }  from './musicNameList.js'
-  const { createApp, onMounted, ref, reactive, getCurrentInstance, computed } = Vue
+  const { createApp, onMounted, ref, reactive, getCurrentInstance } = Vue
   const musicList = reactive(getMusicList())
   const Component = {
     template: `
@@ -205,7 +210,9 @@
           </template>
         </ul>
         <!-- 播放详情 - 可视化信息 -->
-        <div class="player-body-detail"></div>
+        <div class="player-body-detail">
+          <canvas class="player-body-detail-visual"></canvas>
+        </div>
       </div>
       <div class="player-footer">
         <div class="player-footer-info"></div>
@@ -242,6 +249,7 @@
       // 创建播放器实例
       const player = new AudioPlayer(musicList, 'AUDIO')
       const controls = new PlayerControls(player, { autoplay: false })
+      const visual = new PlayerVisual(player, { canvasSelector: '.player-body-detail-visual' })
       window.controls = controls
 
       // 开始监听播放器
@@ -353,8 +361,8 @@
         controls.changePlayProcess(targetTime)
       }
 
-      const volumeProcess = ref(0) // 当前音量
-      const pointTop = ref(0)
+      const volumeProcess = ref('50%') // 当前音量
+      const pointTop = ref('50%')
       let skewVolumeProcess = 0 // 进度条左边的相对位置
       let startVolumeOffset = 0 // 按下鼠标时鼠标的相对位置
       let skewVolumeDistance = 0 // 按下鼠标时与当前位置的距离
@@ -362,6 +370,7 @@
       // 点击音量进度条调整音量
       function downVolumeProcess (event) {
         if (event.target.className === 'volume-process-pointer') return
+        if (event.target.className === 'volume-process-played') return
         const targetVolume = getCurrentPositionVolume(event.offsetY)
         controls.controlVolume(targetVolume)
       }
