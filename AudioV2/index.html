@@ -317,14 +317,6 @@
         const percent = offset / instance.$refs.process.offsetWidth
         return percent * totalTime.value
       }
-      // 根据进度条已播放区域的距离计算当前播放进度（时间）
-      function getCurrentPositionVolume (offset, maxVolume = 1) {
-        const percent = offset / instance.$refs.volumeProcess.offsetHeight
-        const volume = 1 - percent
-        if (volume <= 0) return 0
-        if (volume >= 1) return 1
-        return volume * maxVolume
-      }
       // 点击进度条调整进度
       function downProcess (event) {
         if (event.target.className === 'process-pointer') return
@@ -367,6 +359,14 @@
       let startVolumeOffset = 0 // 按下鼠标时鼠标的相对位置
       let skewVolumeDistance = 0 // 按下鼠标时与当前位置的距离
       let isVolumePress = false // 是否按下
+      // 根据进度条信息获取当前音量
+      function getCurrentPositionVolume (offset, maxVolume = 1) {
+        const percent = offset / instance.$refs.volumeProcess.offsetHeight
+        const volume = 1 - percent
+        if (volume <= 0) return 0
+        if (volume >= 1) return 1
+        return volume * maxVolume
+      }
       // 点击音量进度条调整音量
       function downVolumeProcess (event) {
         if (event.target.className === 'volume-process-pointer') return

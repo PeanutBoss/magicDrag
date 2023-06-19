@@ -26,37 +26,6 @@ class Watcher<T extends string> {
   }
 }
 
-const eventStrategy: any = {
-  play (el: HTMLElement, audio: AudioPlayer, key: string) {
-    // const audioEle = audio.audioEle
-    // const { buttonAfterCallback } = audio.options
-    // let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
-    // el.addEventListener('click', () => {
-    // 	audioEle.play()
-    // 	buttonAfterCB && buttonAfterCB()
-    // })
-  },
-  pause (el: HTMLElement, audio: AudioPlayer, key: string) {
-    // const audioEle = audio.audioEle
-    // const { buttonAfterCallback } = audio.options
-    // let buttonAfterCB = buttonAfterCallback && buttonAfterCallback[key]
-    // el.addEventListener('click', () => {
-    // 	audioEle.pause()
-    // 	buttonAfterCB && buttonAfterCB()
-    // })
-  },
-  prev (el: HTMLElement, _: AudioPlayer) {
-    el.addEventListener('click', () => {
-      console.log('prev')
-    })
-  },
-  next (el: HTMLElement, _: AudioPlayer) {
-    el.addEventListener('click', () => {
-      console.log('next')
-    })
-  }
-}
-
 function throttle (fn: any, delay: number) {
   let flag = true
   return () => {
@@ -69,12 +38,7 @@ function throttle (fn: any, delay: number) {
   }
 }
 
-enum State {
-  PLAYING = 'PLAYING',
-  ENDED = 'ENDED',
-  PAUSE = 'PAUSE',
-}
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'progress' | 'volumeupdate' | 'loadeddata' | 'canLoadBuffer' | 'canplay' | 'changePlay' | 'loopWay'
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
 abstract class Player {
   watcher = new Watcher<WatcherEmit>()
   // 监听用户与浏览器的手势交互事件
@@ -100,14 +64,19 @@ abstract class Player {
   abstract setCurrentTime (time: number): void
   abstract changeCurrentPlaying (index: number): void
   abstract getPlayListCount (): number
-  initContext () {
-    // 创建audioContext前必须与文档有交互（点击/移动鼠标），否则音频无法播放
+  // 创建上下文对象 FIXME 未交互时创建上下文对象，如果不与其他节点连接时可以播放（初始化后不能播放）
+  createContext () {
     console.log('创建上下文对象')
     this.playerContext = new window.AudioContext()
-    // context创建完毕，停止监听与文档的交互
-    this.stopListenInteraction()
     // 可以加载Buffer
-    this.watcher.emit('canLoadBuffer')
+    this.watcher.emit('loadedBuffer')
+  }
+  // 初始化上下文对象
+  initContext () {
+    this.createContext()
+    // MARK 初始化audioContext前必须与文档有手势交互，否则音频无法播放
+    // context初始化完毕，停止监听与文档的交互
+    this.stopListenInteraction()
 
     const source = this.playerContext.createMediaElementSource(this.playerDom)
     this.gainNode = this.playerContext.createGain()
@@ -128,7 +97,7 @@ abstract class Player {
   }
 }
 
-// 播放器
+// 播放器 TODO 增加 audioBufferSource 控制播放功能
 export class AudioPlayer extends Player {
   private sourceLoaded: boolean = false // 音频资源是否加载完毕
   private audioBufferSource: any // 音频源
@@ -163,6 +132,7 @@ export class AudioPlayer extends Player {
   async getBufferByUrl () {
     const response = await fetch(this.playerData.url)
     this.playerData.arraybuffer = await response.arrayBuffer()
+    console.log('buffer加载完毕')
   }
 
   // 播放列表条数
@@ -284,7 +254,7 @@ export class PlayerControls {
   private isPlaying = false
   constructor (private player: Player, private options: any = {}) {
     // watchAction中对 changePlay 事件添加了callback，因此第一次触发 changePlay 事件
-    // 需要在watchAction之前，否则会开启自动播放
+    // 需要在watchAction之前，否则会自动播放
     this.player.watcher.emit('changePlay', { playIndex: this.playIndex })
     this.watchAction()
   }
@@ -351,7 +321,7 @@ export class PlayerControls {
   pause () {
     this.player.playerDom.pause()
   }
-  // TODO 切换循环方式
+  // 切换循环方式
   toggleLoopWay () {
     if (this.loopWay === LoopWay.SEQUENCE) {
       this.loopWay = LoopWay.LOOP
@@ -378,12 +348,14 @@ export class PlayerVisual {
   private canvas: any
   private canvasCtx: any
   constructor (private player: Player, private options?: any) {
-    this.player.watcher.on('canLoadBuffer', this.createAnalyser.bind(this))
+    this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this))
   }
   // 创建分析器
   async createAnalyser () {
+    console.log('创建音频分析器')
     this.createCanvasContext()
 
+    console.log(this.player.playerData.arraybuffer, 'this.player.playerData.arraybuffer')
     const audioBuffer = await this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer)
     const audioBufferSource = this.player.playerContext.createBufferSource()
     audioBufferSource.buffer = audioBuffer
@@ -396,6 +368,12 @@ export class PlayerVisual {
     // 创建一个数组用于保存频谱数据
     this.bufferLength = this.analyserNode.frequencyBinCount
     this.dataArray = new Uint8Array(this.bufferLength)
+    /*
+    * MARK 单独使用 mediaAudioSource 不能做可视化操作
+    *  如果要做可视化需要配合 audioBufferSource
+    *  或直接使用 audioBufferSource 控制音频播放
+    * */
+    audioBufferSource.start()
     this.draw()
   }
   // 获取canvas和上下文对象
@@ -411,7 +389,7 @@ export class PlayerVisual {
     // 清空画布
     this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
-    this.createFalls()
+    this.createSpectrum()
   }
 
   createSpectrum () {
