@@ -158,7 +158,7 @@ export class AudioPlayer extends Player {
         });
         // 停止播放（例如切换下一个音频，当前音频就会终止播放）
         this.playerDom.addEventListener('abort', abort => {
-            // this.watcher.emit('abort')
+            this.watcher.emit('abort');
         });
         // 加载中止
         this.playerDom.addEventListener('stalled ', stalled => {
@@ -345,7 +345,7 @@ export class PlayerVisual {
     constructor(player, options) {
         this.player = player;
         this.options = options;
-        this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this));
+        // this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this))
     }
     // 创建分析器
     createAnalyser() {

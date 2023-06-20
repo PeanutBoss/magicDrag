@@ -1,4 +1,4 @@
-export const musicNameList = ['ADVENTURE_PARTY.mp3','Next World.mp3','像你这样的大师.mp3','再飞行.mp3','别看我小.mp3','十二生肖闯江湖.mp3','大风车.mp3','小鲤鱼历险记.mp3','开心往前飞.mp3','春风不解意.mp3','果宝特攻.mp3','横冲直撞.mp3','流星.mp3','生命的云彩.mp3','相信爱.mp3','绿色的旋律.mp3','赵蓓,赵蕾 - 不怕.mp3','追寻.mp3','黑.mp3','龙骑伙伴.mp3']
+export const musicNameList = ['ADVENTURE_PARTY.mp3','Next World.mp3','不怕.mp3','像你这样的大师.mp3','再飞行.mp3','别看我小.mp3','十二生肖闯江湖.mp3','大风车.mp3','小鲤鱼历险记.mp3','开心往前飞.mp3','春风不解意.mp3','果宝特攻.mp3','横冲直撞.mp3','流星.mp3','生命的云彩.mp3','相信爱.mp3','绿色的旋律.mp3','追寻.mp3','黑.mp3','龙骑伙伴.mp3']
 
 export function getMusicList () {
   const musicList = []

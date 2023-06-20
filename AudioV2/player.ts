@@ -38,7 +38,7 @@ function throttle (fn: any, delay: number) {
   }
 }
 
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
 abstract class Player {
   watcher = new Watcher<WatcherEmit>()
   // 监听用户与浏览器的手势交互事件
@@ -165,7 +165,7 @@ export class AudioPlayer extends Player {
     })
     // 停止播放（例如切换下一个音频，当前音频就会终止播放）
     this.playerDom.addEventListener('abort', abort => {
-      // this.watcher.emit('abort')
+      this.watcher.emit('abort')
     })
     // 加载中止
     this.playerDom.addEventListener('stalled ', stalled => {
@@ -348,7 +348,7 @@ export class PlayerVisual {
   private canvas: any
   private canvasCtx: any
   constructor (private player: Player, private options?: any) {
-    this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this))
+    // this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this))
   }
   // 创建分析器
   async createAnalyser () {

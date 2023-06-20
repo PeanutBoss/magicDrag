@@ -126,6 +126,20 @@
       border-radius: 50%;
       background-color: gray;
     }
+    .start_time {
+      position: absolute;
+      left: -50px;
+      top: -9px;
+      color: #968282;
+      font-size: 15px;
+    }
+    .end_time {
+      position: absolute;
+      right: -50px;
+      top: -9px;
+      color: #968282;
+      font-size: 15px
+    }
     .player-footer-other {
       flex: 1;
       text-align: center;
@@ -182,13 +196,13 @@
   *  调整声音时，如果事件对象是 volume-process-played/volume-process-point，计算策略需要更新
   *  可视化
   *  已加载进度
-  *  进度条 已播放时间/总时间
   * */
 </script>
 
 <script type="module">
   import { AudioPlayer, PlayerControls, PlayerVisual } from './player.js'
   import { getMusicList }  from './musicNameList.js'
+  import { getTimeByStamp } from './tool.js'
   const { createApp, onMounted, ref, reactive, getCurrentInstance } = Vue
   const musicList = reactive(getMusicList())
   const Component = {
@@ -228,6 +242,8 @@
           <div class="process" @mousedown="downProcess" ref="process">
             <div class="process-played" :style="{ width: playProcess }"></div>
             <div class="process-pointer" @mousedown="downPointer" :style="{ left: 'calc(' + playProcess + ' - 4px)' }"></div>
+            <div class="start_time">{{ getTimeByStamp(playedTime) }}</div>
+            <div class="end_time">{{ getTimeByStamp(totalTime) }}</div>
           </div>
         </div>
         <div class="player-footer-other">
@@ -286,9 +302,16 @@
         player.watcher.on('pause', () => {
           isPlaying.value = false
         })
+        player.watcher.on('abort', () => {
+          isPlaying.value = false
+          playedTime.value = 0
+          totalTime.value = 0
+          playProcess.value = 0
+        })
         player.watcher.on('timeupdate', ({ currentTime, duration }) => {
           const val = currentTime / duration
           playProcess.value = getPercent(val)
+          playedTime.value = currentTime
         })
         player.watcher.on('volumeupdate', ({ volume }) => {
           volumeProcess.value = getPercent(volume / 1)
@@ -304,6 +327,7 @@
 
       const playProcess = ref(0) // 播放进度
       const totalTime = ref(0) // 音频总时长
+      const playedTime = ref(0)
       let skewProcess = 0 // 进度条左边的相对位置
       let startOffset = 0 // 按下鼠标时鼠标的相对位置
       let skewDistance = 0 // 按下鼠标时与当前位置的距离
@@ -405,11 +429,14 @@
         loopWayIcon,
         volumeProcess,
         pointTop,
+        totalTime,
+        playedTime,
 
         downProcess,
         downPointer,
         downVolumeProcess,
-        downVolumePointer
+        downVolumePointer,
+        getTimeByStamp
       }
     }
   }
