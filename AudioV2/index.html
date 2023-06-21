@@ -24,6 +24,7 @@
       box-shadow: 0 0 10px  gray;
     }
     .player-header {
+      visibility: hidden;
       box-sizing: border-box;
       padding: 6px;
       height: 60px;
@@ -36,6 +37,7 @@
       border-top-right-radius: 6px;
     }
     .player-body {
+      visibility: hidden;
       display: flex;
       height: calc(100% - 60px - 70px);
     }
@@ -78,6 +80,7 @@
       flex: 1;
     }
     .player-footer-control {
+      visibility: hidden;
       width: 470px;
       background-color: azure;
     }
@@ -193,7 +196,6 @@
 <script>
   /*
   * TODO 声音（上下文创建前记录当前音量，创建完成后再调整音量）
-  *  调整声音时，如果事件对象是 volume-process-played/volume-process-point，计算策略需要更新
   *  可视化
   *  已加载进度
   * */
@@ -285,6 +287,8 @@
         window.addEventListener('scroll', () => {
           skewVolumeProcess = instance.$refs.volumeProcess.offsetTop
         })
+
+        volumeProcessPlayed = document.querySelector('.volume-process-played')
       })
 
       function watchAction() {
@@ -378,11 +382,12 @@
       }
 
       const volumeProcess = ref('50%') // 当前音量
-      const pointTop = ref('50%')
+      const pointTop = ref('50%') // 计算音量指示点的位置
       let skewVolumeProcess = 0 // 进度条左边的相对位置
       let startVolumeOffset = 0 // 按下鼠标时鼠标的相对位置
       let skewVolumeDistance = 0 // 按下鼠标时与当前位置的距离
       let isVolumePress = false // 是否按下
+      let volumeProcessPlayed
       // 根据进度条信息获取当前音量
       function getCurrentPositionVolume (offset, maxVolume = 1) {
         const percent = offset / instance.$refs.volumeProcess.offsetHeight
@@ -393,9 +398,16 @@
       }
       // 点击音量进度条调整音量
       function downVolumeProcess (event) {
-        if (event.target.className === 'volume-process-pointer') return
-        if (event.target.className === 'volume-process-played') return
-        const targetVolume = getCurrentPositionVolume(event.offsetY)
+        let offsetY = event.offsetY
+        // 目标对象是音量的指示点时需要修改offsetY
+        if (event.target.className === 'volume-process-pointer') {
+          offsetY = 50 - (volumeProcessPlayed.offsetHeight + (4 - event.offsetY))
+        }
+        // 目标对象是已填充的进度条时需要修改offsetY
+        if (event.target.className === 'volume-process-played') {
+          offsetY = 50 - (event.target.offsetHeight - offsetY)
+        }
+        const targetVolume = getCurrentPositionVolume(offsetY)
         controls.controlVolume(targetVolume)
       }
       // 点击音量进度指示点
