@@ -192,14 +192,13 @@
 
 <script>
   /*
-  * TODO 声音（上下文创建前记录当前音量，创建完成后再调整音量）
-  *  可视化
-  *  已加载进度
+  *  TODO BufferSource
   * */
 </script>
 
 <script type="module">
-  import { AudioPlayer, PlayerControls, PlayerVisual } from './player.js'
+  // import { AudioPlayer, PlayerControls, PlayerVisual } from './player.js'
+  import { AudioPlayer, PlayerControls, PlayerVisual } from './playerSource.js'
   import { getMusicList }  from './musicNameList.js'
   import { getTimeByStamp } from './tool.js'
   const { createApp, onMounted, ref, reactive, getCurrentInstance } = Vue
