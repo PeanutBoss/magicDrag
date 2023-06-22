@@ -38,7 +38,12 @@ function throttle (fn: any, delay: number) {
   }
 }
 
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'contextCreated' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
+
+type SourceType = 'Media' | 'Buffer'
+const MediaType = 'Media'
+const BufferType = 'Buffer'
+
 abstract class Player {
   watcher = new Watcher<WatcherEmit>()
   // 监听用户与浏览器的手势交互事件
@@ -48,7 +53,13 @@ abstract class Player {
   playerData: any = {} // 当前音频数据
   playerDom: HTMLAudioElement | HTMLVideoElement // 音频播放器元素
   gainNode: any
-  protected constructor (private playerType: 'AUDIO' | 'VIDEO') {
+
+  /**
+   * @param playerType 音频/视频播放器
+   * @param type 音源基于Audio元素（Media）还是二进制数据（Buffer）
+   * @protected
+   */
+  protected constructor (private playerType: 'AUDIO' | 'VIDEO', public type: 'Media' | 'Buffer') {
     // 创建播放器元素
     if (this.playerType === 'AUDIO') {
       this.playerDom = document.createElement('audio')
@@ -61,7 +72,7 @@ abstract class Player {
     this._initContext = throttle(this.initContext.bind(this), 100)
     this.listenInteraction()
   }
-  abstract setCurrentTime (time: number): void
+  abstract setMediaCurrentTime (time: number): void
   abstract changeCurrentPlaying (index: number): void
   abstract getPlayListCount (): number
   // 创建上下文对象 FIXME 未交互时创建上下文对象，如果不与其他节点连接时可以播放（初始化后不能播放）
@@ -72,19 +83,7 @@ abstract class Player {
     this.watcher.emit('loadedBuffer')
   }
   // 初始化上下文对象
-  initContext () {
-    this.createContext()
-    // MARK 初始化audioContext前必须与文档有手势交互，否则音频无法播放
-    // context初始化完毕，停止监听与文档的交互
-    this.stopListenInteraction()
-
-    const source = this.playerContext.createMediaElementSource(this.playerDom)
-    this.gainNode = this.playerContext.createGain()
-    this.gainNode.gain.value = 0.5
-    this.watcher.emit('volumeupdate', { volume: 0.5 })
-    source.connect(this.gainNode)
-    this.gainNode.connect(this.playerContext.destination)
-  }
+  abstract initContext (): void
   listenInteraction () {
     this.INTERACTION_EVENT.forEach(eventName => {
       window.addEventListener(eventName, this._initContext)
@@ -106,19 +105,23 @@ export class AudioPlayer extends Player {
 
   private audioContext: any // 音频的上下文对象
 
-  constructor(private playList: any[], playerType: 'AUDIO' | 'VIDEO') {
-    super(playerType)
+  constructor(private playList: any[], playerType: 'AUDIO' | 'VIDEO', public type: SourceType) {
+    super(playerType, type)
     this.playList = playList
     this.startWatch()
+  }
+  initContext() {
+    this.createContext()
+    // MARK 初始化audioContext前必须与文档有手势交互，否则音频无法播放
+    // context初始化完毕，停止监听与文档的交互
+    this.stopListenInteraction()
 
-    // setTimeout(() => {
-    //   this.playerDom.setAttribute('controls', '');
-    //   (document.querySelector('.player-body-detail') as HTMLElement).appendChild(this.playerDom)
-    // }, 500)
+    // 通知上下文对象已经创建完成
+    this.watcher.emit('contextCreated')
   }
 
   // 调整播放进度
-  setCurrentTime (time: number) {
+  setMediaCurrentTime (time: number) {
     this.playerDom.currentTime = time
   }
 
@@ -252,11 +255,25 @@ export class PlayerControls {
   private loopWay: LoopWay = LoopWay.SEQUENCE // 循环方式 - 默认顺序播放
   private readonly _play = this.play.bind(this)
   private isPlaying = false
+  private gainNode: any
   constructor (private player: Player, private options: any = {}) {
     // watchAction中对 changePlay 事件添加了callback，因此第一次触发 changePlay 事件
     // 需要在watchAction之前，否则会自动播放
     this.player.watcher.emit('changePlay', { playIndex: this.playIndex })
     this.watchAction()
+    // 监听上下文对象是否创建完毕
+    this.player.watcher.on('contextCreated', this.createGainNode.bind(this))
+  }
+  createGainNode () {
+    console.log('创建音频节点')
+    const source = this.player.playerContext.createMediaElementSource(this.player.playerDom)
+    this.gainNode = this.player.playerContext.createGain()
+    console.log(this.options.initialVolume)
+    this.gainNode.gain.value = this.options.initialVolume
+    this.player.watcher.emit('volumeupdate', { volume: this.options.initialVolume })
+
+    source.connect(this.gainNode)
+    this.gainNode.connect(this.player.playerContext.destination)
   }
   // 监听播放器事件
   watchAction () {
@@ -303,11 +320,19 @@ export class PlayerControls {
   // 控制声音
   controlVolume (volume: number) {
     this.player.watcher.emit('volumeupdate', { volume })
-    this.player.gainNode.gain.value = volume
+    if (this.player.type === MediaType) {
+      this.player.playerDom.volume = volume
+    } else {
+      this.gainNode.gain.value = volume
+    }
   }
   // 调整进度
   changePlayProcess (currentTime: number) {
-    this.player.setCurrentTime(currentTime)
+    if (this.player.type === MediaType) {
+      this.player.setMediaCurrentTime(currentTime)
+    } else {
+      console.log('Buffer - 调整进度')
+    }
   }
   start () {
     // 默认播放第一首
@@ -315,11 +340,11 @@ export class PlayerControls {
   }
   // 播放
   play () {
-    this.player.playerDom.play()
+    this.player.type === MediaType && this.player.playerDom.play()
   }
   // 暂停
   pause () {
-    this.player.playerDom.pause()
+    this.player.type === MediaType && this.player.playerDom.pause()
   }
   // 切换循环方式
   toggleLoopWay () {

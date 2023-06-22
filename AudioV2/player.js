@@ -48,9 +48,17 @@ function throttle(fn, delay) {
         }, delay);
     };
 }
+const MediaType = 'Media';
+const BufferType = 'Buffer';
 class Player {
-    constructor(playerType) {
+    /**
+     * @param playerType 音频/视频播放器
+     * @param type 音源基于Audio元素（Media）还是二进制数据（Buffer）
+     * @protected
+     */
+    constructor(playerType, type) {
         this.playerType = playerType;
+        this.type = type;
         this.watcher = new Watcher();
         // 监听用户与浏览器的手势交互事件
         this.INTERACTION_EVENT = ['touchstart', 'keydown', 'pointerdown', 'mousedown'];
@@ -75,19 +83,6 @@ class Player {
         // 可以加载Buffer
         this.watcher.emit('loadedBuffer');
     }
-    // 初始化上下文对象
-    initContext() {
-        this.createContext();
-        // MARK 初始化audioContext前必须与文档有手势交互，否则音频无法播放
-        // context初始化完毕，停止监听与文档的交互
-        this.stopListenInteraction();
-        const source = this.playerContext.createMediaElementSource(this.playerDom);
-        this.gainNode = this.playerContext.createGain();
-        this.gainNode.gain.value = 0.5;
-        this.watcher.emit('volumeupdate', { volume: 0.5 });
-        source.connect(this.gainNode);
-        this.gainNode.connect(this.playerContext.destination);
-    }
     listenInteraction() {
         this.INTERACTION_EVENT.forEach(eventName => {
             window.addEventListener(eventName, this._initContext);
@@ -101,19 +96,24 @@ class Player {
 }
 // 播放器 TODO 增加 audioBufferSource 控制播放功能
 export class AudioPlayer extends Player {
-    constructor(playList, playerType) {
-        super(playerType);
+    constructor(playList, playerType, type) {
+        super(playerType, type);
         this.playList = playList;
+        this.type = type;
         this.sourceLoaded = false; // 音频资源是否加载完毕
         this.playList = playList;
         this.startWatch();
-        // setTimeout(() => {
-        //   this.playerDom.setAttribute('controls', '');
-        //   (document.querySelector('.player-body-detail') as HTMLElement).appendChild(this.playerDom)
-        // }, 500)
+    }
+    initContext() {
+        this.createContext();
+        // MARK 初始化audioContext前必须与文档有手势交互，否则音频无法播放
+        // context初始化完毕，停止监听与文档的交互
+        this.stopListenInteraction();
+        // 通知上下文对象已经创建完成
+        this.watcher.emit('contextCreated');
     }
     // 调整播放进度
-    setCurrentTime(time) {
+    setMediaCurrentTime(time) {
         this.playerDom.currentTime = time;
     }
     // 切换播放的音频
@@ -255,6 +255,18 @@ export class PlayerControls {
         // 需要在watchAction之前，否则会自动播放
         this.player.watcher.emit('changePlay', { playIndex: this.playIndex });
         this.watchAction();
+        // 监听上下文对象是否创建完毕
+        this.player.watcher.on('contextCreated', this.createGainNode.bind(this));
+    }
+    createGainNode() {
+        console.log('创建音频节点');
+        const source = this.player.playerContext.createMediaElementSource(this.player.playerDom);
+        this.gainNode = this.player.playerContext.createGain();
+        console.log(this.options.initialVolume);
+        this.gainNode.gain.value = this.options.initialVolume;
+        this.player.watcher.emit('volumeupdate', { volume: this.options.initialVolume });
+        source.connect(this.gainNode);
+        this.gainNode.connect(this.player.playerContext.destination);
     }
     // 监听播放器事件
     watchAction() {
@@ -301,11 +313,21 @@ export class PlayerControls {
     // 控制声音
     controlVolume(volume) {
         this.player.watcher.emit('volumeupdate', { volume });
-        this.player.gainNode.gain.value = volume;
+        if (this.player.type === MediaType) {
+            this.player.playerDom.volume = volume;
+        }
+        else {
+            this.gainNode.gain.value = volume;
+        }
     }
     // 调整进度
     changePlayProcess(currentTime) {
-        this.player.setCurrentTime(currentTime);
+        if (this.player.type === MediaType) {
+            this.player.setMediaCurrentTime(currentTime);
+        }
+        else {
+            console.log('Buffer - 调整进度');
+        }
     }
     start() {
         // 默认播放第一首
@@ -313,11 +335,11 @@ export class PlayerControls {
     }
     // 播放
     play() {
-        this.player.playerDom.play();
+        this.player.type === MediaType && this.player.playerDom.play();
     }
     // 暂停
     pause() {
-        this.player.playerDom.pause();
+        this.player.type === MediaType && this.player.playerDom.pause();
     }
     // 切换循环方式
     toggleLoopWay() {

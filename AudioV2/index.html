@@ -24,7 +24,6 @@
       box-shadow: 0 0 10px  gray;
     }
     .player-header {
-      visibility: hidden;
       box-sizing: border-box;
       padding: 6px;
       height: 60px;
@@ -37,7 +36,6 @@
       border-top-right-radius: 6px;
     }
     .player-body {
-      visibility: hidden;
       display: flex;
       height: calc(100% - 60px - 70px);
     }
@@ -80,7 +78,6 @@
       flex: 1;
     }
     .player-footer-control {
-      visibility: hidden;
       width: 470px;
       background-color: azure;
     }
@@ -265,8 +262,8 @@
       const loopWayIcon = ref('../Audio/assets/icon/sequence.png')
 
       // 创建播放器实例
-      const player = new AudioPlayer(musicList, 'AUDIO')
-      const controls = new PlayerControls(player, { autoplay: false })
+      const player = new AudioPlayer(musicList, 'AUDIO', 'Media')
+      const controls = new PlayerControls(player, { autoplay: false, initialVolume: 0.5 })
       const visual = new PlayerVisual(player, { canvasSelector: '.player-body-detail-visual' })
       window.controls = controls
 
