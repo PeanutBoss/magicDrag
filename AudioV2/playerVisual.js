@@ -101,18 +101,24 @@ export class AudioPlayer extends Player {
         this.playList = playList;
         this.type = type;
         this.sourceLoaded = false; // 音频资源是否加载完毕
-        this.audioBufferSource = null; // 音频源
         this.playList = playList;
         this.startWatch();
+    }
+    createMediaSource() {
+        this.mediaSource = this.playerContext.createMediaElementSource(this.playerDom);
+        this.watcher.emit('sourceCreated');
+    }
+    connectAnalyser(analyser) {
+        this.mediaSource.connect(analyser);
+        this.mediaSource.connect(this.playerContext.destination);
     }
     initContext() {
         this.createContext();
         // MARK 初始化audioContext前必须与文档有手势交互，否则音频无法播放
         // context初始化完毕，停止监听与文档的交互
         this.stopListenInteraction();
-        this.playerContext.addEventListener('statechange', (e) => {
-            console.log(e, 'stateChange');
-        });
+        // 创建媒体类型的音频源
+        this.createMediaSource();
         // 通知上下文对象已经创建完成
         this.watcher.emit('contextCreated');
     }
@@ -123,7 +129,6 @@ export class AudioPlayer extends Player {
     // 切换播放的音频
     changeCurrentPlaying(index) {
         this.playerData = this.playList[index];
-        console.log(this.playerData.url, 'this.playerData.url');
         this.playerDom.src = this.playerData.url;
         this.getBufferByUrl();
     }
@@ -198,9 +203,6 @@ export class AudioPlayer extends Player {
             return URL.createObjectURL(blob);
         });
     }
-    setBufferSource(source) {
-        this.audioBufferSource = source;
-    }
 }
 var LoopWay;
 (function (LoopWay) {
@@ -250,7 +252,7 @@ const PlayStrategy = {
         }
     }
 };
-// 控制器
+// 控制器 TODO 将AudioPlayer抽象为Player
 export class PlayerControls {
     constructor(player, options = {}) {
         this.player = player;
@@ -267,14 +269,15 @@ export class PlayerControls {
         this.player.watcher.on('contextCreated', this.createGainNode.bind(this));
     }
     createGainNode() {
-        console.log('创建音频节点');
-        const source = this.player.playerContext.createMediaElementSource(this.player.playerDom);
+        // const source = this.player.playerContext.createMediaElementSource(this.player.playerDom)
         this.gainNode = this.player.playerContext.createGain();
         console.log(this.options.initialVolume);
         this.gainNode.gain.value = this.options.initialVolume;
         this.player.watcher.emit('volumeupdate', { volume: this.options.initialVolume });
-        source.connect(this.gainNode);
+        // source.connect(this.gainNode)
+        this.player.mediaSource.connect(this.gainNode);
         this.gainNode.connect(this.player.playerContext.destination);
+        console.log('---音频节点连接完毕---');
     }
     // 监听播放器事件
     watchAction() {
@@ -343,33 +346,11 @@ export class PlayerControls {
     }
     // 播放
     play() {
-        // this.player.type === MediaType && this.player.playerDom.play()
-        console.log(this.player.type);
-        if (this.player.type === 'Buffer') {
-            try {
-                this.player.audioBufferSource.start();
-                this.player.watcher.emit('playing');
-            }
-            catch (e) {
-                console.log(e);
-                const audioBufferSource = this.player.playerContext.createBufferSource();
-                audioBufferSource.buffer = this.player.playerData.audioBuffer;
-                this.player.setBufferSource(audioBufferSource);
-                // this.player.audioBufferSource = this.player.playerContext.createBufferSource()
-                // (this.player.audioBufferSource as AudioBufferSourceNode).buffer = this.player.playerData.audioBuffer
-                this.player.audioBufferSource.start();
-            }
-        }
+        this.player.type === MediaType && this.player.playerDom.play();
     }
     // 暂停
     pause() {
-        // this.player.type === MediaType && this.player.playerDom.pause()
-        if (this.player.type === 'Buffer') {
-            console.log(this.player.playerContext.currentTime);
-            this.player.audioBufferSource.stop();
-            this.player.watcher.emit('pause');
-            console.log(this.player.audioBufferSource, Object.assign({}, this.player.playerData));
-        }
+        this.player.type === MediaType && this.player.playerDom.pause();
     }
     // 切换循环方式
     toggleLoopWay() {
@@ -392,12 +373,34 @@ export class PlayerControls {
         return PlayStrategy[this.loopWay];
     }
 }
+const DrawStrategy = {
+    Spectrum() { },
+    Fall() { },
+    Wave() { }
+};
 // 可视化
 export class PlayerVisual {
     constructor(player, options) {
         this.player = player;
         this.options = options;
-        this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this));
+        this.visualType = 'Spectrum';
+        this.visualData = {};
+        // this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this))
+        this.player.watcher.on('sourceCreated', this.createAnalyserSync.bind(this));
+        this.player.watcher.on('playing', this.draw.bind(this));
+    }
+    // 创建音频分析器
+    createAnalyserSync() {
+        this.createCanvasContext();
+        this.analyserNode = this.player.playerContext.createAnalyser();
+        this.analyserNode.fftSize = 256; // 512 // 1024 // 2048
+        const bufferLength = this.analyserNode.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        this.visualData.bufferLength = bufferLength;
+        this.visualData.dataArray = dataArray;
+        // 连接音源和音频分析器
+        this.player.connectAnalyser(this.analyserNode);
+        console.log('---音频分析器连接完毕---');
     }
     // 创建分析器
     createAnalyser() {
@@ -405,10 +408,9 @@ export class PlayerVisual {
             console.log('创建音频分析器');
             this.createCanvasContext();
             console.log(this.player.playerData.arraybuffer, 'this.player.playerData.arraybuffer');
-            this.player.playerData.audioBuffer = yield this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer);
+            const audioBuffer = yield this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer);
             const audioBufferSource = this.player.playerContext.createBufferSource();
-            audioBufferSource.buffer = this.player.playerData.audioBuffer;
-            this.player.setBufferSource(audioBufferSource);
+            audioBufferSource.buffer = audioBuffer;
             // 创建音频分析器
             this.analyserNode = this.player.playerContext.createAnalyser();
             this.analyserNode.fftSize = 2048; // 设置 FFT 大小
@@ -423,7 +425,7 @@ export class PlayerVisual {
             *  如果要做可视化需要配合 audioBufferSource
             *  或直接使用 audioBufferSource 控制音频播放
             * */
-            // audioBufferSource.start()
+            audioBufferSource.start();
             this.draw();
         });
     }
@@ -436,28 +438,52 @@ export class PlayerVisual {
         // 请求下一帧动画
         requestAnimationFrame(this.draw.bind(this));
         // 获取频谱数据
-        this.analyserNode.getByteFrequencyData(this.dataArray);
+        this.analyserNode.getByteFrequencyData(this.visualData.dataArray);
         // 清空画布
         this.canvasCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.createSpectrum();
+        switch (this.visualType) {
+            case 'Spectrum':
+                this.createSpectrum();
+                break;
+            case 'Fall':
+                this.createFall();
+                break;
+            case 'Wave':
+                this.createWave();
+                break;
+            default:
+                throw new Error('缺少参数 options.visualType');
+        }
+    }
+    toggleVisualType() {
+        if (this.visualType === 'Wave') {
+            this.visualType = 'Spectrum';
+        }
+        else if (this.visualType === 'Spectrum') {
+            this.visualType = 'Fall';
+        }
+        else if (this.visualType === 'Fall') {
+            this.visualType = 'Wave';
+        }
+        this.player.watcher.emit('changeVisualType', this.visualType);
     }
     createSpectrum() {
-        const bufferLength = this.analyserNode.frequencyBinCount;
+        const bufferLength = this.visualData.bufferLength;
         const barWidth = (this.canvas.width / bufferLength) * 2.5;
         let x = 0;
         for (let i = 0; i < bufferLength; i++) {
-            const barHeight = this.dataArray[i] / 2;
+            const barHeight = this.visualData.dataArray[i] / 2;
             this.canvasCtx.fillStyle = `rgb(${barHeight + 100}, 50, 50)`;
             this.canvasCtx.fillRect(x, this.canvas.height - barHeight, barWidth, barHeight);
             x += barWidth + 1;
         }
     }
-    createFalls() {
-        const bufferLength = this.analyserNode.frequencyBinCount;
+    createFall() {
+        const bufferLength = this.visualData.bufferLength;
         const fallsWidth = this.canvas.width / bufferLength;
         let fallsX = 0;
         for (let i = 0; i < bufferLength; i++) {
-            const barHeight = (this.dataArray[i] / 255) * this.canvas.height;
+            const barHeight = (this.visualData.dataArray[i] / 255) * this.canvas.height;
             const hue = (i / bufferLength) * 360;
             this.canvasCtx.fillStyle = `hsl(${hue}, 100%, 50%)`;
             this.canvasCtx.fillRect(fallsX, this.canvas.height - barHeight, fallsWidth, barHeight);
@@ -465,15 +491,15 @@ export class PlayerVisual {
         }
     }
     createWave() {
-        this.analyserNode.getByteTimeDomainData(this.dataArray);
-        const bufferLength = this.analyserNode.frequencyBinCount;
+        this.analyserNode.getByteTimeDomainData(this.visualData.dataArray);
+        const bufferLength = this.visualData.bufferLength;
         this.canvasCtx.lineWidth = 1;
         this.canvasCtx.strokeStyle = 'rgb(0, 255, 255)';
         this.canvasCtx.beginPath();
         const sliceWidth = this.canvas.width / bufferLength;
         let waveX = 0;
         for (let i = 0; i < bufferLength; i++) {
-            const v = this.dataArray[i] / 128.0;
+            const v = this.visualData.dataArray[i] / 128.0;
             const y = (v * this.canvas.height) / 2;
             if (i === 0) {
                 this.canvasCtx.moveTo(waveX, y);

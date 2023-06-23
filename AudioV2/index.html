@@ -64,8 +64,13 @@
       height: 100%;
       flex: 1;
       background-color: rgba(127, 255, 212, 0.2);
-      padding: 10px;
+      padding: 20px;
       box-sizing: border-box;
+    }
+    .player-body-detail-visual {
+      /*outline: 1px solid #000;*/
+      width: 100%;
+      height: 100%;
     }
     .player-footer {
       display: flex;
@@ -198,7 +203,8 @@
 
 <script type="module">
   // import { AudioPlayer, PlayerControls, PlayerVisual } from './player.js'
-  import { AudioPlayer, PlayerControls, PlayerVisual } from './playerSource.js'
+  // import { AudioPlayer, PlayerControls, PlayerVisual } from './playerSource.js'
+  import { AudioPlayer, PlayerControls, PlayerVisual } from './playerVisual.js'
   import { getMusicList }  from './musicNameList.js'
   import { getTimeByStamp } from './tool.js'
   const { createApp, onMounted, ref, reactive, getCurrentInstance } = Vue
@@ -235,7 +241,7 @@
             <img v-show="!isPlaying" @click="controls.play()" class="play control-icon" src="../Audio/assets/icon/play.png">
             <img v-show="isPlaying" @click="controls.pause()" class="pause control-icon" src="../Audio/assets/icon/pause.png">
             <img class="next control-icon" @click="controls.playNext()" src="../Audio/assets/icon/next.png">
-            <img class="words control-icon" src="../Audio/assets/icon/forward.png">
+            <img class="words control-icon" @click="toggleVisualType" :src="visualTypeIcon">
           </div>
           <div class="process" @mousedown="downProcess" ref="process">
             <div class="process-played" :style="{ width: playProcess }"></div>
@@ -261,9 +267,9 @@
       const loopWayIcon = ref('../Audio/assets/icon/sequence.png')
 
       // 创建播放器实例
-      const player = new AudioPlayer(musicList, 'AUDIO', 'Buffer')
+      const player = new AudioPlayer(musicList, 'AUDIO', 'Media')
       const controls = new PlayerControls(player, { autoplay: false, initialVolume: 0.5 })
-      const visual = new PlayerVisual(player, { canvasSelector: '.player-body-detail-visual' })
+      const visual = new PlayerVisual(player, { canvasSelector: '.player-body-detail-visual', visualType: 'Spectrum' })
       window.controls = controls
 
       // 开始监听播放器
@@ -323,6 +329,15 @@
         player.watcher.on('loopWay', loopWay => {
           loopWayIcon.value = `../Audio/assets/icon/${loopWay.toLowerCase()}.png`
         })
+        player.watcher.on('changeVisualType', visualType => {
+          console.log(visualType, 'visualType')
+          visualTypeIcon.value = `../Audio/assets/icon/${visualType}.png`
+        })
+      }
+
+      const visualTypeIcon = ref('../Audio/assets/icon/Spectrum.png')
+      function toggleVisualType () {
+        visual.toggleVisualType()
       }
 
       const playProcess = ref(0) // 播放进度
@@ -439,12 +454,14 @@
         pointTop,
         totalTime,
         playedTime,
+        visualTypeIcon,
 
         downProcess,
         downPointer,
         downVolumeProcess,
         downVolumePointer,
-        getTimeByStamp
+        getTimeByStamp,
+        toggleVisualType
       }
     }
   }
