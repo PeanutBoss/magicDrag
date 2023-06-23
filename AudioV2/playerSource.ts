@@ -116,6 +116,10 @@ export class AudioPlayer extends Player {
     // context初始化完毕，停止监听与文档的交互
     this.stopListenInteraction()
 
+    this.playerContext.addEventListener('statechange', (e: any) => {
+      console.log(e, 'stateChange')
+    })
+
     // 通知上下文对象已经创建完成
     this.watcher.emit('contextCreated')
   }
@@ -128,6 +132,7 @@ export class AudioPlayer extends Player {
   // 切换播放的音频
   changeCurrentPlaying (index: number) {
     this.playerData = this.playList[index]
+    console.log(this.playerData.url, 'this.playerData.url')
     this.playerDom.src = this.playerData.url
     this.getBufferByUrl()
   }
@@ -344,11 +349,31 @@ export class PlayerControls {
   // 播放
   play () {
     // this.player.type === MediaType && this.player.playerDom.play()
-    (this.player.audioBufferSource as AudioBufferSourceNode).start()
+    console.log(this.player.type)
+    if (this.player.type === 'Buffer') {
+      try {
+        (this.player.audioBufferSource as AudioBufferSourceNode).start()
+        this.player.watcher.emit('playing')
+      } catch (e) {
+        console.log(e)
+        const audioBufferSource = this.player.playerContext.createBufferSource()
+        audioBufferSource.buffer = this.player.playerData.audioBuffer
+        this.player.setBufferSource(audioBufferSource);
+        // this.player.audioBufferSource = this.player.playerContext.createBufferSource()
+        // (this.player.audioBufferSource as AudioBufferSourceNode).buffer = this.player.playerData.audioBuffer
+        (this.player.audioBufferSource as AudioBufferSourceNode).start()
+      }
+    }
   }
   // 暂停
   pause () {
-    this.player.type === MediaType && this.player.playerDom.pause()
+    // this.player.type === MediaType && this.player.playerDom.pause()
+    if (this.player.type === 'Buffer') {
+      console.log(this.player.playerContext.currentTime);
+      (this.player.audioBufferSource as AudioBufferSourceNode).stop()
+      this.player.watcher.emit('pause')
+      console.log(this.player.audioBufferSource, { ...this.player.playerData })
+    }
   }
   // 切换循环方式
   toggleLoopWay () {
@@ -386,9 +411,9 @@ export class PlayerVisual {
     this.createCanvasContext()
 
     console.log(this.player.playerData.arraybuffer, 'this.player.playerData.arraybuffer')
-    const audioBuffer = await this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer)
+    this.player.playerData.audioBuffer = await this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer)
     const audioBufferSource = this.player.playerContext.createBufferSource()
-    audioBufferSource.buffer = audioBuffer
+    audioBufferSource.buffer = this.player.playerData.audioBuffer
 
     this.player.setBufferSource(audioBufferSource)
 

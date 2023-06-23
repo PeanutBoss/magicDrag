@@ -261,7 +261,7 @@
       const loopWayIcon = ref('../Audio/assets/icon/sequence.png')
 
       // 创建播放器实例
-      const player = new AudioPlayer(musicList, 'AUDIO', 'Media')
+      const player = new AudioPlayer(musicList, 'AUDIO', 'Buffer')
       const controls = new PlayerControls(player, { autoplay: false, initialVolume: 0.5 })
       const visual = new PlayerVisual(player, { canvasSelector: '.player-body-detail-visual' })
       window.controls = controls
