@@ -266,7 +266,20 @@ export class PlayerControls {
         this.player.watcher.emit('changePlay', { playIndex: this.playIndex });
         this.watchAction();
         // 监听上下文对象是否创建完毕
-        this.player.watcher.on('contextCreated', this.createGainNode.bind(this));
+        // this.player.watcher.on('contextCreated', this.createGainNode.bind(this))
+        this.player.watcher.on('contextCreated', () => {
+            this.createGainNode();
+            this.createBiquadFilter();
+        });
+    }
+    createBiquadFilter() {
+        this.biquadFilter = this.player.playerContext.createBiquadFilter();
+        this.player.mediaSource.connect(this.biquadFilter);
+        this.biquadFilter.connect(this.player.playerContext.destination);
+    }
+    setBiquadFilter(type = 'lowpass', HZ = 1000) {
+        this.biquadFilter.type = type;
+        this.biquadFilter.frequency.value = HZ;
     }
     createGainNode() {
         // const source = this.player.playerContext.createMediaElementSource(this.player.playerDom)
@@ -274,7 +287,6 @@ export class PlayerControls {
         console.log(this.options.initialVolume);
         this.gainNode.gain.value = this.options.initialVolume;
         this.player.watcher.emit('volumeupdate', { volume: this.options.initialVolume });
-        // source.connect(this.gainNode)
         this.player.mediaSource.connect(this.gainNode);
         this.gainNode.connect(this.player.playerContext.destination);
         console.log('---音频节点连接完毕---');
@@ -385,12 +397,11 @@ export class PlayerVisual {
         this.options = options;
         this.visualType = 'Spectrum';
         this.visualData = {};
-        // this.player.watcher.on('loadedBuffer', this.createAnalyser.bind(this))
-        this.player.watcher.on('sourceCreated', this.createAnalyserSync.bind(this));
+        this.player.watcher.on('sourceCreated', this.createAnalyser.bind(this));
         this.player.watcher.on('playing', this.draw.bind(this));
     }
     // 创建音频分析器
-    createAnalyserSync() {
+    createAnalyser() {
         this.createCanvasContext();
         this.analyserNode = this.player.playerContext.createAnalyser();
         this.analyserNode.fftSize = 256; // 512 // 1024 // 2048
@@ -401,33 +412,6 @@ export class PlayerVisual {
         // 连接音源和音频分析器
         this.player.connectAnalyser(this.analyserNode);
         console.log('---音频分析器连接完毕---');
-    }
-    // 创建分析器
-    createAnalyser() {
-        return __awaiter(this, void 0, void 0, function* () {
-            console.log('创建音频分析器');
-            this.createCanvasContext();
-            console.log(this.player.playerData.arraybuffer, 'this.player.playerData.arraybuffer');
-            const audioBuffer = yield this.player.playerContext.decodeAudioData(this.player.playerData.arraybuffer);
-            const audioBufferSource = this.player.playerContext.createBufferSource();
-            audioBufferSource.buffer = audioBuffer;
-            // 创建音频分析器
-            this.analyserNode = this.player.playerContext.createAnalyser();
-            this.analyserNode.fftSize = 2048; // 设置 FFT 大小
-            // 连接音频源和音频分析器
-            audioBufferSource.connect(this.analyserNode);
-            this.analyserNode.connect(this.player.playerContext.destination);
-            // 创建一个数组用于保存频谱数据
-            this.bufferLength = this.analyserNode.frequencyBinCount;
-            this.dataArray = new Uint8Array(this.bufferLength);
-            /*
-            * MARK 单独使用 mediaAudioSource 不能做可视化操作
-            *  如果要做可视化需要配合 audioBufferSource
-            *  或直接使用 audioBufferSource 控制音频播放
-            * */
-            audioBufferSource.start();
-            this.draw();
-        });
     }
     // 获取canvas和上下文对象
     createCanvasContext() {

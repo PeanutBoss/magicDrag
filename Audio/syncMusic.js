@@ -14,11 +14,19 @@ const getNameMethodStr = 'export function getMusicName(index) {\n' +
   '  return musicName;\n' +
   '}'
 
+const getMusicListStr = 'export function getMusicList () {\n' +
+  '  const musicList = []\n' +
+  '  musicNameList.forEach(musicName => {\n' +
+  '    musicList.push({ name: musicName, url: `./assets/music/${musicName}`, image: \'./assets/image/suolong.png\' })\n' +
+  '  })\n' +
+  '  return musicList\n' +
+  '}'
+
 function insertExport (str) {
   str.forEach((_, index) => {
     str[index] = `'${str[index]}'`
   })
-  return 'export const musicNameList = [' + str + ']' + '\n' + getNameMethodStr
+  return 'export const musicNameList = [' + str + ']' + '\n' + getNameMethodStr + '\n' + getMusicListStr
 }
 
 fs.readdir(path.resolve(__dirname, './assets/music'), (err, data) => {
