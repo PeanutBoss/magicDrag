@@ -21,7 +21,7 @@ function insertExport (str) {
   return 'export const musicNameList = [' + str + ']' + '\n' + getNameMethodStr
 }
 
-fs.readdir(path.resolve(__dirname, 'assets/music'), (err, data) => {
+fs.readdir(path.resolve(__dirname, './assets/music'), (err, data) => {
   if (err) console.log(err)
   const insertContent = insertExport(data)
   const buffer = Buffer.alloc(Buffer.byteLength(insertContent), insertContent)
