@@ -41,7 +41,9 @@ module.exports = {
     }),
     // 这里的资源是直接复制过来的，不会经过file-loader处理
     new copyPlugin({
-      patterns: [{ from: path.resolve(__dirname, '../Audio/assets'), to: path.resolve(__dirname, '../dist/assets') }]
+      patterns: [
+        { from: path.resolve(__dirname, '../Audio/assets'), to: path.resolve(__dirname, '../dist/assets') }
+      ]
     })
   ],
   resolve: {
