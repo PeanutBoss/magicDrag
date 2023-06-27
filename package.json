@@ -6,8 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "syncMusic": "node ./Audio/syncMusic.js",
-    "build": "webpack",
-    "serve": "webpack serve"
+    "build": "webpack --config ./config/webpack.config.js",
+    "serve": "webpack serve --config ./config/webpack.config.js",
+    "build:ts": "webpack --config ./config/webpack.tsconfig.js",
+    "serve:ts": "webpack serve --config ./config/webpack.tsconfig.js"
   },
   "repository": {
     "type": "git",
