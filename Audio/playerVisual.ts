@@ -38,11 +38,12 @@ function throttle (fn: any, delay: number) {
   }
 }
 
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'contextCreated' | 'sourceCreated' | 'changeVisualType' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
+type WatcherEmit = 'ended' | 'pause' | 'playing' | 'contextCreated' | 'sourceCreated' |
+  'changeVisualType' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' |
+  'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay'
 
 type SourceType = 'Media' | 'Buffer'
 const MediaType = 'Media'
-const BufferType = 'Buffer'
 
 abstract class Player {
   watcher = new Watcher<WatcherEmit>()
@@ -168,26 +169,26 @@ export class AudioPlayer extends Player {
     this.playerDom.addEventListener('ended', () => {
       this.watcher.emit('ended')
     })
-    this.playerDom.addEventListener('timeupdate', event => {
+    this.playerDom.addEventListener('timeupdate', () => {
       const { currentTime, duration } = this.playerDom
       this.watcher.emit('timeupdate', { currentTime, duration })
     })
     // 播放发生错误
     this.playerDom.addEventListener('error', error => {
       console.log(error, 'error')
-      // this.watcher.emit('error')
     })
     // 停止播放（例如切换下一个音频，当前音频就会终止播放）
-    this.playerDom.addEventListener('abort', abort => {
+    this.playerDom.addEventListener('abort', () => {
       this.watcher.emit('abort')
     })
     // 加载中止
-    this.playerDom.addEventListener('stalled ', stalled => {
+    this.playerDom.addEventListener('stalled ', () => {
       // this.watcher.emit('stalled')
     })
     // 加载进度
-    this.playerDom.addEventListener('progress', event => {
+    this.playerDom.addEventListener('progress', () => {
       // this.watcher.emit('stalled')
+      console.log('progress')
     })
   }
 
@@ -198,22 +199,6 @@ export class AudioPlayer extends Player {
       this.audioBufferSource = this.audioContext.createBufferSource()
       this.audioBufferSource.buffer = this.playerData.audioBuffer
     }
-  }
-
-  // 根据相对路径创建文件url
-  async createBlobUrl (url: string) {
-    const response = await fetch(url)
-    this.playerData.arrayBuffer = await response.arrayBuffer() // 保存音频对应的arrayBuffer
-
-    // const blob = await response.blob()
-    const blob = new Blob([this.playerData.arrayBuffer], { type: 'audio/mp3' })
-    // 视频资源加载完毕
-    this.sourceLoaded = true
-
-    // await this.createBufferSource()
-
-    // TODO 切换音频时应该销毁该url 或 将该url缓存，关闭页面时再销毁
-    return URL.createObjectURL(blob)
   }
 }
 
@@ -244,7 +229,7 @@ const PlayStrategy = {
     return randomIndex
   },
   // 单曲循环
-  SINGLE (currentIndex: number, totalCount: number, action: 'prev' | 'next'): number {
+  SINGLE (currentIndex: number): number {
     return currentIndex
   },
   // 列表循环
@@ -390,12 +375,6 @@ export class PlayerControls {
   }
 }
 
-const DrawStrategy = {
-  Spectrum () {},
-  Fall () {},
-  Wave () {}
-}
-
 type VisualType = 'Spectrum' | 'Fall' | 'Wave'
 // 可视化
 export class PlayerVisual {
@@ -516,7 +495,5 @@ function getMaxNumber (max: number) {
 }
 
 function isContinue (cur: number, max: number) {
-  if (cur <= 0) return false
-  if (cur >= max - 1) return false
-  return true
+  return !(cur <= 0 || cur >= max - 1)
 }
