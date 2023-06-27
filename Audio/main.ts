@@ -1,7 +1,8 @@
-import { AudioPlayer, PlayerControls, PlayerVisual } from './playerVisual.ts'
-import { getMusicList }  from './musicNameList.ts'
-import { getTimeByStamp } from './tool.ts'
-import { createApp, onMounted, ref, reactive, getCurrentInstance } from 'vue'
+import { AudioPlayer, PlayerControls, PlayerVisual } from './playerVisual'
+import { getMusicList }  from './musicNameList'
+import { getTimeByStamp } from './tool'
+// TODO 现在的vue用法是运行时编译
+import { createApp, onMounted, ref, reactive, getCurrentInstance } from 'vue/dist/vue.esm-bundler.js'
 const musicList = reactive(getMusicList())
 const Component = {
 	template: `

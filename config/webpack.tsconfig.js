@@ -23,7 +23,15 @@ module.exports = {
       },
       {
         test: /\.(ts|tsx)$/,
-        loader: "ts-loader"
+        use: [
+          {
+            loader: "ts-loader",
+            options: {
+              transpileOnly: true
+            }
+          }
+        ],
+        exclude: /node_modules/
       }
     ]
   },
@@ -39,5 +47,10 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.json', '.tsx', '.js']
   },
-  mode: 'development'
+  mode: 'development',
+  devServer: {
+    port: 9000,
+    open: true,
+    hot: true
+  }
 }
