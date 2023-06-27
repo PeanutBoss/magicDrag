@@ -12,7 +12,7 @@ module.exports = {
     rules: [
       {
         test: /\.(jpe?g|.png)$/,
-        type: "asset", // 大于80kb的图片会转为base64
+        type: "asset", // 小于80kb的图片会转为base64
         parser: {
           maxSize: 80 * 1024
         }
@@ -27,6 +27,7 @@ module.exports = {
     new htmlPlugin({
       template: path.resolve(__dirname, './Audio/template/index.html')
     }),
+    // 这里的资源是直接复制过来的，不会经过file-loader处理
     new copyPlugin({
       patterns: [{ from: path.resolve(__dirname, './Audio/assets'), to: path.resolve(__dirname, './dist/assets') }]
     })
