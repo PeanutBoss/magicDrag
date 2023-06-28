@@ -2,7 +2,7 @@
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig.json to read more about this file */
     "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": false, // 不生成js文件
+    "emitDeclarationOnly": true, // 不生成js文件
     "declaration": true, // 不生成生命文件
     "composite": false,
 //    "noEmit": false, // 生成js文件

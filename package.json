@@ -21,8 +21,13 @@
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.3",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.1.5",
     "webpack": "^5.88.0",
     "webpack-cli": "^4.10.0",
     "webpack-dev-server": "^4.15.1"
+  },
+  "dependencies": {
+    "vue": "^3.3.4"
   }
 }
