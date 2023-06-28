@@ -5,8 +5,8 @@ declare class Watcher<T extends string> {
     once(event: T, callback: Function): void;
     emit(event: T, ...rest: any[]): void;
 }
-type WatcherEmit = 'ended' | 'pause' | 'playing' | 'contextCreated' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay';
-type SourceType = 'Media' | 'Buffer';
+declare type WatcherEmit = 'ended' | 'pause' | 'playing' | 'contextCreated' | 'timeupdate' | 'abort' | 'progress' | 'volumeupdate' | 'loadeddata' | 'loadedBuffer' | 'canplay' | 'changePlay' | 'loopWay';
+declare type SourceType = 'Media' | 'Buffer';
 declare abstract class Player {
     private playerType;
     type: 'Media' | 'Buffer';
