@@ -26,7 +26,7 @@ module.exports = {
   plugins: [
     new htmlPlugin({
       template: path.resolve(__dirname, '../Audio/template/index.html'),
-      favicon: path.resolve(__dirname, '../Audio/assets/favicon.ico')
+      // favicon: path.resolve(__dirname, '../Audio/assets/favicon.ico')
     }),
     // 这里的资源是直接复制过来的，不会经过file-loader处理
     new copyPlugin({
