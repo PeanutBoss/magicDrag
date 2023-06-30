@@ -41,13 +41,6 @@ const component = {
 			})
 		})
 
-		function getPercent (val) {
-			return (val * 100).toFixed(1) + '%'
-		}
-		// 根据进度条已播放区域的距离计算当前播放进度（时间）
-		function getCurrentPositionTime (offset) {
-			const percent = offset / $process.offsetWidth
-		}
 		// 点击进度条调整进度
 		function downProcess (event) {
 			// 因为process和processPlayed元素的左侧在同一个位置，所以他们的offsetX相同，无需特殊处理processPlayed

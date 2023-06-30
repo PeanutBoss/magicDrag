@@ -27,6 +27,9 @@ module.exports = {
       template: path.resolve(__dirname, '../movePointer/template.html')
     })
   ],
+  resolve: {
+    extensions: ['.ts', 'json', '.tsx']
+  },
   devServer: {
     open: true,
     port: 9001
