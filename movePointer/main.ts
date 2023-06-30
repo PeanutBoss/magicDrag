@@ -14,12 +14,18 @@
 * */
 
 import { ref, onMounted, createApp } from 'vue/dist/vue.esm-bundler.js'
+import { useMovePointer } from './hook.ts'
 
 const component = {
 	template: `
 		<div class="process" @mousedown="downProcess" ref="process">
-			<div class="process-played" :style="{ width: playProcess }"></div>
+			<div class="process-played"></div>
 			<div class="process-pointer" @mousedown="downPointer"></div>
+		</div>
+
+		<div id="process" class="process">
+			<div id="process-played" class="process-played"></div>
+			<div id="process-pointer" class="process-pointer"></div>
 		</div>
 	`,
 	setup() {
@@ -40,6 +46,13 @@ const component = {
 				skewProcess = $process.offsetLeft - window.scrollX
 			})
 		})
+
+    useMovePointer({
+      process: '#process',
+      processPlayed: '#process-played',
+      processPointer: '#process-pointer',
+      direction: 'X'
+    })
 
 		// 点击进度条调整进度
 		function downProcess (event) {

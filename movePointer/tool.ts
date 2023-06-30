@@ -4,9 +4,9 @@ function isElement (ele: any) {
 
 export function getElement (ele: string | HTMLElement): HTMLElement {
 	if (typeof ele === 'string') {
-		ele = document.querySelector(ele)
+    return document.querySelector(ele)
 	}
-	return <HTMLElement>ele
+	return ele
 }
 
 interface DirectionKey {

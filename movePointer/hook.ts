@@ -1,5 +1,5 @@
 import { onMounted } from 'vue'
-import { getElement, getDirectionKey } from './tool'
+import { getElement, getDirectionKey } from './tool.ts'
 
 interface MovePointerParams {
 	process: string | HTMLElement
@@ -8,7 +8,7 @@ interface MovePointerParams {
 	direction: 'X' | 'Y'
 }
 
-function useMovePointer ({ process, processPlayed, processPointer, direction }: MovePointerParams) {
+export function useMovePointer ({ process, processPlayed, processPointer, direction }: MovePointerParams) {
 	let $process, $processPlayed, $processPointer
 
 	onMounted(() => {
@@ -20,6 +20,7 @@ function useMovePointer ({ process, processPlayed, processPointer, direction }: 
 		window.addEventListener('scroll', () => {
 			skewProcess = $process[startDistanceKey] - window[scrollKey]
 		})
+    addEvent()
 	})
 	const { startDistanceKey, sizeKey, movementKey, offsetKey, scrollKey, clientKey } = getDirectionKey(direction)
 
@@ -27,6 +28,11 @@ function useMovePointer ({ process, processPlayed, processPointer, direction }: 
 	let startOffset = 0 // 按下鼠标时鼠标的相对位置
 	let skewDistance = 0 // 按下鼠标时与（移动后）当前位置的距离
 	let isPress = false // 是否按下
+
+  function addEvent () {
+    $process.addEventListener('mousedown', downProcess)
+    $processPointer.addEventListener('mousedown', downPointer)
+  }
 
 	// 点击进度条调整进度
 	function downProcess (event) {
