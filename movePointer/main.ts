@@ -22,11 +22,6 @@ const component = {
 			<div class="process-played"></div>
 			<div class="process-pointer" @mousedown="downPointer"></div>
 		</div>
-
-		<div id="process" class="process">
-			<div id="process-played" class="process-played"></div>
-			<div id="process-pointer" class="process-pointer"></div>
-		</div>
 	`,
 	setup() {
 		const playProcess: any = ref(0) // 播放进度
@@ -47,13 +42,6 @@ const component = {
 				skewProcess = $process.offsetLeft - window.scrollX
 			})
 		})
-
-    useMovePointer({
-      process: '#process',
-      processPlayed: '#process-played',
-      processPointer: '#process-pointer',
-      direction: 'X'
-    })
 
 		// 点击进度条调整进度
 		function downProcess (event) {
@@ -95,7 +83,6 @@ const component = {
 			// 鼠标当前位置距离文档最左侧的距离 - 按下鼠标时距离文档最左侧的距离 + 按下鼠标时$processPlayed的宽度
 			const currentPointX = event.pageX - startOffset + startLeft
 			setTargetPosition(currentPointX)
-			skewDistance += event.movementX
 		}
 
 		function setTargetPosition (x: number) {

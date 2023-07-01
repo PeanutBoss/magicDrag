@@ -16,6 +16,7 @@ interface DirectionKey {
 	offsetKey: string // 鼠标相对事件元素偏移量
 	clientKey: string // 鼠标距离可视区域的距离
 	movementKey: string // 鼠标相对上次触发事件的偏移量
+	pageKey: string
 }
 const directionKeys = {
 	X: {
@@ -24,7 +25,8 @@ const directionKeys = {
 		scrollKey: 'scrollX',
 		offsetKey: 'offsetX',
 		clientKey: 'clientX',
-		movementKey: 'movementX'
+		movementKey: 'movementX',
+		pageKey: 'pageX'
 	},
 	Y: {
 		startDistanceKey: 'offsetTop',
@@ -32,7 +34,8 @@ const directionKeys = {
 		scrollKey: 'scrollY',
 		offsetKey: 'offsetY',
 		clientKey: 'clientY',
-		movementKey: 'movementY'
+		movementKey: 'movementY',
+		pageKey: 'pageY'
 	}
 }
 

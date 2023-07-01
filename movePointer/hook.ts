@@ -1,4 +1,4 @@
-import { onMounted } from 'vue'
+import {nextTick, onMounted, Ref, ref} from 'vue'
 import { getElement, getDirectionKey } from './tool.ts'
 
 interface MovePointerParams {
@@ -8,31 +8,45 @@ interface MovePointerParams {
 	direction: 'X' | 'Y'
 }
 
-export function useMovePointer ({ process, processPlayed, processPointer, direction }: MovePointerParams) {
+interface MoveDistance {
+	startOffset: Ref<number> // 按下鼠标时鼠标的相对位置
+	startSize: Ref<number> // 按下鼠标时的位置与进度条最左/顶端的距离（按下鼠标时$processPlayed的宽/高度）
+	currentPosition: Ref<number> // pointer相对于左/顶端点的位置（进度）
+	totalSize: Ref<number> // 进度条总宽度/高度
+	isPress: Ref<boolean> // 是否按下
+	pointerOffset: Ref<number> // 指示点的尺寸
+}
+
+export function useMovePointer ({ process, processPlayed, processPointer, direction }: MovePointerParams):MoveDistance {
 	let $process, $processPlayed, $processPointer
 
 	onMounted(() => {
 		$process = getElement(process)
 		$processPlayed = getElement(processPlayed)
 		$processPointer = getElement(processPointer)
-
-		skewProcess = $process[startDistanceKey]
-		window.addEventListener('scroll', () => {
-			skewProcess = $process[startDistanceKey] - window[scrollKey]
-		})
+		totalSize.value = $process.offsetWidth
     addEvent()
+		$process.onmouseenter = getPointerOffset
 	})
-	const { startDistanceKey, sizeKey, movementKey, offsetKey, scrollKey, clientKey } = getDirectionKey(direction)
+	const { startDistanceKey, sizeKey, offsetKey, pageKey } = getDirectionKey(direction)
 
-	let skewProcess = 0 // 进度条左边的相对位置
-	let startOffset = 0 // 按下鼠标时鼠标的相对位置
-	let skewDistance = 0 // 按下鼠标时与（移动后）当前位置的距离
-	let isPress = false // 是否按下
+	const startOffset = ref(0)
+	const startSize = ref(0)
+	const isPress = ref(false)
+	const currentPosition = ref(0)
+	const totalSize = ref(0)
+	const pointerOffset = ref(0)
 
   function addEvent () {
     $process.addEventListener('mousedown', downProcess)
     $processPointer.addEventListener('mousedown', downPointer)
   }
+
+	function getPointerOffset () {
+		nextTick(() => {
+			pointerOffset.value = $processPointer.offsetWidth
+		}).finally()
+	}
 
 	// 点击进度条调整进度
 	function downProcess (event) {
@@ -44,32 +58,51 @@ export function useMovePointer ({ process, processPlayed, processPointer, direct
 	// 点击进度指示点
 	function downPointer (event) {
 		// 计算点击的位置与 processPlayed 右端的距离
-		const targetPosition = event[offsetKey] + $processPlayed[sizeKey] - 4
+		const targetPosition = event[offsetKey] + $processPlayed[sizeKey] - pointerOffset.value / 2
 		setTargetPosition(targetPosition)
 
-		isPress = true
+		isPress.value = true
 		// 鼠标按下时修改相对位置
-		startOffset = event[clientKey]
-		skewDistance = 0
+		startOffset.value = event[pageKey]
+		// 事件目标是$processPointer，它的offsetLeft要比$processPlayed左移了4个单位
+		startSize.value = event.target[startDistanceKey] + pointerOffset.value / 2
 
 		window.onmousemove = movePointer
 		window.onmouseup = () => {
-			isPress = false
+			isPress.value = false
 		}
 	}
 
 	// 移动进度指示点
 	function movePointer (event) {
-		if (!isPress) return
-		skewDistance += event[movementKey]
-		// 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
-		const currentPointX = startOffset - skewProcess + skewDistance
+		if (!isPress.value) return
+		const currentPointX = event[pageKey] - startOffset.value + startSize.value
+		// 保存偏移量
+		currentPosition.value = startSize.value + (event[pageKey] - startOffset.value)
+
+		if (currentPosition.value <= 0) {
+			setTargetPosition(0)
+			return
+		} else if (currentPosition.value >= totalSize.value) {
+			setTargetPosition(totalSize.value)
+			return
+		}
+
 		setTargetPosition(currentPointX)
 	}
 
 	function setTargetPosition (x: number) {
 		// TODO left width
-		$processPointer.style.left = x - 4 + 'px'
+		$processPointer.style.left = x - pointerOffset.value / 2 + 'px'
 		$processPlayed.style.width = x + 'px'
+	}
+
+	return {
+		startOffset,
+		startSize,
+		isPress,
+		currentPosition,
+		totalSize,
+		pointerOffset
 	}
 }
