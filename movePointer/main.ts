@@ -10,6 +10,7 @@
 
 import { createApp } from 'vue/dist/vue.esm-bundler.js'
 import { useMovePointer } from './hook.ts'
+import {onMounted} from "vue";
 
 const component = {
 	template: `
@@ -46,11 +47,13 @@ const component = {
 			direction: 'rtl'
 		})
 
-		useMovePointer({
-			process: '.process_v',
-			processPointer: '.process-pointer_v',
-			processPlayed: '.process-played_v',
-			direction: 'ttb'
+		onMounted(() => {
+			useMovePointer({
+				process: '.process_v',
+				processPointer: document.querySelector('.process-pointer_v'),
+				processPlayed: '.process-played_v',
+				direction: 'ttb'
+			})
 		})
 
 		function formatPercent (count, total) {

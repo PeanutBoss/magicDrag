@@ -1,4 +1,4 @@
-import { nextTick, onMounted, Ref, ref, computed } from 'vue'
+import { nextTick, Ref, ref, computed } from 'vue'
 import { getElement, getDirectionKey } from './tool.ts'
 
 interface MovePointerParams {
@@ -21,13 +21,14 @@ interface MoveDistance {
 export function useMovePointer ({ process, processPlayed, processPointer, direction }: MovePointerParams):MoveDistance {
 	let $process, $processPlayed, $processPointer
 
-	onMounted(() => {
+	// MARK 使用时如果传入dom元素，就有可能是在onMounted钩子里使用的hook，那么再在onMounted中做的初始化操作就不会执行
+	nextTick(() => {
 		$process = getElement(process)
 		$processPlayed = getElement(processPlayed)
 		$processPointer = getElement(processPointer)
 		totalSize.value = $process[sizeKey]
     initElement()
-	})
+	}).finally()
 	const { startDistanceKey, sizeKey, offsetKey, pageKey, stylePosition, styleSize } = getDirectionKey(direction)
 
 	const startOffset = ref(0)
