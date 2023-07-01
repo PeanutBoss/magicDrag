@@ -3,7 +3,8 @@ const htmlPlugin = require('html-webpack-plugin')
 const copyPlugin = require('copy-webpack-plugin')
 
 module.exports = {
-  entry: './Audio/main.ts',
+  // entry: './Audio/main.ts',
+  entry: './Audio/index.ts',
   output: {
     path: path.resolve(__dirname, '../dist'),
     clean: true
