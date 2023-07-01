@@ -32,7 +32,7 @@ const component = {
 		const playProcess: any = ref(0) // 播放进度
 		let skewProcess = 0 // 进度条左边的相对位置
 		let startOffset = 0 // 按下鼠标时鼠标的相对位置
-    let startLeft = 0
+    let startLeft = 0 // 按下鼠标时的位置与进度条最左端的距离（$processPlayed的宽度）
 		let skewDistance = 0 // 按下鼠标时与（移动后）当前位置的距离
 		let isPress = false // 是否按下
 		let $process, $processPlayed, $processPointer
@@ -68,10 +68,10 @@ const component = {
 			setTargetPosition(targetPosition)
 
 			isPress = true
-			// 鼠标按下时修改相对位置
-			// startOffset = event.clientX
+			// 鼠标按下时记录按下的位置
 			startOffset = event.pageX
-      startLeft = event.target.offsetLeft
+			// 事件目标是$processPointer，它的offsetLeft要比$processPlayed左移了4个单位
+      startLeft = event.target.offsetLeft + 4
 
 			skewDistance = 0
 
@@ -83,13 +83,19 @@ const component = {
 		// 移动进度指示点
 		function movePointer (event) {
 			if (!isPress) return
-      // 使用 movement 会有误差
-			// skewDistance += event.movementX
-			// 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
-			// const currentPointX = startOffset - skewProcess + skewDistance
-			const currentPointX = event.pageX - startOffset + startLeft + 4
-      console.log(event.pageX, startOffset, event.pageX - startOffset)
+
+			/*
+			* MARK
+			*  skewDistance += event.movementX
+			*  鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
+			*  const currentPointX = startOffset - skewProcess + skewDistance
+			*  console.log(event.clientX - startOffset, skewDistance, 'movementX在部分机型/浏览器上有误差')
+			* */
+
+			// 鼠标当前位置距离文档最左侧的距离 - 按下鼠标时距离文档最左侧的距离 + 按下鼠标时$processPlayed的宽度
+			const currentPointX = event.pageX - startOffset + startLeft
 			setTargetPosition(currentPointX)
+			skewDistance += event.movementX
 		}
 
 		function setTargetPosition (x: number) {
