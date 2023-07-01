@@ -24,6 +24,11 @@ const component = {
 			<div class="process-played"></div>
 			<div class="process-pointer"></div>
 		</div>
+
+    <div class="process_v">
+			<div class="process-played_v"></div>
+			<div class="process-pointer_v"></div>
+    </div>
 	`,
 	setup() {
 		const {
@@ -38,7 +43,14 @@ const component = {
 			process: '.process',
 			processPointer: '.process-pointer',
 			processPlayed: '.process-played',
-			direction: 'X'
+			direction: 'rtl'
+		})
+
+		useMovePointer({
+			process: '.process_v',
+			processPointer: '.process-pointer_v',
+			processPlayed: '.process-played_v',
+			direction: 'ttb'
 		})
 
 		function formatPercent (count, total) {

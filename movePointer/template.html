@@ -48,6 +48,43 @@
             border-radius: 50%;
             background-color: gray;
         }
+
+        .process_v {
+            height: 350px;
+            width: 4px;
+            background-color: rgb(229, 229, 229);
+            margin: 15px auto 0;
+            position: relative;
+            border-radius: 2px;
+        }
+        .process-played_v {
+            height: 0;
+            width: 4px;
+            background-color: gray;
+        }
+        .process_v:hover {
+            width: 6px;
+            border-radius: 3px;
+            box-shadow: 0 0 5px rgb(229, 229, 229);
+        }
+        .process_v:hover > .process-played_v {
+            width: 6px;
+            border-radius: 3px;
+            box-shadow: 0 0 5px gray;
+        }
+        .process_v:hover > .process-pointer_v {
+            display: block;
+        }
+        .process-pointer_v {
+            display: none;
+            position: absolute;
+            top: -4px;
+            right: -1px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: gray;
+        }
     </style>
 </head>
 <body>

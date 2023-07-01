@@ -5,7 +5,7 @@ interface MovePointerParams {
 	process: string | HTMLElement
 	processPlayed: string | HTMLElement
 	processPointer: string | HTMLElement
-	direction: 'X' | 'Y'
+	direction: 'ltr' | 'rtl' | 'ttb' | 'btt'
 }
 
 interface MoveDistance {
@@ -26,10 +26,9 @@ export function useMovePointer ({ process, processPlayed, processPointer, direct
 		$processPlayed = getElement(processPlayed)
 		$processPointer = getElement(processPointer)
 		totalSize.value = $process[sizeKey]
-    addEvent()
-		$process.onmouseenter = getPointerOffset
+    initElement()
 	})
-	const { startDistanceKey, sizeKey, offsetKey, pageKey } = getDirectionKey(direction)
+	const { startDistanceKey, sizeKey, offsetKey, pageKey, stylePosition, styleSize } = getDirectionKey(direction)
 
 	const startOffset = ref(0)
 	const startSize = ref(0)
@@ -39,9 +38,11 @@ export function useMovePointer ({ process, processPlayed, processPointer, direct
 	const pointSize = ref(0)
 	const changeSize = computed(() => currentPosition.value - startSize.value)
 
-  function addEvent () {
+  function initElement () {
     $process.addEventListener('mousedown', downProcess)
     $processPointer.addEventListener('mousedown', downPointer)
+		$process.onmouseenter = getPointerOffset;
+		['rtl', 'btt'].includes(direction) && ($process.style.rotate = '180deg')
   }
 
 	function getPointerOffset () {
@@ -67,13 +68,13 @@ export function useMovePointer ({ process, processPlayed, processPointer, direct
 		) return
 		// 计算点击的位置与 processPlayed 右端的距离
 		const targetPosition = event[offsetKey] + $processPlayed[sizeKey] - pointSize.value / 2
+		// 事件目标是$processPointer，它的offsetLeft要比$processPlayed左移了 pointSize.value/2 个单位
+		startSize.value = event.target[startDistanceKey] + pointSize.value / 2
 		setTargetPosition(targetPosition)
 
 		isPress.value = true
 		// 鼠标按下时修改相对位置
 		startOffset.value = event[pageKey]
-		// 事件目标是$processPointer，它的offsetLeft要比$processPlayed左移了 pointSize.value/2 个单位
-		startSize.value = event.target[startDistanceKey] + pointSize.value / 2
 
 		window.onmousemove = movePointer
 		window.onmouseup = () => {
@@ -84,24 +85,36 @@ export function useMovePointer ({ process, processPlayed, processPointer, direct
 	// 移动进度指示点
 	function movePointer (event) {
 		if (!isPress.value) return
-		const currentPointX = event[pageKey] - startOffset.value + startSize.value
+		// 方向正常
+		// const currentPointOffset = event[pageKey] - startOffset.value + startSize.value
+		// 方向反转
+		// const currentPointOffset = totalSize.value - event[pageKey] + $process[startDistanceKey]
+		const currentPointOffset = getPointSize(event)
 
-		if (currentPointX <= 0) {
+		if (currentPointOffset <= 0) {
 			setTargetPosition(0)
 			return
-		} else if (currentPointX >= totalSize.value) {
+		} else if (currentPointOffset >= totalSize.value) {
 			setTargetPosition(totalSize.value)
 			return
 		}
 
-		setTargetPosition(currentPointX)
+		setTargetPosition(currentPointOffset)
 	}
 
 	function setTargetPosition (x: number) {
 		currentPosition.value = x
-		// TODO left width
-		$processPointer.style.left = x - pointSize.value / 2 + 'px'
-		$processPlayed.style.width = x + 'px'
+		$processPointer.style[stylePosition] = x - pointSize.value / 2 + 'px'
+		$processPlayed.style[styleSize] = x + 'px'
+	}
+
+	// 获取点的坐标
+	function getPointSize (event) {
+		if (['ltr', 'ttb'].includes(direction)) {
+			return event[pageKey] - startOffset.value + startSize.value
+		} else {
+			return totalSize.value - event[pageKey] + $process[startDistanceKey]
+		}
 	}
 
 	return {

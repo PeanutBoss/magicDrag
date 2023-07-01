@@ -16,7 +16,9 @@ interface DirectionKey {
 	offsetKey: string // 鼠标相对事件元素偏移量
 	clientKey: string // 鼠标距离可视区域的距离
 	movementKey: string // 鼠标相对上次触发事件的偏移量
-	pageKey: string
+	pageKey: string // 鼠标相对文档最左/顶端的距离
+	stylePosition: string // 元素定位
+	styleSize: string // 元素尺寸
 }
 const directionKeys = {
 	X: {
@@ -26,7 +28,9 @@ const directionKeys = {
 		offsetKey: 'offsetX',
 		clientKey: 'clientX',
 		movementKey: 'movementX',
-		pageKey: 'pageX'
+		pageKey: 'pageX',
+		stylePosition: 'left',
+		styleSize: 'width'
 	},
 	Y: {
 		startDistanceKey: 'offsetTop',
@@ -35,10 +39,14 @@ const directionKeys = {
 		offsetKey: 'offsetY',
 		clientKey: 'clientY',
 		movementKey: 'movementY',
-		pageKey: 'pageY'
+		pageKey: 'pageY',
+		stylePosition: 'top',
+		styleSize: 'height'
 	}
 }
 
-export function getDirectionKey (direction: 'X' | 'Y'): DirectionKey {
-	return directionKeys[direction]
+export function getDirectionKey (direction: 'ltr' | 'rtl' | 'ttb' | 'btt'): DirectionKey {
+	if (['ltr', 'rtl'].includes(direction)) {
+		return directionKeys['X']
+	} else return directionKeys['Y']
 }
