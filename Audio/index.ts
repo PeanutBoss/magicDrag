@@ -68,9 +68,9 @@ const Component = {
           </div>
         </div>
         <div class="player-footer-other">
-          <div class="volume-process" @mousedown="downVolumeProcess" ref="volumeProcess">
-            <div class="volume-process-played" :style="{ height: volumeProcess }"></div>
-            <div class="volume-process-pointer" @mousedown="downVolumePointer" :style="{ top: 'calc(' + pointTop + ' - 4px)' }"></div>
+          <div class="volume-process">
+            <div class="volume-process-played" ></div>
+            <div class="volume-process-pointer"></div>
           </div>
         </div>
       </div>
@@ -93,15 +93,15 @@ const Component = {
 
 		controls.start()
 
-		onMounted(() => {
-			// 获取进度条最左端与窗口的距离
-			skewVolumeProcess = (instance.$refs.volumeProcess as any).offsetTop
-			// 滚动条滚动时重新计算（进度条最左端与窗口的距离可能会发生变化）
-			window.addEventListener('scroll', () => {
-				skewVolumeProcess = (instance.$refs.volumeProcess as any).offsetTop
-			})
-			volumeProcessPlayed = document.querySelector('.volume-process-played')
-		})
+		// onMounted(() => {
+		// 	// 获取进度条最左端与窗口的距离
+		// 	skewVolumeProcess = (instance.$refs.volumeProcess as any).offsetTop
+		// 	// 滚动条滚动时重新计算（进度条最左端与窗口的距离可能会发生变化）
+		// 	window.addEventListener('scroll', () => {
+		// 		skewVolumeProcess = (instance.$refs.volumeProcess as any).offsetTop
+		// 	})
+		// 	volumeProcessPlayed = document.querySelector('.volume-process-played')
+		// })
 
 		function watchAction() {
 			/*
@@ -128,8 +128,7 @@ const Component = {
         currentPosition.value = currentTime ? currentTime / totalTime.value * totalSize.value : 0
 			})
 			player.watcher.on('volumeupdate', ({ volume }) => {
-				volumeProcess.value = getPercent(volume / 1)
-				pointTop.value = getPercent(1 - volume)
+        volumePosition.value = volume / 1 * volumeSize.value
 			})
 			player.watcher.on('changePlay', ({ playIndex }) => {
 				audioIndex.value = playIndex
@@ -148,14 +147,11 @@ const Component = {
 			visual.toggleVisualType()
 		}
 
-		// const playProcess: any = ref(0) // 播放进度
 		const totalTime = ref(0) // 音频总时长
 		const playedTime = ref(0)
-		// let skewProcess = 0 // 进度条左边的相对位置
 		let startOffset = 0 // 按下鼠标时鼠标的相对位置
 		let skewDistance = 0 // 按下鼠标时与当前位置的距离
 		let pauseBeforeStatus // 调整进度时需要暂停，用来记录调整进度之前的状态
-		// let isPress = false // 是否按下
 
     const {
       currentPosition,
@@ -172,123 +168,37 @@ const Component = {
       controls.changePlayProcess(currentPosition.value / totalSize.value * totalTime.value)
       controls[pointPress ? 'pause' : 'play']()
     })
-
     watchEffect(() => {
       playedTime.value = currentPosition.value / totalSize.value * totalTime.value
     }, { flush: 'post' })
 
-		function getPercent (val) {
-			return (val * 100).toFixed(1) + '%'
-		}
-		// 根据进度条已播放区域的距离计算当前播放进度（时间）
-		function getCurrentPositionTime (offset) {
-			const percent = offset / (instance.$refs.process as any).offsetWidth
-			return percent * totalTime.value
-		}
-		// 点击进度条调整进度
-		function downProcess (event) {
-			if (event.target.className === 'process-pointer') return
-			const targetTime = getCurrentPositionTime(event.offsetX)
-			controls.changePlayProcess(targetTime)
-		}
-		// 点击进度指示点
-		function downPointer (event) {
-			// 调整进度时暂停播放，记录播放前的状态
-			pauseBeforeStatus = isPlaying.value
-			controls.pause()
-
-			// isPress = true
-			// 鼠标按下时修改相对位置
-			startOffset = event.clientX
-			skewDistance = 0
-
-			window.onmousemove = movePointer
-			window.onmouseup = () => {
-				// isPress = false
-				// 如果调整进度前是播放中状态，继续播放
-				if (pauseBeforeStatus) controls.play()
-				// 然后重置状态
-				pauseBeforeStatus = false
-			}
-		}
-		// 移动进度指示点
-		function movePointer (event) {
-			// if (!isPress) return
-			skewDistance += event.movementX
-			// 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
-			// const currentPointX = startOffset - skewProcess + skewDistance
-			// const targetTime = getCurrentPositionTime(currentPointX)
-			// controls.changePlayProcess(targetTime)
-		}
-
-		const volumeProcess = ref('50%') // 当前音量
-		const pointTop = ref('50%') // 计算音量指示点的位置
-		let skewVolumeProcess = 0 // 进度条左边的相对位置
-		let startVolumeOffset = 0 // 按下鼠标时鼠标的相对位置
-		let skewVolumeDistance = 0 // 按下鼠标时与当前位置的距离
-		let isVolumePress = false // 是否按下
-		let volumeProcessPlayed
-		// 根据进度条信息获取当前音量
-		function getCurrentPositionVolume (offset, maxVolume = 1) {
-			const percent = offset / (instance.$refs.volumeProcess as any).offsetHeight
-			const volume = 1 - percent
-			if (volume <= 0) return 0
-			if (volume >= 1) return 1
-			return volume * maxVolume
-		}
-		// 点击音量进度条调整音量
-		function downVolumeProcess (event) {
-			let offsetY = event.offsetY
-			// 目标对象是音量的指示点时需要修改offsetY
-			if (event.target.className === 'volume-process-pointer') {
-				offsetY = 50 - (volumeProcessPlayed.offsetHeight + (4 - event.offsetY))
-			}
-			// 目标对象是已填充的进度条时需要修改offsetY
-			if (event.target.className === 'volume-process-played') {
-				offsetY = 50 - (event.target.offsetHeight - offsetY)
-			}
-			const targetVolume = getCurrentPositionVolume(offsetY)
-			controls.controlVolume(targetVolume)
-		}
-		// 点击音量进度指示点
-		function downVolumePointer (event) {
-			isVolumePress = true
-			// 鼠标按下时修改相对位置
-			startOffset = event.clientY
-			skewDistance = 0
-
-			window.onmousemove = moveVolumePointer
-			window.onmouseup = () => {
-				isVolumePress = false
-			}
-		}
-		// 移动音量进度指示点
-		function moveVolumePointer (event) {
-			if (!isVolumePress) return
-			skewVolumeDistance += event.movementY
-			// 鼠标点击的位置 - 进度条左端距浏览器左边窗口的距离 + 鼠标当前与按下时的偏移量（正负）
-			const currentPointY = startOffset - skewVolumeProcess + skewVolumeDistance
-			const targetVolume = getCurrentPositionVolume(currentPointY)
-			controls.controlVolume(targetVolume)
-		}
+    const {
+      currentPosition: volumePosition,
+      totalSize: volumeSize,
+      pressState: volumeState
+    } = useMovePointer({
+      process: '.volume-process',
+      processPlayed: '.volume-process-played',
+      processPointer: '.volume-process-pointer',
+      direction: 'btt',
+      moveCallBack (event) {
+        controls.controlVolume(volumePosition.value / volumeSize.value)
+      }
+    })
+    watch(volumeState, () => {
+      controls.controlVolume(volumePosition.value / volumeSize.value)
+    })
 
 		return {
 			isPlaying,
 			musicList,
 			audioIndex,
-			// playProcess,
 			controls,
 			loopWayIcon,
-			volumeProcess,
-			pointTop,
 			totalTime,
 			playedTime,
 			visualTypeIcon,
 
-			downProcess,
-			downPointer,
-			downVolumeProcess,
-			downVolumePointer,
 			getTimeByStamp,
 			toggleVisualType
 		}

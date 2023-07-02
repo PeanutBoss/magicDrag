@@ -6,7 +6,8 @@ interface MovePointerParams {
 	process: string | HTMLElement
 	processPlayed: string | HTMLElement
 	processPointer: string | HTMLElement
-	direction: 'ltr' | 'rtl' | 'ttb' | 'btt'
+	direction: 'ltr' | 'rtl' | 'ttb' | 'btt',
+  moveCallBack?: (e: Event) => void
 }
 
 type PressState = {
@@ -26,7 +27,7 @@ interface MoveDistance {
   readonly pressState: PressState // 进度条点击状态
 }
 
-export default function useMovePointer ({ process, processPlayed, processPointer, direction }: MovePointerParams):MoveDistance {
+export default function useMovePointer ({ process, processPlayed, processPointer, direction, moveCallBack }: MovePointerParams):MoveDistance {
 	let $process, $processPlayed, $processPointer
 
 	// MARK 使用时如果传入dom元素，就有可能是在onMounted钩子里使用的hook，那么再在onMounted中做的初始化操作就不会执行
@@ -55,15 +56,19 @@ export default function useMovePointer ({ process, processPlayed, processPointer
     $process.addEventListener('mousedown', downProcess)
     $process.addEventListener('mouseup', upProcess)
     $processPointer.addEventListener('mousedown', downPointer)
-		$process.onmouseenter = getPointerOffset;
+    getPointerOffset();
 		['rtl', 'btt'].includes(direction) && ($process.style.rotate = '180deg')
     $processPlayed.style[styleSize] = 0
   }
 
 	function getPointerOffset () {
-		nextTick(() => {
-			pointSize.value = $processPointer[sizeKey]
-		}).finally()
+    let ele = document.createElement('div')
+    ele.className = $processPointer.className
+    ele.style.display = 'block'
+    ele.style.visibility = 'hidden'
+    document.body.appendChild(ele)
+    pointSize.value = ele[sizeKey]
+    ele = null
 	}
 
 	// 点击进度条调整进度
@@ -111,10 +116,6 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 	// 移动进度指示点
 	function movePointer (event) {
 		if (!pressState.pointPress) return
-		// 方向正常
-		// const currentPointOffset = event[pageKey] - startOffset.value + startSize.value
-		// 方向反转
-		// const currentPointOffset = totalSize.value - event[pageKey] + $process[startDistanceKey]
 		const currentPointOffset = getPointSize(event)
 
 		if (currentPointOffset <= 0) {
@@ -126,6 +127,7 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 		}
 
 		setTargetPosition(currentPointOffset)
+    moveCallBack(event)
 	}
 
 	function setTargetPosition (x: number) {
@@ -143,11 +145,12 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 		}
 	}
 
+  // TODO 反向
   watch(currentPosition, (position) => {
     if (position < 0 || position > totalSize.value) return
     currentPosition.value = position
     $processPlayed.style[styleSize] = position + 'px'
-    $processPointer.style[stylePosition] = position - 4 + 'px'
+    $processPointer.style[stylePosition] = position - pointSize.value / 2 + 'px'
   })
 
 	return {
