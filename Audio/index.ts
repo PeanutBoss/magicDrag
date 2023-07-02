@@ -3,6 +3,7 @@ import { getMusicList }  from './musicNameList'
 import { getTimeByStamp } from './tool'
 import { createApp, onMounted, ref, reactive, getCurrentInstance, watch } from 'vue/dist/vue.esm-bundler.js'
 import useMovePointer from '../movePointer/hook.ts'
+import {watchEffect} from "vue";
 const musicList = reactive(getMusicList())
 const Component = {
 	template: `
@@ -121,12 +122,10 @@ const Component = {
 				isPlaying.value = false
 				playedTime.value = 0
 				totalTime.value = 0
-				// playProcess.value = 0
 			})
 			player.watcher.on('timeupdate', ({ currentTime, duration }) => {
-				// const val = currentTime / duration
-				// playProcess.value = getPercent(val)
 				playedTime.value = currentTime
+        currentPosition.value = currentTime ? currentTime / totalTime.value * totalSize.value : 0
 			})
 			player.watcher.on('volumeupdate', ({ volume }) => {
 				volumeProcess.value = getPercent(volume / 1)
@@ -161,18 +160,22 @@ const Component = {
     const {
       currentPosition,
       totalSize,
-      isPress
+      pressState
     } = useMovePointer({
       process: '.process',
       processPlayed: '.process-played',
       processPointer: '.process-pointer',
       direction: 'ltr'
     })
-    watch([currentPosition, isPress], ([position, isPress]) => {
-      const currentTime = totalTime.value * currentPosition.value / totalSize.value
-      controls.changePlayProcess(currentTime)
-      controls[isPress ? 'pause' : 'play']()
+    // 通过监听是否按下指示点判断是否更新播放进度
+    watch(pressState, ({ processState, playedPress, pointPress }) => {
+      controls.changePlayProcess(currentPosition.value / totalSize.value * totalTime.value)
+      controls[pointPress ? 'pause' : 'play']()
     })
+
+    watchEffect(() => {
+      playedTime.value = currentPosition.value / totalSize.value * totalTime.value
+    }, { flush: 'post' })
 
 		function getPercent (val) {
 			return (val * 100).toFixed(1) + '%'
