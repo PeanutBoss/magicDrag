@@ -15,8 +15,10 @@ import {onMounted} from "vue";
 const component = {
 	template: `
 		<div style="text-align: center">
-			状态：{{ isPress ? '可移动' : '不可移动' }}<br>
-			当前位置：{{ currentPosition }}<br>
+			状态：<template v-if="pressState.pointPress">按下指示点</template>
+      <template v-if="pressState.processPress">按下进度条</template>
+      <template v-if="pressState.playedPress">按下内容进度条</template><br>
+			当前位置：<input type="text" v-model="currentPosition"><br>
 			当前进度：{{ (currentPosition / totalSize * 100).toFixed(2) + '%' }}<br>
 			本次进度变化：{{ formatPercent(changeSize, totalSize) }}<br>
 		</div>
@@ -35,7 +37,7 @@ const component = {
 		const {
 			startOffset,
 			startSize,
-			isPress,
+			pressState,
 			totalSize,
 			currentPosition,
 			changeSize
@@ -62,7 +64,7 @@ const component = {
 		return {
 			startOffset,
 			startSize,
-			isPress,
+      pressState,
 			totalSize,
 			currentPosition,
 			formatPercent,

@@ -127,7 +127,7 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 		}
 
 		setTargetPosition(currentPointOffset)
-    moveCallBack(event)
+    moveCallBack?.(event)
 	}
 
 	function setTargetPosition (x: number) {
@@ -147,11 +147,17 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 
   // TODO 反向
   watch(currentPosition, (position) => {
-    if (position < 0 || position > totalSize.value) return
+    const lt0 = position < 0
+    const gtTotal = position > totalSize.value
+    lt0 && (position = 0)
+    gtTotal && (position = totalSize.value)
+    setCurrentPosition(position)
+  })
+  function setCurrentPosition (position: number) {
     currentPosition.value = position
     $processPlayed.style[styleSize] = position + 'px'
     $processPointer.style[stylePosition] = position - pointSize.value / 2 + 'px'
-  })
+  }
 
 	return {
     startOffset: readonly(startOffset),
