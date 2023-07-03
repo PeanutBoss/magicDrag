@@ -145,13 +145,13 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 		}
 	}
 
-  // TODO currentPosition变化
+  // TODO move状态不应该更新startSize
   watch(currentPosition, (position, oldPos) => {
     const lt0 = position < 0
     const gtTotal = position > totalSize.value
     lt0 && (position = 0)
     gtTotal && (position = totalSize.value)
-    startSize.value = oldPos
+    // startSize.value = oldPos
     setCurrentPosition(position)
   })
   function setCurrentPosition (position: number) {
