@@ -77,7 +77,6 @@ const Component = {
     </div>
     `,
 	setup () {
-		const instance = getCurrentInstance().proxy
 		const audioIndex = ref(0)
 		let isPlaying = ref(false)
 
@@ -92,16 +91,6 @@ const Component = {
 		watchAction()
 
 		controls.start()
-
-		// onMounted(() => {
-		// 	// 获取进度条最左端与窗口的距离
-		// 	skewVolumeProcess = (instance.$refs.volumeProcess as any).offsetTop
-		// 	// 滚动条滚动时重新计算（进度条最左端与窗口的距离可能会发生变化）
-		// 	window.addEventListener('scroll', () => {
-		// 		skewVolumeProcess = (instance.$refs.volumeProcess as any).offsetTop
-		// 	})
-		// 	volumeProcessPlayed = document.querySelector('.volume-process-played')
-		// })
 
 		function watchAction() {
 			/*
@@ -148,10 +137,7 @@ const Component = {
 		}
 
 		const totalTime = ref(0) // 音频总时长
-		const playedTime = ref(0)
-		let startOffset = 0 // 按下鼠标时鼠标的相对位置
-		let skewDistance = 0 // 按下鼠标时与当前位置的距离
-		let pauseBeforeStatus // 调整进度时需要暂停，用来记录调整进度之前的状态
+		const playedTime = ref(0) // 已播放时长
 
     const {
       currentPosition,
