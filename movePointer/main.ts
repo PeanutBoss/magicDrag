@@ -45,7 +45,7 @@ const component = {
 			process: '.process',
 			processPointer: '.process-pointer',
 			processPlayed: '.process-played',
-			direction: 'rtl'
+			direction: 'ltr'
 		})
 
 		onMounted(() => {
@@ -53,7 +53,7 @@ const component = {
 				process: '.process_v',
 				processPointer: document.querySelector('.process-pointer_v') as HTMLDivElement,
 				processPlayed: '.process-played_v',
-				direction: 'ttb'
+				direction: 'btt'
 			})
 		})
 

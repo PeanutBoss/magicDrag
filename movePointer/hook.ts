@@ -1,4 +1,11 @@
-import {nextTick, ref, computed, readonly, reactive, watch} from 'vue'
+// TODO 进度条角度在 0 ~ 90deg 计算尺寸的策略
+
+/*
+* MARK 通过 moveCallback 可以注册移动指示点的操作
+*  各个元素的状态通过监听 pressState 判断
+* */
+
+import { nextTick, ref, computed, readonly, reactive, watch } from 'vue'
 import type { Ref } from 'vue'
 import { getElement, getDirectionKey } from './tool.ts'
 
@@ -6,7 +13,7 @@ interface MovePointerParams {
 	process: string | HTMLElement
 	processPlayed: string | HTMLElement
 	processPointer: string | HTMLElement
-	direction: 'ltr' | 'rtl' | 'ttb' | 'btt',
+	direction: 'ltr' | 'rtl' | 'ttb' | 'btt'
   moveCallBack?: (e: Event) => void
 }
 
@@ -30,7 +37,7 @@ interface MoveDistance {
 export default function useMovePointer ({ process, processPlayed, processPointer, direction, moveCallBack }: MovePointerParams):MoveDistance {
 	let $process, $processPlayed, $processPointer
 
-	// MARK 使用时如果传入dom元素，就有可能是在onMounted钩子里使用的hook，那么再在onMounted中做的初始化操作就不会执行
+	// 使用时如果传入dom元素，就有可能是在onMounted钩子里使用的hook，那么再在onMounted中做的初始化操作就不会执行
 	nextTick(() => {
 		$process = getElement(process)
 		$processPlayed = getElement(processPlayed)
@@ -145,13 +152,13 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 		}
 	}
 
-  // TODO move状态不应该更新startSize
   watch(currentPosition, (position, oldPos) => {
     const lt0 = position < 0
     const gtTotal = position > totalSize.value
     lt0 && (position = 0)
     gtTotal && (position = totalSize.value)
-    // startSize.value = oldPos
+    // move状态不更新startSize（move开始和结束通过监听currentPosition更新startSize）
+    !pressState.pointPress && (startSize.value = oldPos)
     setCurrentPosition(position)
   })
   function setCurrentPosition (position: number) {
