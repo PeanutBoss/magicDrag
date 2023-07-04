@@ -132,7 +132,7 @@ export default function useMovePointer ({ process, processPlayed, processPointer
 			setTargetPosition(totalSize.value)
 			return
 		}
-
+    console.log(currentPointOffset)
 		setTargetPosition(currentPointOffset)
     moveCallBack?.(event)
 	}

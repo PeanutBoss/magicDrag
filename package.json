@@ -11,7 +11,8 @@
     "build:ts": "webpack --config ./config/webpack.tsconfig.js",
     "serve:ts": "webpack serve --config ./config/webpack.tsconfig.js",
     "build:move": "webpack --config ./config/movePointer.config.js",
-    "serve:move": "webpack serve --config ./config/movePointer.config.js"
+    "serve:move": "webpack serve --config ./config/movePointer.config.js",
+    "serve:drag": "webpack serve --config ./config/dragResize.config.js"
   },
   "repository": {
     "type": "git",
