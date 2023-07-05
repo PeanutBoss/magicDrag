@@ -1,8 +1,8 @@
-import { reactive, ref, toRef, onMounted } from "vue/dist/vue.esm-bundler.js";
+import { reactive, ref, toRef, nextTick } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
 
-export default function useMovePoint (selector: string | HTMLElement) {
-	onMounted(() => {
+export default function useMovePoint (selector: string | HTMLElement, moveCallback?) {
+  nextTick(() => {
 		$ele = getElement(selector)
 		$ele.onmousedown = mouseDown
 	})
@@ -25,6 +25,8 @@ export default function useMovePoint (selector: string | HTMLElement) {
 		y: 0
 	})
 	function mouseDown (event) {
+    // 取消文本选中
+    event.preventDefault()
 		isPress.value = true
 		movement.x = 0
 		movement.y = 0
@@ -41,6 +43,7 @@ export default function useMovePoint (selector: string | HTMLElement) {
 		movement.y = event.pageY - startOffset.y
 		$ele.style.left = startCoordinate.x + movement.x + 'px'
 		$ele.style.top = startCoordinate.y + movement.y + 'px'
+    moveCallback?.(movement.x, movement.y)
 	}
 	function mouseUp () {
 		isPress.value = false
@@ -51,6 +54,7 @@ export default function useMovePoint (selector: string | HTMLElement) {
 		left: toRef(startCoordinate, 'x'),
 		top: toRef(startCoordinate, 'y'),
 		movementX: toRef(movement, 'x'),
-		movementY: toRef(movement, 'y')
+		movementY: toRef(movement, 'y'),
+    isPress
 	}
 }

@@ -80,6 +80,8 @@ export default function useMoveProcess ({ process, processPlayed, processPointer
 
 	// 点击进度条调整进度
 	function downProcess (event) {
+    // 取消文本选中
+    event.preventDefault()
 		// 因为process和processPlayed元素的左侧在同一个位置，所以他们的offsetX相同，无需特殊处理processPlayed
 		if (event.target === $processPointer) return
     if (event.target === $processPlayed) {
@@ -99,6 +101,8 @@ export default function useMoveProcess ({ process, processPlayed, processPointer
 
 	// 点击进度指示点
 	function downPointer (event) {
+    // 取消文本选中
+    event.preventDefault()
 		// 不能小于0或大于totalSize
 		if (
 			currentPosition.value + event[offsetKey] < pointSize.value / 2
