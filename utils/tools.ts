@@ -9,3 +9,10 @@ export function throttle (fn: any, delay: number) {
 		}, delay)
 	}
 }
+
+export function getElement (ele: string | HTMLElement): HTMLElement {
+	if (typeof ele === 'string') {
+		return document.querySelector(ele)
+	}
+	return ele
+}

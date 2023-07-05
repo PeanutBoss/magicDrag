@@ -14,7 +14,6 @@
 * */
 
 import { ref, onMounted, createApp } from 'vue/dist/vue.esm-bundler.js'
-import { useMovePointer } from './hook.ts'
 
 const component = {
 	template: `

@@ -2,7 +2,7 @@ import { AudioPlayer, PlayerControls, PlayerVisual } from './playerVisual'
 import { getMusicList }  from './musicNameList'
 import { getTimeByStamp } from './tool'
 import { createApp, onMounted, ref, reactive, getCurrentInstance, watch } from 'vue/dist/vue.esm-bundler.js'
-import useMovePointer from '../movePointer/hook.ts'
+import useMoveProcess from '../moveProcess/useMoveProcess.ts'
 import {watchEffect} from "vue";
 const musicList = reactive(getMusicList())
 const Component = {
@@ -143,7 +143,7 @@ const Component = {
       currentPosition,
       totalSize,
       pressState
-    } = useMovePointer({
+    } = useMoveProcess({
       process: '.process',
       processPlayed: '.process-played',
       processPointer: '.process-pointer',
@@ -162,7 +162,7 @@ const Component = {
       currentPosition: volumePosition,
       totalSize: volumeSize,
       pressState: volumeState
-    } = useMovePointer({
+    } = useMoveProcess({
       process: '.volume-process',
       processPlayed: '.volume-process-played',
       processPointer: '.volume-process-pointer',

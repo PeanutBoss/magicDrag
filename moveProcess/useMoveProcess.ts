@@ -34,7 +34,7 @@ interface MoveDistance {
   readonly pressState: PressState // 进度条点击状态
 }
 
-export default function useMovePointer ({ process, processPlayed, processPointer, direction, moveCallBack }: MovePointerParams):MoveDistance {
+export default function useMoveProcess ({ process, processPlayed, processPointer, direction, moveCallBack }: MovePointerParams):MoveDistance {
 	let $process, $processPlayed, $processPointer
 
 	// 使用时如果传入dom元素，就有可能是在onMounted钩子里使用的hook，那么再在onMounted中做的初始化操作就不会执行

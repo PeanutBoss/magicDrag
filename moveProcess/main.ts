@@ -9,7 +9,7 @@
 * */
 
 import { createApp } from 'vue/dist/vue.esm-bundler.js'
-import useMovePointer from './hook.ts'
+import useMoveProcess from './useMoveProcess.ts'
 import {onMounted} from "vue";
 
 const component = {
@@ -41,7 +41,7 @@ const component = {
 			totalSize,
 			currentPosition,
 			changeSize
-		} = useMovePointer({
+		} = useMoveProcess({
 			process: '.process',
 			processPointer: '.process-pointer',
 			processPlayed: '.process-played',
@@ -49,7 +49,7 @@ const component = {
 		})
 
 		onMounted(() => {
-			useMovePointer({
+			useMoveProcess({
 				process: '.process_v',
 				processPointer: document.querySelector('.process-pointer_v') as HTMLDivElement,
 				processPlayed: '.process-played_v',
