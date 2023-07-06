@@ -6,6 +6,8 @@ import {watch} from "vue";
 export default function useDragResize (targetSelector: string | HTMLElement) {
 	onMounted(() => {
 		initTarget()
+
+    createDragPoint($target, 10)
 	})
 
   let $target
@@ -21,14 +23,11 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     for (const rectKey in initialTarget) {
       initialTarget[rectKey] = rect[rectKey]
     }
-    console.log({ ...initialTarget }, 'init')
 	}
 
   /*
-  * MARK 将元素的 left, top, width, height 作为响应式数据使用
-  *  轮廓点的位置信息依赖响应式数据
+  * TODO 滚动条问题 边界问题
   * */
-
   const pointElements = {
     lt: null,
     lb: null,
@@ -47,84 +46,85 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       target.style.height = height - offsetY + 'px'
     },
     lb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX
-      target.style.top = top + offsetY
-      target.style.width = width + offsetX
-      target.style.height = height + offsetY
+      target.style.left = left + offsetX + 'px'
+      target.style.width = width - offsetX + 'px'
+      target.style.height = height + offsetY + 'px'
     },
     rt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX
-      target.style.top = top + offsetY
-      target.style.width = width + offsetX
-      target.style.height = height + offsetY
+      target.style.top = top + offsetY + 'px'
+      target.style.width = width + offsetX + 'px'
+      target.style.height = height - offsetY + 'px'
     },
     rb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
       target.style.width = width + offsetX
       target.style.height = height + offsetY
     },
     t (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.top = top + offsetY
-      target.style.height = height + offsetY
+      target.style.top = top + offsetY + 'px'
+      target.style.height = height - offsetY + 'px'
     },
     b (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.top = top + offsetY
       target.style.height = height + offsetY
     },
     l (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX
-      target.style.width = width + offsetX
+      target.style.left = left + offsetX + 'px'
+      target.style.width = width - offsetX + 'px'
     },
     r (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX + 'px'
       target.style.width = width + offsetX + 'px'
     }
   }
-  watchEffect(() => {
-    nextTick(() => {
-      createDragPoint(initialTarget, $target, 10)
-    })
-  })
 
   // 创建供拖拽的元素
-  function createDragPoint ({ left, top, width, height }, target: HTMLElement, pointSize: number) {
+  function createDragPoint (target: HTMLElement, pointSize: number) {
+    const { left, top, width, height } = toRefs(initialTarget)
     const halfPointSize = pointSize / 2
-    const pointPosition = {
-      lt: [0 - halfPointSize, 0 - halfPointSize, 'nw-resize'],
-      lb: [0 - halfPointSize, height - halfPointSize, 'ne-resize'],
-      rt: [width - halfPointSize, 0 - halfPointSize, 'ne-resize'],
-      rb: [width - halfPointSize, height - halfPointSize, 'nw-resize'],
-      t: [width / 2 - halfPointSize, 0 - halfPointSize, 'n-resize'],
-      b: [width / 2 - halfPointSize, height - halfPointSize, 'n-resize'],
-      l: [0 - halfPointSize, height / 2 - halfPointSize, 'e-resize'],
-      r: [width - halfPointSize, height / 2 - halfPointSize, 'e-resize']
-    }
+    const parentNode = target.parentNode
+    const pointPosition = createParentPosition(initialTarget, pointSize)
     for (const direction in pointPosition) {
-      const point = pointElements[direction] || document.createElement('div')
+      const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
       point.style.position = 'absolute'
       point.style.width = pointSize + 'px'
       point.style.height = pointSize + 'px'
-      point.style.left = pointPosition[direction][0]
-      point.style.top = pointPosition[direction][1]
+      setPosition(point, pointPosition, direction)
       point.style.cursor = pointPosition[direction][2]
       point.style.boxSizing = 'border-box'
       point.style.border = '1px solid #333'
       point.style.borderRadius = '50%'
-      target.appendChild(point)
+      parentNode.appendChild(point)
       // TODO 将所有的 width/height 换成initialTarget的数据
       const { isPress, movementX, movementY } = useMovePoint(point, (x, y) => {
-        pointStrategies[direction](target, { left, top, width, height, offsetX: x, offsetY: y })
+        pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: x, offsetY: y })
+        // FIXME pointPosition计算有问题
+        const pointPosition = createParentPosition({
+          left: initialTarget.left + movementX.value,
+          top: initialTarget.top + movementY.value,
+          width: initialTarget.width + movementX.value,
+          height: initialTarget.height + movementY.value
+        }, pointSize)
+        for (const innerDirection in pointPosition) {
+          if (innerDirection === direction) continue
+          setPosition(pointElements[innerDirection], pointPosition, innerDirection)
+        }
       })
       // 松开鼠标时更新宽高信息
       watch(isPress, () => {
         if (!isPress.value) {
-          width = width + movementX.value
-          height = height + movementY.value
+          initialTarget.width = target.offsetWidth
+          initialTarget.height = target.offsetHeight
+          initialTarget.left = target.offsetLeft
+          initialTarget.top = target.offsetTop
         }
       })
     }
   }
 
-  function createParentPosition ({ left, top, width, height }, parent: HTMLElement, pointSize: number) {
+  function setPosition (point: HTMLElement, pointPosition, direction) {
+    point.style.left = pointPosition[direction][0] + 'px'
+    point.style.top = pointPosition[direction][1] + 'px'
+  }
+
+  function createParentPosition ({ left, top, width, height }, pointSize: number) {
     const halfPointSize = pointSize / 2
     return {
       lt: [left - halfPointSize, top - halfPointSize, 'nw-resize'],
@@ -137,5 +137,17 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       r: [left + width - halfPointSize, top + height / 2 - halfPointSize, 'e-resize']
     }
   }
-
+  function createTargetPosition ({ left, top, width, height }, pointSize: number) {
+    const halfPointSize = pointSize / 2
+    return {
+      lt: [0 - halfPointSize, 0 - halfPointSize, 'nw-resize'],
+      lb: [0 - halfPointSize, height - halfPointSize, 'ne-resize'],
+      rt: [width - halfPointSize, 0 - halfPointSize, 'ne-resize'],
+      rb: [width - halfPointSize, height - halfPointSize, 'nw-resize'],
+      t: [width / 2 - halfPointSize, 0 - halfPointSize, 'n-resize'],
+      b: [width / 2 - halfPointSize, height - halfPointSize, 'n-resize'],
+      l: [0 - halfPointSize, height / 2 - halfPointSize, 'e-resize'],
+      r: [width - halfPointSize, height / 2 - halfPointSize, 'e-resize']
+    }
+  }
 }

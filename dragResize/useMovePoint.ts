@@ -1,6 +1,10 @@
 import { reactive, ref, toRef, nextTick } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
 
+/*
+* TODO 限制移动
+* */
+
 export default function useMovePoint (selector: string | HTMLElement, moveCallback?) {
   nextTick(() => {
 		$ele = getElement(selector)
