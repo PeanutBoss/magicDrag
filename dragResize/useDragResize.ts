@@ -74,11 +74,75 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       target.style.width = width + offsetX + 'px'
     }
   }
+  const paramStrategies = {
+    lt ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left: left + movementX.value,
+        top: top + movementY.value,
+        width: width - movementX.value,
+        height: height - movementY.value
+      }
+    },
+    lb ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left: left + movementX.value,
+        top,
+        width: width - movementX.value,
+        height: height + movementY.value
+      }
+    },
+    rt ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left,
+        top: top + movementY.value,
+        width: width + movementX.value,
+        height: height - movementY.value
+      }
+    },
+    rb ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left,
+        top,
+        width: width + movementX.value,
+        height: height + movementY.value
+      }
+    },
+    t ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left,
+        top: top + movementY.value,
+        width,
+        height: height - movementY.value
+      }
+    },
+    b ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left,
+        top,
+        width,
+        height: height + movementY.value
+      }
+    },
+    l ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left: left + movementX.value,
+        top,
+        width: width - movementX.value,
+        height
+      }
+    },
+    r ({ left, top, width, height, movementX, movementY }) {
+      return {
+        left,
+        top,
+        width: width + movementX.value,
+        height
+      }
+    }
+  }
 
   // 创建供拖拽的元素
   function createDragPoint (target: HTMLElement, pointSize: number) {
-    const { left, top, width, height } = toRefs(initialTarget)
-    const halfPointSize = pointSize / 2
     const parentNode = target.parentNode
     const pointPosition = createParentPosition(initialTarget, pointSize)
     for (const direction in pointPosition) {
@@ -92,21 +156,22 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       point.style.border = '1px solid #333'
       point.style.borderRadius = '50%'
       parentNode.appendChild(point)
-      // TODO 将所有的 width/height 换成initialTarget的数据
+
       const { isPress, movementX, movementY } = useMovePoint(point, (x, y) => {
+        // 根据按下点的移动信息 调整元素尺寸和定位
         pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: x, offsetY: y })
-        // FIXME pointPosition计算有问题
-        const pointPosition = createParentPosition({
-          left: initialTarget.left + movementX.value,
-          top: initialTarget.top + movementY.value,
-          width: initialTarget.width + movementX.value,
-          height: initialTarget.height + movementY.value
-        }, pointSize)
+
+        // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
+        const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
+        // 根据新的坐标和尺寸信息设置轮廓点的位置
+        const pointPosition = createParentPosition(coordinate, pointSize)
         for (const innerDirection in pointPosition) {
+          // 不需要更新当前拖拽的点
           if (innerDirection === direction) continue
+          // 设置 innerDirection 对应点的位置信息
           setPosition(pointElements[innerDirection], pointPosition, innerDirection)
         }
-      })
+      }, pointPosition[direction][3])
       // 松开鼠标时更新宽高信息
       watch(isPress, () => {
         if (!isPress.value) {
@@ -131,10 +196,10 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       lb: [left - halfPointSize, top + height - halfPointSize, 'ne-resize'],
       rt: [left + width - halfPointSize, top - halfPointSize, 'ne-resize'],
       rb: [left + width - halfPointSize, top + height - halfPointSize, 'nw-resize'],
-      t: [left + width / 2 - halfPointSize, top - halfPointSize, 'n-resize'],
-      b: [left + width / 2 - halfPointSize, top + height - halfPointSize, 'n-resize'],
-      l: [left - halfPointSize, top + height / 2 - halfPointSize, 'e-resize'],
-      r: [left + width - halfPointSize, top + height / 2 - halfPointSize, 'e-resize']
+      t: [left + width / 2 - halfPointSize, top - halfPointSize, 'n-resize', 'X'],
+      b: [left + width / 2 - halfPointSize, top + height - halfPointSize, 'n-resize', 'X'],
+      l: [left - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y'],
+      r: [left + width - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y']
     }
   }
   function createTargetPosition ({ left, top, width, height }, pointSize: number) {

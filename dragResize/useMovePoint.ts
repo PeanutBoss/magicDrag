@@ -1,11 +1,13 @@
 import { reactive, ref, toRef, nextTick } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
 
-/*
-* TODO 限制移动
-* */
-
-export default function useMovePoint (selector: string | HTMLElement, moveCallback?) {
+/**
+ * @description 移动点
+ * @param selector 要移动的元素或选择器
+ * @param moveCallback 移动时的回调
+ * @param limitDirection 限制不允许移动的方向
+ */
+export default function useMovePoint (selector: string | HTMLElement, moveCallback?, limitDirection?: 'X' | 'Y') {
   nextTick(() => {
 		$ele = getElement(selector)
 		$ele.onmousedown = mouseDown
@@ -43,8 +45,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 	}
 	function mouseMove (event) {
 		if (!isPress.value) return
-		movement.x = event.pageX - startOffset.x
-		movement.y = event.pageY - startOffset.y
+		limitDirection !== 'X' ? movement.x = event.pageX - startOffset.x : ''
+		limitDirection !== 'Y' ? movement.y = event.pageY - startOffset.y : ''
 		$ele.style.left = startCoordinate.x + movement.x + 'px'
 		$ele.style.top = startCoordinate.y + movement.y + 'px'
     moveCallback?.(movement.x, movement.y)
