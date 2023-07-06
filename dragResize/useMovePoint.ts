@@ -1,6 +1,10 @@
 import { reactive, ref, toRef, nextTick } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
 
+/*
+* TODO 测试文本选中
+* */
+
 /**
  * @description 移动点
  * @param selector 要移动的元素或选择器
@@ -31,8 +35,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		y: 0
 	})
 	function mouseDown (event) {
-    // 取消文本选中
-    event.preventDefault()
+    // event.preventDefault()
 		isPress.value = true
 		movement.x = 0
 		movement.y = 0
@@ -44,6 +47,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		window.onmouseup = mouseUp
 	}
 	function mouseMove (event) {
+    // 取消文本选中
+    event.preventDefault()
 		if (!isPress.value) return
 		limitDirection !== 'X' ? movement.x = event.pageX - startOffset.x : ''
 		limitDirection !== 'Y' ? movement.y = event.pageY - startOffset.y : ''

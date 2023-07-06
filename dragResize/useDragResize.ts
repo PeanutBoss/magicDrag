@@ -1,7 +1,6 @@
 import { getElement } from "../utils/tools.ts";
-import { onMounted, reactive, ref, watchEffect, nextTick, toRefs } from 'vue/dist/vue.esm-bundler.js'
+import { onMounted, reactive, watch } from 'vue/dist/vue.esm-bundler.js'
 import useMovePoint from "./useMovePoint.ts";
-import {watch} from "vue";
 
 export default function useDragResize (targetSelector: string | HTMLElement) {
 	onMounted(() => {
@@ -19,7 +18,14 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
   })
 	function initTarget () {
 		$target = getElement(targetSelector)
-    const rect = $target.getBoundingClientRect()
+    const { left, top, height, width } = $target.getBoundingClientRect()
+    const rect = {
+      // 处理页面滚动的距离
+      left: left + window.scrollX,
+      top: top + window.scrollY,
+      height,
+      width
+    }
     for (const rectKey in initialTarget) {
       initialTarget[rectKey] = rect[rectKey]
     }
@@ -155,23 +161,15 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       point.style.boxSizing = 'border-box'
       point.style.border = '1px solid #333'
       point.style.borderRadius = '50%'
+      point.style.display = 'none'
       parentNode.appendChild(point)
 
-      const { isPress, movementX, movementY } = useMovePoint(point, (x, y) => {
-        // 根据按下点的移动信息 调整元素尺寸和定位
-        pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: x, offsetY: y })
+      bindEvent(target)
 
-        // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
-        const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
-        // 根据新的坐标和尺寸信息设置轮廓点的位置
-        const pointPosition = createParentPosition(coordinate, pointSize)
-        for (const innerDirection in pointPosition) {
-          // 不需要更新当前拖拽的点
-          if (innerDirection === direction) continue
-          // 设置 innerDirection 对应点的位置信息
-          setPosition(pointElements[innerDirection], pointPosition, innerDirection)
-        }
+      const { isPress, movementX, movementY } = useMovePoint(point, (x, y) => {
+        movePointCallback({ target, direction, movementX, movementY, pointSize, x, y })
       }, pointPosition[direction][3])
+
       // 松开鼠标时更新宽高信息
       watch(isPress, () => {
         if (!isPress.value) {
@@ -181,6 +179,58 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
           initialTarget.top = target.offsetTop
         }
       })
+    }
+  }
+
+  function movePointCallback ({ target, direction, movementX, movementY, x, y, pointSize }) {// 根据按下点的移动信息 调整元素尺寸和定位
+    pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: x, offsetY: y })
+
+    // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
+    const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
+    // 根据新的坐标和尺寸信息设置轮廓点的位置
+    const pointPosition = createParentPosition(coordinate, pointSize)
+    for (const innerDirection in pointPosition) {
+      // 不需要更新当前拖拽的点
+      if (innerDirection === direction) continue
+      // 设置 innerDirection 对应点的位置信息
+      setPosition(pointElements[innerDirection], pointPosition, innerDirection)
+    }
+  }
+
+  // TODO contains
+  function bindEvent (target: HTMLElement) {
+    // 使元素可以进行焦点设置，但不会参与默认的焦点顺序
+    target.tabIndex = -1
+    target.onblur = blur
+    // 用来记录按下 target 时各个轮廓点的位置信息
+    const downPointPosition = {}
+    const { isPress, movementY, movementX } = useMovePoint(target, (x, y) => {
+      for (const key in pointElements) {
+        pointElements[key].style.left = downPointPosition[key][0] + x + 'px'
+        pointElements[key].style.top = downPointPosition[key][1] + y + 'px'
+      }
+    })
+    watch(isPress, () => {
+      if (isPress.value) {
+        mousedown()
+        for (const key in pointElements) {
+          downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
+        }
+      } else {
+        initialTarget.top += movementY.value
+        initialTarget.left += movementX.value
+      }
+    })
+  }
+  function mousedown() {
+    for (const key in pointElements) {
+      pointElements[key].style.display = 'block'
+    }
+  }
+  function blur (event) {
+    console.log(event.target)
+    for (const key in pointElements) {
+      pointElements[key].style.display = 'none'
     }
   }
 
