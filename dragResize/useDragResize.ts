@@ -166,8 +166,8 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
 
       bindEvent(target)
 
-      const { isPress, movementX, movementY } = useMovePoint(point, (x, y) => {
-        movePointCallback({ target, direction, movementX, movementY, pointSize, x, y })
+      const { isPress, movementX, movementY, canIMove } = useMovePoint(point, () => {
+        movePointCallback({ target, direction, movementX, movementY, pointSize, canIMove })
       }, pointPosition[direction][3])
 
       // 松开鼠标时更新宽高信息
@@ -182,8 +182,15 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     }
   }
 
-  function movePointCallback ({ target, direction, movementX, movementY, x, y, pointSize }) {// 根据按下点的移动信息 调整元素尺寸和定位
-    pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: x, offsetY: y })
+  // TODO movementX/Y 与 x/y 一样
+  function movePointCallback ({ target, direction, movementX, movementY, pointSize, canIMove }) {// 根据按下点的移动信息 调整元素尺寸和定位
+    // const { left, top, width, height } = initialTarget
+    // if (width - movementX.value <= 100) {
+    //   canIMove.value = false
+    // } else {
+    //   canIMove.value = true
+    // }
+    pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: movementX.value, offsetY: movementY.value })
 
     // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
     const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
@@ -201,13 +208,13 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
   function bindEvent (target: HTMLElement) {
     // 使元素可以进行焦点设置，但不会参与默认的焦点顺序
     target.tabIndex = -1
-    target.onblur = blur
+    // target.onblur = blur
     // 用来记录按下 target 时各个轮廓点的位置信息
     const downPointPosition = {}
-    const { isPress, movementY, movementX } = useMovePoint(target, (x, y) => {
+    const { isPress, movementY, movementX } = useMovePoint(target, () => {
       for (const key in pointElements) {
-        pointElements[key].style.left = downPointPosition[key][0] + x + 'px'
-        pointElements[key].style.top = downPointPosition[key][1] + y + 'px'
+        pointElements[key].style.left = downPointPosition[key][0] + movementX.value + 'px'
+        pointElements[key].style.top = downPointPosition[key][1] + movementY.value + 'px'
       }
     })
     watch(isPress, () => {

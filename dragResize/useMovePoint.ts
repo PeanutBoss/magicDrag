@@ -18,6 +18,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 	})
 	let $ele
 
+  const canIMove = ref(true)
+  // 鼠标状态
 	const isPress = ref(false)
 	// 按下鼠标时鼠标的坐标
 	const startOffset = reactive({
@@ -47,6 +49,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		window.onmouseup = mouseUp
 	}
 	function mouseMove (event) {
+    if (!canIMove.value) return
     // 取消文本选中
     event.preventDefault()
 		if (!isPress.value) return
@@ -66,6 +69,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		top: toRef(startCoordinate, 'y'),
 		movementX: toRef(movement, 'x'),
 		movementY: toRef(movement, 'y'),
-    isPress
+    isPress,
+    canIMove
 	}
 }
