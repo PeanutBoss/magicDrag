@@ -2,6 +2,13 @@ import { getElement } from "../utils/tools.ts";
 import { onMounted, reactive, watch } from 'vue/dist/vue.esm-bundler.js'
 import useMovePoint from "./useMovePoint.ts";
 
+/*
+* TODO 注释
+*  1.初始化目标元素
+*  2.初始化/移动轮廓点
+*  3.移动目标元素
+* */
+
 export default function useDragResize (targetSelector: string | HTMLElement) {
 	onMounted(() => {
 		initTarget()
@@ -32,7 +39,7 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
 	}
 
   /*
-  * TODO 滚动条问题 边界问题
+  * TODO 边界问题
   * */
   const pointElements = {
     lt: null,
@@ -44,6 +51,7 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     l: null,
     r: null
   }
+  // 移动不同轮廓点的策略
   const pointStrategies = {
     lt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
       target.style.left = left + offsetX + 'px'
@@ -80,6 +88,7 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       target.style.width = width + offsetX + 'px'
     }
   }
+  // $target 尺寸/坐标 更新后，获取最新轮廓点坐标的策略
   const paramStrategies = {
     lt ({ left, top, width, height, movementX, movementY }) {
       return {
@@ -184,12 +193,16 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
 
   // TODO movementX/Y 与 x/y 一样
   function movePointCallback ({ target, direction, movementX, movementY, pointSize, canIMove }) {// 根据按下点的移动信息 调整元素尺寸和定位
+
     // const { left, top, width, height } = initialTarget
-    // if (width - movementX.value <= 100) {
-    //   canIMove.value = false
-    // } else {
-    //   canIMove.value = true
-    // }
+    // const achieveMinX = width - movementX.value <= 100
+    // const achieveMinY = height - movementY.value <= 100
+    // achieveMinX && (movementX.value = 100)
+    // achieveMinY && (movementY.value = 100)
+    // canIMove.x = !(achieveMinX)
+    // canIMove.y = !(achieveMinY)
+    // console.log(width, height, movementX.value, movementY.value)
+
     pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: movementX.value, offsetY: movementY.value })
 
     // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同

@@ -18,7 +18,11 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 	})
 	let $ele
 
-  const canIMove = ref(true)
+	// 是否可以移动
+  const canIMove = reactive({
+		x: true,
+		y: true
+	})
   // 鼠标状态
 	const isPress = ref(false)
 	// 按下鼠标时鼠标的坐标
@@ -49,14 +53,13 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		window.onmouseup = mouseUp
 	}
 	function mouseMove (event) {
-    if (!canIMove.value) return
     // 取消文本选中
     event.preventDefault()
 		if (!isPress.value) return
 		limitDirection !== 'X' ? movement.x = event.pageX - startOffset.x : ''
 		limitDirection !== 'Y' ? movement.y = event.pageY - startOffset.y : ''
-		$ele.style.left = startCoordinate.x + movement.x + 'px'
-		$ele.style.top = startCoordinate.y + movement.y + 'px'
+		canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
+		canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
     moveCallback?.(movement.x, movement.y)
 	}
 	function mouseUp () {
