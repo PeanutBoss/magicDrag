@@ -175,7 +175,8 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
 
       bindEvent(target)
 
-      const { isPress, movementX, movementY, canIMove } = useMovePoint(point, () => {
+      const { isPress, movementX, movementY, canIMove } = useMovePoint(point, (moveAction) => {
+        moveAction()
         movePointCallback({ target, direction, movementX, movementY, pointSize, canIMove })
       }, pointPosition[direction][3])
 
@@ -194,16 +195,42 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
   // TODO movementX/Y 与 x/y 一样
   function movePointCallback ({ target, direction, movementX, movementY, pointSize, canIMove }) {// 根据按下点的移动信息 调整元素尺寸和定位
 
-    // const { left, top, width, height } = initialTarget
-    // const achieveMinX = width - movementX.value <= 100
-    // const achieveMinY = height - movementY.value <= 100
-    // achieveMinX && (movementX.value = 100)
-    // achieveMinY && (movementY.value = 100)
-    // canIMove.x = !(achieveMinX)
-    // canIMove.y = !(achieveMinY)
-    // console.log(width, height, movementX.value, movementY.value)
+    const { left, top, width, height } = initialTarget
+    // 是否达到可移动的最大距离
+    const achieveMaxX = width - movementX.value <= 100
+    const achieveMaxY = height - movementY.value <= 100
+    // 是否达到最小宽度/高度
+    const achieveMinWidth = width <= 100 && movementX.value > 0
+    const achieveMinHeight = height <= 100 && movementY.value > 0
+    // 如果已经达到可移动的最大距离则不能移动
+    canIMove.x = !achieveMaxX
+    canIMove.y = !achieveMaxY
 
-    pointStrategies[direction](target, { left: initialTarget.left, top: initialTarget.top, width: initialTarget.width, height: initialTarget.height, offsetX: movementX.value, offsetY: movementY.value })
+    if (achieveMaxX || achieveMaxY && (!achieveMinWidth || !achieveMinHeight)) {
+      if (achieveMaxX) {
+        movementX.value = 100
+      }
+      if (achieveMaxY) {
+        movementY.value = 100
+      }
+    }
+    if (achieveMinWidth || achieveMinHeight) {
+      if (achieveMinWidth) {
+        movementX.value = 0
+      }
+      if (achieveMinHeight) {
+        movementY.value = 0
+      }
+    }
+
+    pointStrategies[direction](target, {
+      left: initialTarget.left,
+      top: initialTarget.top,
+      width: initialTarget.width,
+      height: initialTarget.height,
+      offsetX: movementX.value,
+      offsetY: movementY.value
+    })
 
     // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
     const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
@@ -224,7 +251,8 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     // target.onblur = blur
     // 用来记录按下 target 时各个轮廓点的位置信息
     const downPointPosition = {}
-    const { isPress, movementY, movementX } = useMovePoint(target, () => {
+    const { isPress, movementY, movementX } = useMovePoint(target, (moveAction) => {
+      moveAction()
       for (const key in pointElements) {
         pointElements[key].style.left = downPointPosition[key][0] + movementX.value + 'px'
         pointElements[key].style.top = downPointPosition[key][1] + movementY.value + 'px'

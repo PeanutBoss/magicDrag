@@ -1,4 +1,4 @@
-import { reactive, ref, toRef, nextTick } from "vue/dist/vue.esm-bundler.js";
+import { reactive, ref, toRef, nextTick, watch } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
 
 /*
@@ -53,18 +53,24 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		window.onmouseup = mouseUp
 	}
 	function mouseMove (event) {
-    // 取消文本选中
-    event.preventDefault()
-		if (!isPress.value) return
-		limitDirection !== 'X' ? movement.x = event.pageX - startOffset.x : ''
-		limitDirection !== 'Y' ? movement.y = event.pageY - startOffset.y : ''
-		canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
-		canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
-    moveCallback?.(movement.x, movement.y)
+    if (!isPress.value) return
+    const moveAction = () => {
+      // 取消文本选中
+      event.preventDefault()
+      limitDirection !== 'X' ? movement.x = event.pageX - startOffset.x : ''
+      limitDirection !== 'Y' ? movement.y = event.pageY - startOffset.y : ''
+      canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
+      canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
+    }
+    moveCallback ? moveCallback(moveAction) : moveAction()
 	}
 	function mouseUp () {
 		isPress.value = false
 	}
+  watch(movement, () => {
+    $ele.style.left = startCoordinate.x + movement.x + 'px'
+    $ele.style.top = startCoordinate.y + movement.y + 'px'
+  })
 	return {
 		preStartX: toRef(startOffset, 'x'),
 		preStartY: toRef(startOffset, 'y'),
