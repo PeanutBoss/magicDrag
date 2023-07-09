@@ -39,7 +39,7 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
 	}
 
   /*
-  * TODO 边界问题
+  * FIXME 边界问题 最小尺寸限制
   * */
   const pointElements = {
     lt: null,
