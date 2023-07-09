@@ -73,8 +73,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		isPress.value = false
 	}
   watch(movement, () => {
-    $ele.style.left = startCoordinate.x + movement.x + 'px'
-    $ele.style.top = startCoordinate.y + movement.y + 'px'
+    $ele.style.left = canIMove.x && startCoordinate.x + movement.x + 'px'
+    $ele.style.top = canIMove.y && startCoordinate.y + movement.y + 'px'
   })
 	return {
 		preStartX: toRef(startOffset, 'x'),

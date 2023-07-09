@@ -6,12 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "syncMusic": "node ./Audio/syncMusic.js",
-    "build": "webpack --config ./config/webpack.config.js",
-    "serve": "webpack serve --config ./config/webpack.config.js",
-    "build:ts": "webpack --config ./config/webpack.tsconfig.js",
+    "build": "webpack --config ./config/webpack.tsconfig.js",
     "serve:ts": "webpack serve --config ./config/webpack.tsconfig.js",
-    "build:move": "webpack --config ./config/moveProcess.config.js",
     "serve:move": "webpack serve --config ./config/moveProcess.config.js",
+    "serve:point": "webpack serve --config ./config/point.config.js",
     "serve:drag": "webpack serve --config ./config/dragResize.config.js",
     "serve:container": "webpack serve --config ./config/dragContainer.config.js"
   },
@@ -29,7 +27,8 @@
     "typescript": "^5.1.5",
     "webpack": "^5.88.0",
     "webpack-cli": "^4.10.0",
-    "webpack-dev-server": "^4.15.1"
+    "webpack-dev-server": "^4.15.1",
+    "webpack-merge": "^5.9.0"
   },
   "dependencies": {
     "css-loader": "^6.8.1",
