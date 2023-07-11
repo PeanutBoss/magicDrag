@@ -1,5 +1,6 @@
 import { reactive, ref, toRef, nextTick, watch } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
+import {readonly} from "vue";
 
 /*
 * TODO 测试文本选中
@@ -9,9 +10,15 @@ import { getElement } from '../utils/tools.ts'
  * @description 移动点
  * @param selector 要移动的元素或选择器
  * @param moveCallback 移动时的回调
- * @param limitDirection 限制不允许移动的方向
+ * @param limitOption 限制移动的配置项
  */
-export default function useMovePoint (selector: string | HTMLElement, moveCallback?, limitDirection?: 'X' | 'Y' | null) {
+interface LimitOption {
+  direction?: 'X' | 'Y' | null
+  updateX?: boolean
+  updateY?: boolean
+}
+export default function useMovePoint (selector: string | HTMLElement, moveCallback?, limitOption: LimitOption = {}) {
+  const { direction: limitDirection, updateX = true, updateY = true } = limitOption
   nextTick(() => {
 		$ele = getElement(selector)
 		$ele.onmousedown = mouseDown
@@ -40,6 +47,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		x: 0,
 		y: 0
 	})
+  const isUpdateMovementX = limitDirection !== 'X' && updateX
+  const isUpdateMovementY = limitDirection !== 'Y' && updateY
 	function mouseDown (event) {
     // event.preventDefault()
 		isPress.value = true
@@ -61,8 +70,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
       // 取消文本选中
       event.preventDefault()
       // 如果有限制移动，则不更新movement和元素坐标
-      limitDirection !== 'X' ? movement.x = event.pageX - startOffset.x : ''
-      limitDirection !== 'Y' ? movement.y = event.pageY - startOffset.y : ''
+      isUpdateMovementX && (movement.x = event.pageX - startOffset.x)
+      isUpdateMovementY && (movement.y = event.pageY - startOffset.y)
       // 如果不能移动，则更新movement但不更新元素坐标
       canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
       canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
@@ -83,7 +92,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		top: toRef(startCoordinate, 'y'),
 		movementX: toRef(movement, 'x'),
 		movementY: toRef(movement, 'y'),
-    isPress,
+    isPress: readonly(isPress),
     canIMove
 	}
 }

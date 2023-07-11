@@ -18,7 +18,10 @@ const App = {
         // canIMove.x = false
         moveAction()
       },
-      'X'
+      {
+        direction: 'X'
+      //   updateX: false
+      }
       )
     return { left, top, movementX, movementY }
   }

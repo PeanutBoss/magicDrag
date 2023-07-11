@@ -178,7 +178,7 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       const { isPress, movementX, movementY, canIMove } = useMovePoint(point, (moveAction) => {
         moveAction()
         movePointCallback({ target, direction, movementX, movementY, pointSize, canIMove })
-      }, pointPosition[direction][3])
+      }, { direction: pointPosition[direction][3] })
 
       // 松开鼠标时更新宽高信息
       watch(isPress, () => {
@@ -195,33 +195,34 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
   // TODO movementX/Y 与 x/y 一样
   function movePointCallback ({ target, direction, movementX, movementY, pointSize, canIMove }) {// 根据按下点的移动信息 调整元素尺寸和定位
 
-    const { left, top, width, height } = initialTarget
-    // 是否达到可移动的最大距离
-    const achieveMaxX = width - movementX.value <= 100
-    const achieveMaxY = height - movementY.value <= 100
-    // 是否达到最小宽度/高度
-    const achieveMinWidth = width <= 100 && movementX.value > 0
-    const achieveMinHeight = height <= 100 && movementY.value > 0
-    // 如果已经达到可移动的最大距离则不能移动
-    canIMove.x = !achieveMaxX
-    canIMove.y = !achieveMaxY
+    // TODO 每次移动前计算正反方向可以移动的最大距离
+    // const { left, top, width, height } = initialTarget
+    // // 是否达到可移动的最大距离
+    // const achieveMaxX = width - movementX.value <= 100
+    // const achieveMaxY = height - movementY.value <= 100
+    // // 是否达到最小宽度/高度
+    // const achieveMinWidth = width <= 100 && movementX.value > 0
+    // const achieveMinHeight = height <= 100 && movementY.value > 0
+    // // 如果已经达到可移动的最大距离则不能移动
+    // canIMove.x = !achieveMaxX
+    // canIMove.y = !achieveMaxY
 
-    if (achieveMaxX || achieveMaxY && (!achieveMinWidth || !achieveMinHeight)) {
-      if (achieveMaxX) {
-        movementX.value = 100
-      }
-      if (achieveMaxY) {
-        movementY.value = 100
-      }
-    }
-    if (achieveMinWidth || achieveMinHeight) {
-      if (achieveMinWidth) {
-        movementX.value = 0
-      }
-      if (achieveMinHeight) {
-        movementY.value = 0
-      }
-    }
+    // if (achieveMaxX || achieveMaxY && (!achieveMinWidth || !achieveMinHeight)) {
+    //   if (achieveMaxX) {
+    //     movementX.value = 100
+    //   }
+    //   if (achieveMaxY) {
+    //     movementY.value = 100
+    //   }
+    // }
+    // if (achieveMinWidth || achieveMinHeight) {
+    //   if (achieveMinWidth) {
+    //     movementX.value = 0
+    //   }
+    //   if (achieveMinHeight) {
+    //     movementY.value = 0
+    //   }
+    // }
 
     pointStrategies[direction](target, {
       left: initialTarget.left,
