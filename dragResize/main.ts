@@ -13,10 +13,12 @@ const App = {
     </div>
     <div style="height: 800px">
       <div class="box"></div>
+      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
     </div>
   `,
   setup () {
     useDragResize('.box', { minHeight: 200, minWidth: 200 })
+    useDragResize('.box1', { minHeight: 200, minWidth: 100 })
   }
 }
 

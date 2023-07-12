@@ -50,6 +50,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
     l: null,
     r: null
   }
+
   // 移动不同轮廓点的策略
   const pointStrategies = {
     lt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
@@ -155,24 +156,29 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
     }
   }
 
+  // 初始化轮廓点的样式
+  function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }) {
+    point.style.position = 'absolute'
+    point.style.width = pointSize + 'px'
+    point.style.height = pointSize + 'px'
+    point.style.boxSizing = 'border-box'
+    point.style.border = '1px solid #333'
+    point.style.borderRadius = '50%'
+    point.style.display = 'none'
+    setPosition(point, pointPosition, direction)
+    point.style.cursor = pointPosition[direction][2]
+  }
+
   // 创建供拖拽的元素
   function createDragPoint (target: HTMLElement, pointSize: number) {
     const parentNode = target.parentNode
     const pointPosition = createParentPosition(initialTarget, pointSize)
 
-    bindEvent(target)
+    moveTarget(target)
 
     for (const direction in pointPosition) {
       const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
-      point.style.position = 'absolute'
-      point.style.width = pointSize + 'px'
-      point.style.height = pointSize + 'px'
-      setPosition(point, pointPosition, direction)
-      point.style.cursor = pointPosition[direction][2]
-      point.style.boxSizing = 'border-box'
-      point.style.border = '1px solid #333'
-      point.style.borderRadius = '50%'
-      point.style.display = 'none'
+      initPointStyle(point, { pointPosition, direction, pointSize })
       parentNode.appendChild(point)
 
       const { isPress, movementX, movementY, canIMove } = useMovePoint(point, (moveAction) => {
@@ -306,10 +312,12 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
     }
   }
 
-  function bindEvent (target: HTMLElement) {
+  function moveTarget (target: HTMLElement) {
+    // 保证元素绝对定位
+    target.style.position = 'absolute'
+
     // 使元素可以进行焦点设置，但不会参与默认的焦点顺序
     target.tabIndex = -1
-    // target.onblur = blur
 
     // 用来记录按下 target 时各个轮廓点的位置信息
     const downPointPosition = {}
@@ -357,6 +365,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
     }
   }
 
+  // 设置元素位置
   function setPosition (point: HTMLElement, pointPosition, direction) {
     point.style.left = pointPosition[direction][0] + 'px'
     point.style.top = pointPosition[direction][1] + 'px'
