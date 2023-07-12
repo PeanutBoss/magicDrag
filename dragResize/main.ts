@@ -16,9 +16,7 @@ const App = {
     </div>
   `,
   setup () {
-    // const { left, top, movementX, movementY } = useMovePoint('.point')
-    // return { left, top, movementX, movementY }
-    useDragResize('.box')
+    useDragResize('.box', { minHeight: 200, minWidth: 200 })
   }
 }
 

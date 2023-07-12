@@ -15,14 +15,13 @@ const App = {
     const { left, top, movementX, movementY, canIMove } = useMovePoint(
       '.point',
       moveAction => {
-        // canIMove.x = false
+        canIMove.x = false
         moveAction()
       },
       {
-        direction: 'X'
-      //   updateX: false
-      }
-      )
+        // direction: 'X'
+        // updateX: false
+      })
     return { left, top, movementX, movementY }
   }
 }

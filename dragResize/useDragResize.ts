@@ -1,5 +1,5 @@
 import { getElement } from "../utils/tools.ts";
-import { onMounted, reactive, watch } from 'vue/dist/vue.esm-bundler.js'
+import { onMounted, reactive, watch } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 
 /*
@@ -9,7 +9,8 @@ import useMovePoint from "./useMovePoint.ts";
 *  3.移动目标元素
 * */
 
-export default function useDragResize (targetSelector: string | HTMLElement) {
+export default function useDragResize (targetSelector: string | HTMLElement, resizeOptions = {}) {
+  const { minWidth = 100, minHeight = 100 } = resizeOptions
 	onMounted(() => {
 		initTarget()
 
@@ -38,9 +39,7 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     }
 	}
 
-  /*
-  * FIXME 边界问题 最小尺寸限制
-  * */
+  // TODO point应该是个单例
   const pointElements = {
     lt: null,
     lb: null,
@@ -160,6 +159,9 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
   function createDragPoint (target: HTMLElement, pointSize: number) {
     const parentNode = target.parentNode
     const pointPosition = createParentPosition(initialTarget, pointSize)
+
+    bindEvent(target)
+
     for (const direction in pointPosition) {
       const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
       point.style.position = 'absolute'
@@ -172,8 +174,6 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
       point.style.borderRadius = '50%'
       point.style.display = 'none'
       parentNode.appendChild(point)
-
-      bindEvent(target)
 
       const { isPress, movementX, movementY, canIMove } = useMovePoint(point, (moveAction) => {
         moveAction()
@@ -192,37 +192,98 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     }
   }
 
-  // TODO movementX/Y 与 x/y 一样
-  function movePointCallback ({ target, direction, movementX, movementY, pointSize, canIMove }) {// 根据按下点的移动信息 调整元素尺寸和定位
+  const resizeLimitStrategies = {
+    lt ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (movementX.value > moveMaxDistanceX) {
+        movementX.value = moveMaxDistanceX
+      }
 
-    // TODO 每次移动前计算正反方向可以移动的最大距离
-    // const { left, top, width, height } = initialTarget
-    // // 是否达到可移动的最大距离
-    // const achieveMaxX = width - movementX.value <= 100
-    // const achieveMaxY = height - movementY.value <= 100
-    // // 是否达到最小宽度/高度
-    // const achieveMinWidth = width <= 100 && movementX.value > 0
-    // const achieveMinHeight = height <= 100 && movementY.value > 0
-    // // 如果已经达到可移动的最大距离则不能移动
-    // canIMove.x = !achieveMaxX
-    // canIMove.y = !achieveMaxY
+      if (movementY.value > moveMaxDistanceY) {
+        movementY.value = moveMaxDistanceY
+      }
+    },
+    lb ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (movementX.value > moveMaxDistanceX) {
+        movementX.value = moveMaxDistanceX
+      }
+      if (-movementY.value > moveMaxDistanceY) {
+        movementY.value = -moveMaxDistanceY
+      }
+    },
+    rt ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (-movementX.value > moveMaxDistanceX) {
+        movementX.value = -moveMaxDistanceX
+      }
 
-    // if (achieveMaxX || achieveMaxY && (!achieveMinWidth || !achieveMinHeight)) {
-    //   if (achieveMaxX) {
-    //     movementX.value = 100
-    //   }
-    //   if (achieveMaxY) {
-    //     movementY.value = 100
-    //   }
-    // }
-    // if (achieveMinWidth || achieveMinHeight) {
-    //   if (achieveMinWidth) {
-    //     movementX.value = 0
-    //   }
-    //   if (achieveMinHeight) {
-    //     movementY.value = 0
-    //   }
-    // }
+      if (movementY.value > moveMaxDistanceY) {
+        movementY.value = moveMaxDistanceY
+      }
+    },
+    rb ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (-movementX.value > moveMaxDistanceX) {
+        movementX.value = -moveMaxDistanceX
+      }
+
+      if (-movementY.value > moveMaxDistanceY) {
+        movementY.value = -moveMaxDistanceY
+      }
+    },
+    l ({ movementX }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      if (movementX.value > moveMaxDistanceX) {
+        movementX.value = moveMaxDistanceX
+      }
+    },
+    r ({ movementX }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      if (-movementX.value > moveMaxDistanceX) {
+        movementX.value = -moveMaxDistanceX
+      }
+    },
+    t ({ movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceY = height - minHeight
+
+      if (movementY.value > moveMaxDistanceY) {
+        movementY.value = moveMaxDistanceY
+      }
+    },
+    b ({ movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceY = height - minHeight
+
+      if (-movementY.value > moveMaxDistanceY) {
+        movementY.value = -moveMaxDistanceY
+      }
+    }
+  }
+
+  function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {// 根据按下点的移动信息 调整元素尺寸和定位
+
+    // 限制目标元素最小尺寸
+    resizeLimitStrategies[direction]({ movementX, movementY })
 
     pointStrategies[direction](target, {
       left: initialTarget.left,
@@ -245,11 +306,11 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
     }
   }
 
-  // TODO contains
   function bindEvent (target: HTMLElement) {
     // 使元素可以进行焦点设置，但不会参与默认的焦点顺序
     target.tabIndex = -1
     // target.onblur = blur
+
     // 用来记录按下 target 时各个轮廓点的位置信息
     const downPointPosition = {}
     const { isPress, movementY, movementX } = useMovePoint(target, (moveAction) => {
@@ -266,16 +327,29 @@ export default function useDragResize (targetSelector: string | HTMLElement) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
       } else {
+        window.onmousedown = checkIsContainsTarget.bind(null, target)
         initialTarget.top += movementY.value
         initialTarget.left += movementX.value
       }
-    })
+    }, { immediate: true })
   }
-  function mousedown() {
+
+  function mousedown () {
+    // 点击目标元素显示轮廓点
     for (const key in pointElements) {
       pointElements[key].style.display = 'block'
     }
   }
+  function checkIsContainsTarget (target, event) {
+    const blurElements = [target, ...Object.values(pointElements)]
+    if (!blurElements.includes(event.target)) {
+      // 失去交点隐藏轮廓点
+      for (const key in pointElements) {
+        pointElements[key].style.display = 'none'
+      }
+    }
+  }
+
   function blur (event) {
     console.log(event.target)
     for (const key in pointElements) {
