@@ -1,6 +1,5 @@
-import { reactive, ref, toRef, nextTick, watch } from "vue/dist/vue.esm-bundler.js";
+import { reactive, ref, toRef, nextTick, watch, readonly } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
-import {readonly} from "vue";
 
 /*
 * TODO 测试文本选中

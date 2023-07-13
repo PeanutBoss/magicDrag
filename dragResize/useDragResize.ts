@@ -10,7 +10,7 @@ import useMovePoint from "./useMovePoint.ts";
 * */
 
 // 移动不同轮廓点的策略
-const pointStrategies = {
+const pointStrategies: any = {
   lt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
     target.style.left = left + offsetX + 'px'
     target.style.top = top + offsetY + 'px'
@@ -47,7 +47,7 @@ const pointStrategies = {
   }
 }
 // $target 尺寸/坐标 更新后，获取最新轮廓点坐标的策略
-const paramStrategies = {
+const paramStrategies: any = {
   lt ({ left, top, width, height, movementX, movementY }) {
     return {
       left: left + movementX.value,
@@ -113,96 +113,8 @@ const paramStrategies = {
     }
   }
 }
-// 调整target尺寸时限制最小尺寸的策略
-const resizeLimitStrategies = {
-  lt ({ movementX, movementY }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceX = width - minWidth
-    const moveMaxDistanceY = height - minHeight
-    if (movementX.value > moveMaxDistanceX) {
-      movementX.value = moveMaxDistanceX
-    }
 
-    if (movementY.value > moveMaxDistanceY) {
-      movementY.value = moveMaxDistanceY
-    }
-  },
-  lb ({ movementX, movementY }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceX = width - minWidth
-    const moveMaxDistanceY = height - minHeight
-    if (movementX.value > moveMaxDistanceX) {
-      movementX.value = moveMaxDistanceX
-    }
-    if (-movementY.value > moveMaxDistanceY) {
-      movementY.value = -moveMaxDistanceY
-    }
-  },
-  rt ({ movementX, movementY }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceX = width - minWidth
-    const moveMaxDistanceY = height - minHeight
-    if (-movementX.value > moveMaxDistanceX) {
-      movementX.value = -moveMaxDistanceX
-    }
-
-    if (movementY.value > moveMaxDistanceY) {
-      movementY.value = moveMaxDistanceY
-    }
-  },
-  rb ({ movementX, movementY }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceX = width - minWidth
-    const moveMaxDistanceY = height - minHeight
-    if (-movementX.value > moveMaxDistanceX) {
-      movementX.value = -moveMaxDistanceX
-    }
-
-    if (-movementY.value > moveMaxDistanceY) {
-      movementY.value = -moveMaxDistanceY
-    }
-  },
-  l ({ movementX }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceX = width - minWidth
-    if (movementX.value > moveMaxDistanceX) {
-      movementX.value = moveMaxDistanceX
-    }
-  },
-  r ({ movementX }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceX = width - minWidth
-    if (-movementX.value > moveMaxDistanceX) {
-      movementX.value = -moveMaxDistanceX
-    }
-  },
-  t ({ movementY }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceY = height - minHeight
-
-    if (movementY.value > moveMaxDistanceY) {
-      movementY.value = moveMaxDistanceY
-    }
-  },
-  b ({ movementY }) {
-    const { width, height } = initialTarget
-    // 可以移动的最大距离
-    const moveMaxDistanceY = height - minHeight
-
-    if (-movementY.value > moveMaxDistanceY) {
-      movementY.value = -moveMaxDistanceY
-    }
-  }
-}
-
-export default function useDragResize (targetSelector: string | HTMLElement, options = {}) {
+export default function useDragResize (targetSelector: string | HTMLElement, options: any = {}) {
   const { minWidth = 100, minHeight = 100, pointSize = 10 } = options
 	onMounted(() => {
 		initTarget()
@@ -246,6 +158,95 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     r: null
   }
 
+  // 调整target尺寸时限制最小尺寸的策略
+  const resizeLimitStrategies = {
+    lt ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (movementX.value > moveMaxDistanceX) {
+        movementX.value = moveMaxDistanceX
+      }
+
+      if (movementY.value > moveMaxDistanceY) {
+        movementY.value = moveMaxDistanceY
+      }
+    },
+    lb ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (movementX.value > moveMaxDistanceX) {
+        movementX.value = moveMaxDistanceX
+      }
+      if (-movementY.value > moveMaxDistanceY) {
+        movementY.value = -moveMaxDistanceY
+      }
+    },
+    rt ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (-movementX.value > moveMaxDistanceX) {
+        movementX.value = -moveMaxDistanceX
+      }
+
+      if (movementY.value > moveMaxDistanceY) {
+        movementY.value = moveMaxDistanceY
+      }
+    },
+    rb ({ movementX, movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+      if (-movementX.value > moveMaxDistanceX) {
+        movementX.value = -moveMaxDistanceX
+      }
+
+      if (-movementY.value > moveMaxDistanceY) {
+        movementY.value = -moveMaxDistanceY
+      }
+    },
+    l ({ movementX }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      if (movementX.value > moveMaxDistanceX) {
+        movementX.value = moveMaxDistanceX
+      }
+    },
+    r ({ movementX }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceX = width - minWidth
+      if (-movementX.value > moveMaxDistanceX) {
+        movementX.value = -moveMaxDistanceX
+      }
+    },
+    t ({ movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceY = height - minHeight
+
+      if (movementY.value > moveMaxDistanceY) {
+        movementY.value = moveMaxDistanceY
+      }
+    },
+    b ({ movementY }) {
+      const { width, height } = initialTarget
+      // 可以移动的最大距离
+      const moveMaxDistanceY = height - minHeight
+
+      if (-movementY.value > moveMaxDistanceY) {
+        movementY.value = -moveMaxDistanceY
+      }
+    }
+  }
+
   // 初始化轮廓点的样式
   function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }) {
     point.style.position = 'absolute'
@@ -272,9 +273,9 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       initPointStyle(point, { pointPosition, direction, pointSize })
       parentNode.appendChild(point)
 
-      const { isPress, movementX, movementY, canIMove } = useMovePoint(point, (moveAction) => {
+      const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
         moveAction()
-        movePointCallback({ target, direction, movementX, movementY, pointSize, canIMove })
+        movePointCallback({ target, direction, movementX, movementY, pointSize })
       }, { direction: pointPosition[direction][3] })
 
       // 松开鼠标时更新宽高信息
