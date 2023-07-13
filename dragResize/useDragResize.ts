@@ -9,12 +9,205 @@ import useMovePoint from "./useMovePoint.ts";
 *  3.移动目标元素
 * */
 
-export default function useDragResize (targetSelector: string | HTMLElement, resizeOptions = {}) {
-  const { minWidth = 100, minHeight = 100 } = resizeOptions
+// 移动不同轮廓点的策略
+const pointStrategies = {
+  lt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.left = left + offsetX + 'px'
+    target.style.top = top + offsetY + 'px'
+    target.style.width = width - offsetX + 'px'
+    target.style.height = height - offsetY + 'px'
+  },
+  lb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.left = left + offsetX + 'px'
+    target.style.width = width - offsetX + 'px'
+    target.style.height = height + offsetY + 'px'
+  },
+  rt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.top = top + offsetY + 'px'
+    target.style.width = width + offsetX + 'px'
+    target.style.height = height - offsetY + 'px'
+  },
+  rb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.width = width + offsetX
+    target.style.height = height + offsetY
+  },
+  t (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.top = top + offsetY + 'px'
+    target.style.height = height - offsetY + 'px'
+  },
+  b (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.height = height + offsetY
+  },
+  l (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.left = left + offsetX + 'px'
+    target.style.width = width - offsetX + 'px'
+  },
+  r (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
+    target.style.width = width + offsetX + 'px'
+  }
+}
+// $target 尺寸/坐标 更新后，获取最新轮廓点坐标的策略
+const paramStrategies = {
+  lt ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left: left + movementX.value,
+      top: top + movementY.value,
+      width: width - movementX.value,
+      height: height - movementY.value
+    }
+  },
+  lb ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left: left + movementX.value,
+      top,
+      width: width - movementX.value,
+      height: height + movementY.value
+    }
+  },
+  rt ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left,
+      top: top + movementY.value,
+      width: width + movementX.value,
+      height: height - movementY.value
+    }
+  },
+  rb ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left,
+      top,
+      width: width + movementX.value,
+      height: height + movementY.value
+    }
+  },
+  t ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left,
+      top: top + movementY.value,
+      width,
+      height: height - movementY.value
+    }
+  },
+  b ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left,
+      top,
+      width,
+      height: height + movementY.value
+    }
+  },
+  l ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left: left + movementX.value,
+      top,
+      width: width - movementX.value,
+      height
+    }
+  },
+  r ({ left, top, width, height, movementX, movementY }) {
+    return {
+      left,
+      top,
+      width: width + movementX.value,
+      height
+    }
+  }
+}
+// 调整target尺寸时限制最小尺寸的策略
+const resizeLimitStrategies = {
+  lt ({ movementX, movementY }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceX = width - minWidth
+    const moveMaxDistanceY = height - minHeight
+    if (movementX.value > moveMaxDistanceX) {
+      movementX.value = moveMaxDistanceX
+    }
+
+    if (movementY.value > moveMaxDistanceY) {
+      movementY.value = moveMaxDistanceY
+    }
+  },
+  lb ({ movementX, movementY }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceX = width - minWidth
+    const moveMaxDistanceY = height - minHeight
+    if (movementX.value > moveMaxDistanceX) {
+      movementX.value = moveMaxDistanceX
+    }
+    if (-movementY.value > moveMaxDistanceY) {
+      movementY.value = -moveMaxDistanceY
+    }
+  },
+  rt ({ movementX, movementY }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceX = width - minWidth
+    const moveMaxDistanceY = height - minHeight
+    if (-movementX.value > moveMaxDistanceX) {
+      movementX.value = -moveMaxDistanceX
+    }
+
+    if (movementY.value > moveMaxDistanceY) {
+      movementY.value = moveMaxDistanceY
+    }
+  },
+  rb ({ movementX, movementY }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceX = width - minWidth
+    const moveMaxDistanceY = height - minHeight
+    if (-movementX.value > moveMaxDistanceX) {
+      movementX.value = -moveMaxDistanceX
+    }
+
+    if (-movementY.value > moveMaxDistanceY) {
+      movementY.value = -moveMaxDistanceY
+    }
+  },
+  l ({ movementX }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceX = width - minWidth
+    if (movementX.value > moveMaxDistanceX) {
+      movementX.value = moveMaxDistanceX
+    }
+  },
+  r ({ movementX }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceX = width - minWidth
+    if (-movementX.value > moveMaxDistanceX) {
+      movementX.value = -moveMaxDistanceX
+    }
+  },
+  t ({ movementY }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceY = height - minHeight
+
+    if (movementY.value > moveMaxDistanceY) {
+      movementY.value = moveMaxDistanceY
+    }
+  },
+  b ({ movementY }) {
+    const { width, height } = initialTarget
+    // 可以移动的最大距离
+    const moveMaxDistanceY = height - minHeight
+
+    if (-movementY.value > moveMaxDistanceY) {
+      movementY.value = -moveMaxDistanceY
+    }
+  }
+}
+
+export default function useDragResize (targetSelector: string | HTMLElement, options = {}) {
+  const { minWidth = 100, minHeight = 100, pointSize = 10 } = options
 	onMounted(() => {
 		initTarget()
 
-    createDragPoint($target, 10)
+    createDragPoint($target, pointSize)
 	})
 
   let $target
@@ -26,6 +219,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
   })
 	function initTarget () {
 		$target = getElement(targetSelector)
+    // 保证元素绝对定位
+    $target.style.position = 'absolute'
     const { left, top, height, width } = $target.getBoundingClientRect()
     const rect = {
       // 处理页面滚动的距离
@@ -51,120 +246,16 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
     r: null
   }
 
-  // 移动不同轮廓点的策略
-  const pointStrategies = {
-    lt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX + 'px'
-      target.style.top = top + offsetY + 'px'
-      target.style.width = width - offsetX + 'px'
-      target.style.height = height - offsetY + 'px'
-    },
-    lb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX + 'px'
-      target.style.width = width - offsetX + 'px'
-      target.style.height = height + offsetY + 'px'
-    },
-    rt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.top = top + offsetY + 'px'
-      target.style.width = width + offsetX + 'px'
-      target.style.height = height - offsetY + 'px'
-    },
-    rb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.width = width + offsetX
-      target.style.height = height + offsetY
-    },
-    t (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.top = top + offsetY + 'px'
-      target.style.height = height - offsetY + 'px'
-    },
-    b (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.height = height + offsetY
-    },
-    l (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.left = left + offsetX + 'px'
-      target.style.width = width - offsetX + 'px'
-    },
-    r (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-      target.style.width = width + offsetX + 'px'
-    }
-  }
-  // $target 尺寸/坐标 更新后，获取最新轮廓点坐标的策略
-  const paramStrategies = {
-    lt ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left: left + movementX.value,
-        top: top + movementY.value,
-        width: width - movementX.value,
-        height: height - movementY.value
-      }
-    },
-    lb ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left: left + movementX.value,
-        top,
-        width: width - movementX.value,
-        height: height + movementY.value
-      }
-    },
-    rt ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left,
-        top: top + movementY.value,
-        width: width + movementX.value,
-        height: height - movementY.value
-      }
-    },
-    rb ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left,
-        top,
-        width: width + movementX.value,
-        height: height + movementY.value
-      }
-    },
-    t ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left,
-        top: top + movementY.value,
-        width,
-        height: height - movementY.value
-      }
-    },
-    b ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left,
-        top,
-        width,
-        height: height + movementY.value
-      }
-    },
-    l ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left: left + movementX.value,
-        top,
-        width: width - movementX.value,
-        height
-      }
-    },
-    r ({ left, top, width, height, movementX, movementY }) {
-      return {
-        left,
-        top,
-        width: width + movementX.value,
-        height
-      }
-    }
-  }
-
   // 初始化轮廓点的样式
   function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }) {
     point.style.position = 'absolute'
     point.style.width = pointSize + 'px'
     point.style.height = pointSize + 'px'
     point.style.boxSizing = 'border-box'
-    point.style.border = '1px solid #333'
+    point.style.border = '1px solid #999'
     point.style.borderRadius = '50%'
     point.style.display = 'none'
+    point.style.zIndex = '9'
     setPosition(point, pointPosition, direction)
     point.style.cursor = pointPosition[direction][2]
   }
@@ -198,94 +289,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
     }
   }
 
-  const resizeLimitStrategies = {
-    lt ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (movementX.value > moveMaxDistanceX) {
-        movementX.value = moveMaxDistanceX
-      }
-
-      if (movementY.value > moveMaxDistanceY) {
-        movementY.value = moveMaxDistanceY
-      }
-    },
-    lb ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (movementX.value > moveMaxDistanceX) {
-        movementX.value = moveMaxDistanceX
-      }
-      if (-movementY.value > moveMaxDistanceY) {
-        movementY.value = -moveMaxDistanceY
-      }
-    },
-    rt ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (-movementX.value > moveMaxDistanceX) {
-        movementX.value = -moveMaxDistanceX
-      }
-
-      if (movementY.value > moveMaxDistanceY) {
-        movementY.value = moveMaxDistanceY
-      }
-    },
-    rb ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (-movementX.value > moveMaxDistanceX) {
-        movementX.value = -moveMaxDistanceX
-      }
-
-      if (-movementY.value > moveMaxDistanceY) {
-        movementY.value = -moveMaxDistanceY
-      }
-    },
-    l ({ movementX }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceX = width - minWidth
-      if (movementX.value > moveMaxDistanceX) {
-        movementX.value = moveMaxDistanceX
-      }
-    },
-    r ({ movementX }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceX = width - minWidth
-      if (-movementX.value > moveMaxDistanceX) {
-        movementX.value = -moveMaxDistanceX
-      }
-    },
-    t ({ movementY }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceY = height - minHeight
-
-      if (movementY.value > moveMaxDistanceY) {
-        movementY.value = moveMaxDistanceY
-      }
-    },
-    b ({ movementY }) {
-      const { width, height } = initialTarget
-      // 可以移动的最大距离
-      const moveMaxDistanceY = height - minHeight
-
-      if (-movementY.value > moveMaxDistanceY) {
-        movementY.value = -moveMaxDistanceY
-      }
-    }
-  }
-
   function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {// 根据按下点的移动信息 调整元素尺寸和定位
 
     // 限制目标元素最小尺寸
@@ -313,9 +316,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, res
   }
 
   function moveTarget (target: HTMLElement) {
-    // 保证元素绝对定位
-    target.style.position = 'absolute'
-
     // 使元素可以进行焦点设置，但不会参与默认的焦点顺序
     target.tabIndex = -1
 
