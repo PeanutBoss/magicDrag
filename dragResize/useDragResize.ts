@@ -1,5 +1,5 @@
 import { getElement } from "../utils/tools.ts";
-import { onMounted, reactive, watch } from 'vue'
+import { onMounted, reactive, watch, onUnmounted } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 
 /*
@@ -121,6 +121,12 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
     createDragPoint($target, pointSize)
 	})
+  onUnmounted(() => {
+    // 页面卸载时销毁dom元素
+    for (const direction in pointElements) {
+      pointElements[direction].remove()
+    }
+  })
 
   let $target
   const initialTarget = reactive({
@@ -146,17 +152,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
 	}
 
-  // TODO point应该是个单例
-  const pointElements = {
-    lt: null,
-    lb: null,
-    rt: null,
-    rb: null,
-    t: null,
-    b: null,
-    l: null,
-    r: null
-  }
+  const pointElements = {}
 
   // 调整target尺寸时限制最小尺寸的策略
   const resizeLimitStrategies = {
