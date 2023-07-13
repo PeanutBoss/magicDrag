@@ -42,3 +42,7 @@ export function getAdjacentSide (number: number, hypotenuse: number, isRadians =
 export function getHypotenuseSide (oppositeSide: number, adjacentSide: number) {
   return Math.sqrt(oppositeSide ** 2 + adjacentSide ** 2)
 }
+
+export function markLog (str: string):void {
+  console.log(`--------${str}--------`)
+}
