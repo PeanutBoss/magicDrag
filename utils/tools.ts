@@ -16,3 +16,23 @@ export function getElement (ele: string | HTMLElement): HTMLElement {
 	}
 	return ele
 }
+
+export function mergeObject (target, source) {
+	const mergedObject = {}
+	for (const key in { ...target, ...source }) {
+		const curVal = source[key]
+		const originVal = target[key]
+		isNullOrUndefined(curVal) ?
+			mergedObject[key] = originVal :
+			mergedObject[key] = curVal
+
+		if (typeof curVal === 'object') {
+			mergedObject[key] = mergeObject(originVal, curVal)
+		}
+	}
+	return mergedObject
+}
+
+export function isNullOrUndefined (val: unknown): boolean {
+	return val === null || val === undefined
+}

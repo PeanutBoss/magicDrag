@@ -1,6 +1,7 @@
-import { getElement } from "../utils/tools.ts";
+import { getElement, isNullOrUndefined, mergeObject } from "../utils/tools.ts";
 import { onMounted, reactive, watch, onUnmounted } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
+import { baseErrorTips } from './errorHandle.ts'
 
 /*
 * TODO 注释
@@ -114,8 +115,50 @@ const paramStrategies: any = {
   }
 }
 
+const defaultOptions = {
+  minWidth: 100,
+  minHeight: 100,
+  pointSize: 10,
+  skill: {
+    resize: true,
+    drag: true,
+    limitRatio: [3, 4]
+  },
+  pageHasScrollBar: false
+}
+
 export default function useDragResize (targetSelector: string | HTMLElement, options: any = {}) {
-  const { minWidth = 100, minHeight = 100, pointSize = 10 } = options
+  // check whether targetSelector is a selector or an HTMLElement
+  baseErrorTips(
+    typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement),
+    'targetSelector should be a selector or HTML Element'
+  )
+
+  // check that the type of options passed in is correct
+  for (const key in defaultOptions) {
+    const value = options[key]
+    if (isNullOrUndefined(value)) continue
+    const originType = typeof defaultOptions[key]
+    const paramsType = typeof value
+    baseErrorTips(
+      originType !== paramsType,
+      `The type of options.${key} should be ${originType}, But the ${paramsType} type is passed in.`
+      )
+  }
+
+  options = mergeObject(defaultOptions, options)
+  console.log(options)
+  const { minWidth, minHeight, pointSize, pageHasScrollBar, skill } = options
+  const { resize, drag, limitRatio } = skill
+
+  let $target
+  const initialTarget = reactive({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0
+  })
+
 	onMounted(() => {
 		initTarget()
 
@@ -128,22 +171,16 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   })
 
-  let $target
-  const initialTarget = reactive({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0
-  })
 	function initTarget () {
 		$target = getElement(targetSelector)
-    // 保证元素绝对定位
+    baseErrorTips(!$target, 'targetSelector is an invalid selector or HTMLElement')
+
+    // Ensure element absolute positioning
     $target.style.position = 'absolute'
     const { left, top, height, width } = $target.getBoundingClientRect()
     const rect = {
-      // 处理页面滚动的距离
-      left: left + window.scrollX,
-      top: top + window.scrollY,
+      left: pageHasScrollBar ? left + window.scrollX : left,
+      top: pageHasScrollBar ? top + window.scrollY : top,
       height,
       width
     }
@@ -260,34 +297,35 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   // 创建供拖拽的元素
   function createDragPoint (target: HTMLElement, pointSize: number) {
     const parentNode = target.parentNode
-    const pointPosition = createParentPosition(initialTarget, pointSize)
 
     moveTarget(target)
 
-    for (const direction in pointPosition) {
-      const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
-      initPointStyle(point, { pointPosition, direction, pointSize })
-      parentNode.appendChild(point)
+    if (resize) {
+      const pointPosition = createParentPosition(initialTarget, pointSize)
+      for (const direction in pointPosition) {
+        const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
+        initPointStyle(point, { pointPosition, direction, pointSize })
+        parentNode.appendChild(point)
 
-      const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
-        moveAction()
-        movePointCallback({ target, direction, movementX, movementY, pointSize })
-      }, { direction: pointPosition[direction][3] })
+        const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
+          moveAction()
+          movePointCallback({ target, direction, movementX, movementY, pointSize })
+        }, { direction: pointPosition[direction][3] })
 
-      // 松开鼠标时更新宽高信息
-      watch(isPress, () => {
-        if (!isPress.value) {
-          initialTarget.width = target.offsetWidth
-          initialTarget.height = target.offsetHeight
-          initialTarget.left = target.offsetLeft
-          initialTarget.top = target.offsetTop
-        }
-      })
+        // 松开鼠标时更新宽高信息
+        watch(isPress, () => {
+          if (!isPress.value) {
+            initialTarget.width = target.offsetWidth
+            initialTarget.height = target.offsetHeight
+            initialTarget.left = target.offsetLeft
+            initialTarget.top = target.offsetTop
+          }
+        })
+      }
     }
   }
 
-  function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {// 根据按下点的移动信息 调整元素尺寸和定位
-
+  function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {
     // 限制目标元素最小尺寸
     resizeLimitStrategies[direction]({ movementX, movementY })
 
@@ -313,9 +351,11 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   }
 
   function moveTarget (target: HTMLElement) {
-    // 使元素可以进行焦点设置，但不会参与默认的焦点顺序
-    target.tabIndex = -1
-
+    if (!drag) {
+      window.onmousedown = checkIsContainsTarget.bind(null, target)
+      target.onmousedown = mousedown
+      return
+    }
     // 用来记录按下 target 时各个轮廓点的位置信息
     const downPointPosition = {}
     const { isPress, movementY, movementX } = useMovePoint(target, (moveAction) => {
@@ -336,10 +376,11 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
         initialTarget.top += movementY.value
         initialTarget.left += movementX.value
       }
-    }, { immediate: true })
+    })
   }
 
   function mousedown () {
+    console.log('down')
     // 点击目标元素显示轮廓点
     for (const key in pointElements) {
       pointElements[key].style.display = 'block'
@@ -352,13 +393,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       for (const key in pointElements) {
         pointElements[key].style.display = 'none'
       }
-    }
-  }
-
-  function blur (event) {
-    console.log(event.target)
-    for (const key in pointElements) {
-      pointElements[key].style.display = 'none'
     }
   }
 
@@ -379,19 +413,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       b: [left + width / 2 - halfPointSize, top + height - halfPointSize, 'n-resize', 'X'],
       l: [left - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y'],
       r: [left + width - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y']
-    }
-  }
-  function createTargetPosition ({ left, top, width, height }, pointSize: number) {
-    const halfPointSize = pointSize / 2
-    return {
-      lt: [0 - halfPointSize, 0 - halfPointSize, 'nw-resize'],
-      lb: [0 - halfPointSize, height - halfPointSize, 'ne-resize'],
-      rt: [width - halfPointSize, 0 - halfPointSize, 'ne-resize'],
-      rb: [width - halfPointSize, height - halfPointSize, 'nw-resize'],
-      t: [width / 2 - halfPointSize, 0 - halfPointSize, 'n-resize'],
-      b: [width / 2 - halfPointSize, height - halfPointSize, 'n-resize'],
-      l: [0 - halfPointSize, height / 2 - halfPointSize, 'e-resize'],
-      r: [width - halfPointSize, height / 2 - halfPointSize, 'e-resize']
     }
   }
 }
