@@ -10,43 +10,68 @@ import { baseErrorTips } from './errorHandle.ts'
 *  3.移动目标元素
 * */
 
-// 移动不同轮廓点的策略
+// 移动不同轮廓点的策略 可以优化为获取样式信息的策略
 const pointStrategies: any = {
   lt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.left = left + offsetX + 'px'
-    target.style.top = top + offsetY + 'px'
-    target.style.width = width - offsetX + 'px'
-    target.style.height = height - offsetY + 'px'
+    const styleData = {
+      left: left + offsetX + 'px',
+      top: top + offsetY + 'px',
+      width: width - offsetX + 'px',
+      height: height - offsetY + 'px'
+    }
+    setStyle(target, styleData)
   },
   lb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.left = left + offsetX + 'px'
-    target.style.width = width - offsetX + 'px'
-    target.style.height = height + offsetY + 'px'
+    const styleData = {
+      left: left + offsetX + 'px',
+      width: width - offsetX + 'px',
+      height: height + offsetY + 'px'
+    }
+    setStyle(target, styleData)
   },
   rt (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.top = top + offsetY + 'px'
-    target.style.width = width + offsetX + 'px'
-    target.style.height = height - offsetY + 'px'
+    const styleData = {
+      top: top + offsetY + 'px',
+      width: width + offsetX + 'px',
+      height: height - offsetY + 'px'
+    }
+    setStyle(target, styleData)
   },
   rb (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.width = width + offsetX
-    target.style.height = height + offsetY
+    const styleData = {
+      width: width + offsetX + 'px',
+      height: height + offsetY + 'px'
+    }
+    setStyle(target, styleData)
   },
   t (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.top = top + offsetY + 'px'
-    target.style.height = height - offsetY + 'px'
+    const styleData = {
+      top: top + offsetY + 'px',
+      height: height - offsetY + 'px'
+    }
+    setStyle(target, styleData)
   },
   b (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.height = height + offsetY
+    const styleData = {
+      height: height + offsetY + 'px'
+    }
+    setStyle(target, styleData)
   },
   l (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.left = left + offsetX + 'px'
-    target.style.width = width - offsetX + 'px'
+    const styleData = {
+      left: left + offsetX + 'px',
+      width: width - offsetX + 'px'
+    }
+    setStyle(target, styleData)
   },
   r (target: HTMLElement, { left, top, height, width, offsetX, offsetY }) {
-    target.style.width = width + offsetX + 'px'
+    const styleData = {
+      width: width + offsetX + 'px'
+    }
+    setStyle(target, styleData)
   }
 }
+
 // $target 尺寸/坐标 更新后，获取最新轮廓点坐标的策略
 const paramStrategies: any = {
   lt ({ left, top, width, height, movementX, movementY }) {
@@ -127,6 +152,65 @@ const defaultOptions = {
   pageHasScrollBar: false
 }
 
+function setStyle (target: HTMLElement, styleKey: string | object, styleValue?: string) {
+  if (typeof styleKey === 'object') {
+    const keys = Object.keys(styleKey)
+    keys.forEach(key => {
+      target.style[key] = styleKey[key]
+    })
+    return
+  }
+  target.style[styleKey] = styleValue
+}
+
+
+const defaultStyle = {
+  position: 'absolute',
+  boxSizing: 'border-box',
+  border: '1px solid #999',
+  borderRadius: '50%',
+  display: 'none',
+  zIndex: '999'
+}
+// 初始化轮廓点的样式
+function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }) {
+  setStyle(point, defaultStyle)
+  setStyle(point, 'width', pointSize + 'px')
+  setStyle(point, 'height', pointSize + 'px')
+  setStyle(point, 'cursor', pointPosition[direction][2])
+  setPosition(point, pointPosition, direction)
+}
+
+// 设置元素位置
+function setPosition (point: HTMLElement, pointPosition, direction) {
+  setStyle(point, 'left', pointPosition[direction][0] + 'px')
+  setStyle(point, 'top', pointPosition[direction][1] + 'px')
+}
+
+// 创建/更新记录目标元素坐标和尺寸信息得对象
+function updateInitialTarget (targetCoordinate?, newCoordinate?) {
+  if (targetCoordinate && newCoordinate) {
+    for (const key in targetCoordinate) {
+      targetCoordinate[key] = newCoordinate[key]
+    }
+  }
+  return reactive({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0
+  })
+}
+
+function getCoordinateByElement (element: HTMLElement) {
+  return {
+    width: element.offsetWidth,
+    height: element.offsetHeight,
+    left: element.offsetLeft,
+    top: element.offsetTop
+  }
+}
+
 export default function useDragResize (targetSelector: string | HTMLElement, options: any = {}) {
   // check whether targetSelector is a selector or an HTMLElement
   baseErrorTips(
@@ -151,13 +235,12 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   const { minWidth, minHeight, pointSize, pageHasScrollBar, skill } = options
   const { resize, drag, limitRatio } = skill
 
+  // 目标元素
   let $target
-  const initialTarget = reactive({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0
-  })
+  // 目标元素的坐标和尺寸信息
+  const initialTarget = updateInitialTarget()
+  // 保存轮廓点
+  const pointElements = {}
 
 	onMounted(() => {
 		initTarget()
@@ -176,7 +259,9 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     baseErrorTips(!$target, 'targetSelector is an invalid selector or HTMLElement')
 
     // Ensure element absolute positioning
-    $target.style.position = 'absolute'
+    setStyle($target, 'position', 'absolute')
+    drag && setStyle($target, 'cursor', 'all-scroll')
+
     const { left, top, height, width } = $target.getBoundingClientRect()
     const rect = {
       left: pageHasScrollBar ? left + window.scrollX : left,
@@ -189,10 +274,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
 	}
 
-  const pointElements = {}
-
   // 调整target尺寸时限制最小尺寸的策略
-  const resizeLimitStrategies = {
+  const resizeLimitStrategies: any = {
     lt ({ movementX, movementY }) {
       const { width, height } = initialTarget
       // 可以移动的最大距离
@@ -280,21 +363,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
 
-  // 初始化轮廓点的样式
-  function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }) {
-    point.style.position = 'absolute'
-    point.style.width = pointSize + 'px'
-    point.style.height = pointSize + 'px'
-    point.style.boxSizing = 'border-box'
-    point.style.border = '1px solid #999'
-    point.style.borderRadius = '50%'
-    point.style.display = 'none'
-    point.style.zIndex = '9'
-    setPosition(point, pointPosition, direction)
-    point.style.cursor = pointPosition[direction][2]
-  }
-
-  // 创建供拖拽的元素
+  // 创建供拖拽的轮廓点
   function createDragPoint (target: HTMLElement, pointSize: number) {
     const parentNode = target.parentNode
 
@@ -315,10 +384,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
         // 松开鼠标时更新宽高信息
         watch(isPress, () => {
           if (!isPress.value) {
-            initialTarget.width = target.offsetWidth
-            initialTarget.height = target.offsetHeight
-            initialTarget.left = target.offsetLeft
-            initialTarget.top = target.offsetTop
+            updateInitialTarget(initialTarget, getCoordinateByElement(target))
           }
         })
       }
@@ -329,6 +395,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     // 限制目标元素最小尺寸
     resizeLimitStrategies[direction]({ movementX, movementY })
 
+    // 更新目标元素坐标和尺寸信息
     pointStrategies[direction](target, {
       left: initialTarget.left,
       top: initialTarget.top,
@@ -351,55 +418,43 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   }
 
   function moveTarget (target: HTMLElement) {
-    if (!drag) {
-      window.onmousedown = checkIsContainsTarget.bind(null, target)
-      target.onmousedown = mousedown
-      return
-    }
+
+    window.addEventListener('mousedown', checkIsContainsTarget.bind(null, target))
+
+    if (!drag) return
     // 用来记录按下 target 时各个轮廓点的位置信息
     const downPointPosition = {}
     const { isPress, movementY, movementX } = useMovePoint(target, (moveAction) => {
       moveAction()
       for (const key in pointElements) {
-        pointElements[key].style.left = downPointPosition[key][0] + movementX.value + 'px'
-        pointElements[key].style.top = downPointPosition[key][1] + movementY.value + 'px'
+        setStyle(pointElements[key], 'left', downPointPosition[key][0] + movementX.value + 'px')
+        setStyle(pointElements[key], 'top', downPointPosition[key][1] + movementY.value + 'px')
       }
     })
     watch(isPress, () => {
       if (isPress.value) {
-        mousedown()
         for (const key in pointElements) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
       } else {
-        window.onmousedown = checkIsContainsTarget.bind(null, target)
         initialTarget.top += movementY.value
         initialTarget.left += movementX.value
       }
     })
   }
 
-  function mousedown () {
-    console.log('down')
-    // 点击目标元素显示轮廓点
-    for (const key in pointElements) {
-      pointElements[key].style.display = 'block'
-    }
-  }
   function checkIsContainsTarget (target, event) {
     const blurElements = [target, ...Object.values(pointElements)]
     if (!blurElements.includes(event.target)) {
-      // 失去交点隐藏轮廓点
+      // 失去焦点隐藏轮廓点
       for (const key in pointElements) {
-        pointElements[key].style.display = 'none'
+        setStyle(pointElements[key], 'display', 'none')
+      }
+    } else {
+      for (const key in pointElements) {
+        setStyle(pointElements[key], 'display', 'block')
       }
     }
-  }
-
-  // 设置元素位置
-  function setPosition (point: HTMLElement, pointPosition, direction) {
-    point.style.left = pointPosition[direction][0] + 'px'
-    point.style.top = pointPosition[direction][1] + 'px'
   }
 
   function createParentPosition ({ left, top, width, height }, pointSize: number) {
