@@ -47,3 +47,9 @@ export function removeElements (elements: HTMLElement[]) {
 		ele.remove()
 	})
 }
+
+export function baseErrorTips (condition, msg) {
+	if (condition) {
+		throw Error(msg)
+	}
+}

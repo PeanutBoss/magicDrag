@@ -11,6 +11,7 @@ const App = {
       <div class="point"></div>
     </div>
     <div style="height: 800px">
+    {{ targetCoordinate.width }} {{ targetCoordinate.height }} {{ targetCoordinate.top }} {{ targetCoordinate.left }}
       <div class="box"></div>
       <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
     </div>
@@ -18,12 +19,15 @@ const App = {
   setup () {
     useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, skill: { resize: false, drag: true } })
 
-    const moveInfo = useDragResize('.box1', {
+    const { targetCoordinate } = useDragResize('.box1', {
       minHeight: 100,
       minWidth: 100,
       pageHasScrollBar: true,
       skill: { resize: true, drag: true }
     })
+    return {
+      targetCoordinate
+    }
   }
 }
 

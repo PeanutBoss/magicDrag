@@ -1,7 +1,6 @@
-import { getElement, isNullOrUndefined, mergeObject, removeElements } from "../utils/tools.ts";
-import { onMounted, reactive, watch, onUnmounted } from 'vue'
+import { getElement, isNullOrUndefined, mergeObject, removeElements, baseErrorTips } from "../utils/tools.ts";
+import {onMounted, reactive, watch, onUnmounted, ref, Ref} from 'vue'
 import useMovePoint from "./useMovePoint.ts";
-import { baseErrorTips } from './errorHandle.ts'
 import { createCoordinateStrategies, createParamStrategies, createResizeLimitStrategies, setPosition, createParentPosition } from '../utils/dragResize.ts'
 import type { Direction, PointPosition } from '../utils/dragResize.ts'
 
@@ -96,6 +95,34 @@ const pointDefaultStyle: { [key: string]: string } = {
   borderRadius: '50%',
   display: 'none',
   zIndex: '999'
+}
+
+/*
+* {
+    targetIsPress: targetMoveInfo.isPress,
+    targetCanIMove: targetMoveInfo.canIMove,
+    targetMovement: {
+      movementX: targetMoveInfo.movementX,
+      movementY: targetMoveInfo.movementY
+    },
+    targetCoordinate: {
+      left: targetMoveInfo.left,
+      top: targetMoveInfo.top,
+      width: ref(targetMoveInfo.movementX + initialTarget.width),
+      height: ref(targetMoveInfo.movementY + initialTarget.height)
+    }
+  }
+* */
+interface DragResizeState {
+  targetIsPress: Ref<boolean>
+  targetCanIMove: Ref<{ x: boolean, y: boolean }>
+  targetMovement: { movementX: Ref<number>, movementY: Ref<number> }
+  targetCoordinate: {
+    left: Ref<number>
+    top: Ref<number>
+    width: Ref<number>
+    height: Ref<number>
+  }
 }
 
 export default function useDragResize (targetSelector: string | HTMLElement, options: DragResizeOptions) {
@@ -216,7 +243,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
 
-  let targetMoveInfo
+  let targetMoveInfo = reactive({})
   function moveTarget (target: HTMLElement) {
 
     window.addEventListener('mousedown', checkIsContainsTarget.bind(null, target))
@@ -260,7 +287,17 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   }
 
   return {
-    targetMoveInfo,
-    initialTarget
+    // targetIsPress: targetMoveInfo.isPress,
+    // targetCanIMove: targetMoveInfo.canIMove,
+    // targetMovement: {
+    //   movementX: targetMoveInfo.movementX,
+    //   movementY: targetMoveInfo.movementY
+    // },
+    // targetCoordinate: {
+    //   left: targetMoveInfo.left,
+    //   top: targetMoveInfo.top,
+    //   width: ref(targetMoveInfo.movementX + initialTarget.width),
+    //   height: ref(targetMoveInfo.movementY + initialTarget.height)
+    // }
   }
 }
