@@ -1,4 +1,4 @@
-import { createApp } from 'vue/dist/vue.esm-bundler.js'
+import { createApp, watch } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
 
 const App = {
@@ -11,7 +11,13 @@ const App = {
       <div class="point"></div>
     </div>
     <div style="height: 800px">
-<!--    {{ targetCoordinate.width }} {{ targetCoordinate.height }} {{ targetCoordinate.top }} {{ targetCoordinate.left }}-->
+<!--      {{ targetCoordinate.targetLeft }} {{ targetCoordinate.targetTop }}-->
+<!--      -&#45;&#45;-->
+<!--      {{ targetCoordinate.targetWidth }} {{ targetCoordinate.targetHeight }}-->
+<!--      -&#45;&#45;-->
+<!--      {{ targetCoordinate.targetIsPress }}-->
+<!--      -&#45;&#45;-->
+<!--      {{ targetCoordinate.targetMovementX }}-->
       <div class="box"></div>
       <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
     </div>
@@ -19,7 +25,7 @@ const App = {
   setup () {
     useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, skill: { resize: false, drag: true } })
 
-    useDragResize('.box1', {
+    const targetCoordinate: any = useDragResize('.box1', {
       minHeight: 100,
       minWidth: 100,
       pageHasScrollBar: true,

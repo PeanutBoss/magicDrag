@@ -1,3 +1,5 @@
+export const EXECUTE_NEXT_TASK = 'EXECUTE_NEXT_TASK'
+
 export function throttle (fn: any, delay: number) {
 	let flag = true
 	return () => {
@@ -52,4 +54,17 @@ export function baseErrorTips (condition, msg) {
 	if (condition) {
 		throw Error(msg)
 	}
+}
+
+export function insertAfter () {
+  Reflect.set(Function.prototype, 'after', function (fn) {
+    const self = this
+    return function (...rest) {
+      const ret = self.apply(this, rest)
+      if (ret === EXECUTE_NEXT_TASK) {
+        return fn.apply(this, rest)
+      }
+      return ret
+    }
+  })
 }

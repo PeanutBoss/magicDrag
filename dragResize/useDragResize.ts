@@ -1,8 +1,10 @@
-import { getElement, isNullOrUndefined, mergeObject, removeElements, baseErrorTips } from "../utils/tools.ts";
-import {onMounted, reactive, watch, onUnmounted, ref, Ref} from 'vue'
+import { getElement, isNullOrUndefined, mergeObject, removeElements, baseErrorTips, insertAfter, EXECUTE_NEXT_TASK } from "../utils/tools.ts";
+import {onMounted, reactive, watch, onUnmounted, Ref} from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import { createCoordinateStrategies, createParamStrategies, createResizeLimitStrategies, setPosition, createParentPosition } from '../utils/dragResize.ts'
 import type { Direction, PointPosition } from '../utils/dragResize.ts'
+
+insertAfter()
 
 // 移动不同轮廓点的策略 可以优化为获取样式信息的策略
 const pointStrategies = createCoordinateStrategies()
@@ -144,7 +146,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
   options = mergeObject(defaultOptions, options)
   const { minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
-  const { resize, drag, limitRatio } = skill
+  const { resize, drag } = skill
   const { dragCallback, resizeCallback } = callbacks
 
   // the target element being manipulated
@@ -202,7 +204,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
         const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
           moveAction()
-          movePointCallback({ target, direction, movementX, movementY, pointSize })
+          // movePointCallback({ target, direction, movementX, movementY, pointSize })
+          movePointCallback(target, { direction, movementX, movementY, pointSize })
           resizeCallback?.(direction as Direction, { movementX: movementX.value, movementY: movementY.value })
         }, { direction: pointPosition[direction][3] })
 
@@ -216,11 +219,15 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
 
-  function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {
-    // limits the minimum size of the target element
+  // the callback that moves the target element
+  const movePointCallback = limitTargetResize.after(updateTargetStyle.after(updatePointPosition))
+  // limits the minimum size of the target element
+  function limitTargetResize (target, { direction, movementX, movementY }) {
     resizeLimitStrategies[direction]({ movementX, movementY })
-
-    // updates the coordinates and dimensions of the target element
+    return EXECUTE_NEXT_TASK
+  }
+  // updates the coordinates and dimensions of the target element
+  function updateTargetStyle (target, { direction, movementX, movementY }) {
     const styleData = pointStrategies[direction]({
       left: initialTarget.left,
       top: initialTarget.top,
@@ -230,7 +237,12 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       offsetY: movementY.value
     })
     setStyle(target, styleData)
-
+    return EXECUTE_NEXT_TASK
+  }
+  // Obtain the latest coordinate and dimension information of target.
+  // Different strategies are used to calculate coordinates and dimensions at different points
+  // Finally, the position of the contour points is set according to the new coordinate and dimension information
+  function updatePointPosition (target, { direction, movementX, movementY, pointSize }) {
     // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
     const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
     // 根据新的坐标和尺寸信息设置轮廓点的位置
@@ -242,8 +254,15 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
     }
   }
+  // function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {
+  //
+  //   limitTargetResize(target, { direction, movementX, movementY })
+  //
+  //   updateTargetStyle(target, { direction, movementX, movementY })
+  //
+  //   updatePointPosition(target, { direction, movementX, movementY })
+  // }
 
-  let targetMoveInfo = reactive({})
   function moveTarget (target: HTMLElement) {
 
     window.addEventListener('mousedown', checkIsContainsTarget.bind(null, target))
@@ -251,22 +270,22 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     if (!drag) return
     // used to record the position information of each contour point when the target is pressed
     const downPointPosition = {}
-    targetMoveInfo = useMovePoint(target, (moveAction) => {
+    const { movementX, movementY, isPress } = useMovePoint(target, (moveAction) => {
       moveAction()
       for (const key in pointElements) {
-        setStyle(pointElements[key], 'left', downPointPosition[key][0] + targetMoveInfo.movementX.value + 'px')
-        setStyle(pointElements[key], 'top', downPointPosition[key][1] + targetMoveInfo.movementY.value + 'px')
+        setStyle(pointElements[key], 'left', downPointPosition[key][0] + movementX.value + 'px')
+        setStyle(pointElements[key], 'top', downPointPosition[key][1] + movementY.value + 'px')
       }
-      dragCallback?.({ movementX: targetMoveInfo.movementX.value, movementY: targetMoveInfo.movementY.value })
+      dragCallback?.({ movementX: movementX.value, movementY: movementY.value })
     })
-    watch(targetMoveInfo.isPress, (newV) => {
+    watch(isPress, (newV) => {
       if (newV) {
         for (const key in pointElements) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
       } else {
-        initialTarget.top += targetMoveInfo.movementY.value
-        initialTarget.left += targetMoveInfo.movementX.value
+        initialTarget.top += movementY.value
+        initialTarget.left += movementX.value
       }
     })
   }
