@@ -18,6 +18,7 @@ export function getElement (ele: string | HTMLElement): HTMLElement {
 }
 
 export function mergeObject (target, source) {
+	if (!source) return { ...target }
 	const mergedObject = {}
 	for (const key in { ...target, ...source }) {
 		const curVal = source[key]
@@ -39,4 +40,10 @@ export function isNullOrUndefined (val: unknown): boolean {
 
 export function conditionExecute (condition, task1, task2) {
 	return condition ? task1 : task2
+}
+
+export function removeElements (elements: HTMLElement[]) {
+	elements.forEach(ele => {
+		ele.remove()
+	})
 }

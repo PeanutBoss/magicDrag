@@ -16,8 +16,14 @@ const App = {
     </div>
   `,
   setup () {
-    useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, skill: { resize: true, drag: false } })
-    useDragResize('.box1', { minHeight: 100, minWidth: 100, pageHasScrollBar: true, skill: { resize: true, drag: true } })
+    useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, skill: { resize: false, drag: true } })
+
+    const moveInfo = useDragResize('.box1', {
+      minHeight: 100,
+      minWidth: 100,
+      pageHasScrollBar: true,
+      skill: { resize: true, drag: true }
+    })
   }
 }
 

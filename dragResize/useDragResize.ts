@@ -1,4 +1,4 @@
-import { getElement, isNullOrUndefined, mergeObject } from "../utils/tools.ts";
+import { getElement, isNullOrUndefined, mergeObject, removeElements } from "../utils/tools.ts";
 import { onMounted, reactive, watch, onUnmounted } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import { baseErrorTips } from './errorHandle.ts'
@@ -9,18 +9,6 @@ import type { Direction, PointPosition } from '../utils/dragResize.ts'
 const pointStrategies = createCoordinateStrategies()
 
 const paramStrategies = createParamStrategies()
-
-const defaultOptions = {
-  minWidth: 100,
-  minHeight: 100,
-  pointSize: 10,
-  skill: {
-    resize: true,
-    drag: true,
-    limitRatio: [3, 4]
-  },
-  pageHasScrollBar: false
-}
 
 function setStyle (target: HTMLElement, styleKey: string | object, styleValue?: string) {
   if (typeof styleKey === 'object') {
@@ -33,15 +21,6 @@ function setStyle (target: HTMLElement, styleKey: string | object, styleValue?: 
   target.style[styleKey] = styleValue
 }
 
-const defaultStyle: { [key: string]: string } = {
-  position: 'absolute',
-  boxSizing: 'border-box',
-  border: '1px solid #999',
-  borderRadius: '50%',
-  display: 'none',
-  zIndex: '999'
-}
-
 interface InitPointOption {
   pointPosition: PointPosition
   direction: Direction
@@ -49,7 +28,7 @@ interface InitPointOption {
 }
 // initializes the style of the contour points
 function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }: InitPointOption) {
-  setStyle(point, defaultStyle)
+  setStyle(point, pointDefaultStyle)
   setStyle(point, 'width', pointSize + 'px')
   setStyle(point, 'height', pointSize + 'px')
   setStyle(point, 'cursor', pointPosition[direction][2])
@@ -81,7 +60,45 @@ function getCoordinateByElement (element: HTMLElement) {
   }
 }
 
-export default function useDragResize (targetSelector: string | HTMLElement, options = {}) {
+interface DragResizeOptions {
+  minWidth?: number
+  minHeight?: number
+  pointSize?: number
+  pageHasScrollBar?: boolean
+  skill?: {
+    resize?: boolean
+    drag?: boolean
+    limitRatio?: [number, number]
+  },
+  callbacks?: {
+    dragCallback?: (movement: { movementX: number, movementY: number }) => void
+    resizeCallback?: (direction: Direction, movement: { movementX: number, movementY: number } ) => void
+  }
+}
+// default configuration
+const defaultOptions: DragResizeOptions = {
+  minWidth: 100, // minimum width
+  minHeight: 100, // minimum height
+  pointSize: 10, // the size of the contour point
+  pageHasScrollBar: false, // whether the page has a scroll bar
+  skill: {
+    resize: true, // whether the size adjustment is supported
+    drag: true // whether to support dragging
+  },
+  callbacks: {}
+}
+
+// default style for contour points
+const pointDefaultStyle: { [key: string]: string } = {
+  position: 'absolute',
+  boxSizing: 'border-box',
+  border: '1px solid #999',
+  borderRadius: '50%',
+  display: 'none',
+  zIndex: '999'
+}
+
+export default function useDragResize (targetSelector: string | HTMLElement, options: DragResizeOptions) {
   // check whether targetSelector is a selector or an HTMLElement
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
@@ -99,8 +116,9 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   }
 
   options = mergeObject(defaultOptions, options)
-  const { minWidth, minHeight, pointSize, pageHasScrollBar, skill } = options
+  const { minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
   const { resize, drag, limitRatio } = skill
+  const { dragCallback, resizeCallback } = callbacks
 
   // the target element being manipulated
   let $target
@@ -116,9 +134,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 	})
   onUnmounted(() => {
     // the dom element is destroyed when the page is uninstalled
-    for (const direction in pointElements) {
-      pointElements[direction].remove()
-    }
+    removeElements(Object.values(pointElements))
   })
 
 	function initTarget () {
@@ -160,6 +176,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
         const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
           moveAction()
           movePointCallback({ target, direction, movementX, movementY, pointSize })
+          resizeCallback?.(direction as Direction, { movementX: movementX.value, movementY: movementY.value })
         }, { direction: pointPosition[direction][3] })
 
         // update the width and height information when releasing the mouse
@@ -199,6 +216,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
 
+  let targetMoveInfo
   function moveTarget (target: HTMLElement) {
 
     window.addEventListener('mousedown', checkIsContainsTarget.bind(null, target))
@@ -206,21 +224,22 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     if (!drag) return
     // used to record the position information of each contour point when the target is pressed
     const downPointPosition = {}
-    const { isPress, movementY, movementX } = useMovePoint(target, (moveAction) => {
+    targetMoveInfo = useMovePoint(target, (moveAction) => {
       moveAction()
       for (const key in pointElements) {
-        setStyle(pointElements[key], 'left', downPointPosition[key][0] + movementX.value + 'px')
-        setStyle(pointElements[key], 'top', downPointPosition[key][1] + movementY.value + 'px')
+        setStyle(pointElements[key], 'left', downPointPosition[key][0] + targetMoveInfo.movementX.value + 'px')
+        setStyle(pointElements[key], 'top', downPointPosition[key][1] + targetMoveInfo.movementY.value + 'px')
       }
+      dragCallback?.({ movementX: targetMoveInfo.movementX.value, movementY: targetMoveInfo.movementY.value })
     })
-    watch(isPress, () => {
-      if (isPress.value) {
+    watch(targetMoveInfo.isPress, (newV) => {
+      if (newV) {
         for (const key in pointElements) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
       } else {
-        initialTarget.top += movementY.value
-        initialTarget.left += movementX.value
+        initialTarget.top += targetMoveInfo.movementY.value
+        initialTarget.left += targetMoveInfo.movementX.value
       }
     })
   }
@@ -238,5 +257,10 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
         setStyle(pointElements[key], 'display', 'block')
       }
     }
+  }
+
+  return {
+    targetMoveInfo,
+    initialTarget
   }
 }
