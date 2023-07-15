@@ -36,3 +36,7 @@ export function mergeObject (target, source) {
 export function isNullOrUndefined (val: unknown): boolean {
 	return val === null || val === undefined
 }
+
+export function conditionExecute (condition, task1, task2) {
+	return condition ? task1 : task2
+}

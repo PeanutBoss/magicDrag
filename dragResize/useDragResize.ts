@@ -2,101 +2,12 @@ import { getElement, isNullOrUndefined, mergeObject } from "../utils/tools.ts";
 import { onMounted, reactive, watch, onUnmounted } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import { baseErrorTips } from './errorHandle.ts'
+import { createCoordinateStrategies, createParamStrategies, createResizeLimitStrategies, setPosition, createParentPosition } from '../utils/dragResize.ts'
+import type { Direction, PointPosition } from '../utils/dragResize.ts'
 
-const All_DIRECTION = ['lt', 'lb', 'rt', 'rb', 'l', 'r', 't', 'b']
-
-function getDirectionExplain (direction) {
-  const hasL = direction.indexOf('l') > -1
-  const hasR = direction.indexOf('r') > -1
-  const hasB = direction.indexOf('b') > -1
-  const hasT = direction.indexOf('t') > -1
-  return {
-    hasL,
-    hasR,
-    hasT,
-    hasB
-  }
-}
-
-function createCoordinateStrategies () {
-  const strategies = {}
-  All_DIRECTION.forEach(direction => {
-    const { hasT, hasR, hasB, hasL } = getDirectionExplain(direction)
-    strategies[direction] = ({ left, top, height, width, offsetX, offsetY }) => {
-      return {
-        left: conditionExecute(hasL, left + offsetX + 'px', left + 'px'),
-        top: conditionExecute(hasT, top + offsetY + 'px', top + 'px'),
-        width: conditionExecute(hasL, width - offsetX + 'px', conditionExecute(hasR, width + offsetX + 'px', width + 'px')),
-        height: conditionExecute(hasT, height - offsetY + 'px', conditionExecute(hasB, height + offsetY + 'px', height + 'px'))
-      }
-    }
-  })
-  return strategies
-}
 // 移动不同轮廓点的策略 可以优化为获取样式信息的策略
-const pointStrategies: any = createCoordinateStrategies()
+const pointStrategies = createCoordinateStrategies()
 
-// 创建调整目标大小时限制最小尺寸的策略
-function createResizeLimitStrategies (initialTarget, minWidth, minHeight) {
-  const strategies = {}
-  const leftTask = (movementX, moveMaxDistanceX) => {
-    if (movementX.value > moveMaxDistanceX) {
-      movementX.value = moveMaxDistanceX
-    }
-  }
-  const topTask = (movementY, moveMaxDistanceY) => {
-    if (movementY.value > moveMaxDistanceY) {
-      movementY.value = moveMaxDistanceY
-    }
-  }
-  const bottomTask = (movementY, moveMaxDistanceY) => {
-    if (-movementY.value > moveMaxDistanceY) {
-      movementY.value = -moveMaxDistanceY
-    }
-  }
-  const rightTask = (movementX, moveMaxDistanceX) => {
-    if (-movementX.value > moveMaxDistanceX) {
-      movementX.value = -moveMaxDistanceX
-    }
-  }
-
-  All_DIRECTION.forEach(direction => {
-    strategies[direction] = ({ movementX, movementY }) => {
-      const { width, height } = initialTarget
-      const { hasT, hasR, hasB, hasL } = getDirectionExplain(direction)
-      // the maximum distance that can be moved
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-
-      hasL && leftTask(movementX, moveMaxDistanceX)
-      hasT && topTask(movementY, moveMaxDistanceY)
-      hasR && rightTask(movementX, moveMaxDistanceX)
-      hasB && bottomTask(movementY, moveMaxDistanceY)
-    }
-  })
-  return strategies
-}
-
-function conditionExecute (condition, task1, task2) {
-  return condition ? task1 : task2
-}
-
-// get the latest contour point coordinate policy after creating update target dimensions/coordinates
-function createParamStrategies () {
-  const strategies = {}
-  All_DIRECTION.forEach(direction => {
-    const { hasT, hasR, hasB, hasL } = getDirectionExplain(direction)
-    strategies[direction] = ({ left, top, width, height, movementX, movementY }) => {
-      return {
-        left: conditionExecute(hasL, left + movementX.value, left),
-        top: conditionExecute(hasT, top + movementY.value, top),
-        width: conditionExecute(hasL, width - movementX.value, conditionExecute(hasR, width + movementX.value, width)),
-        height: conditionExecute(hasT, height - movementY.value, conditionExecute(hasB, height + movementY.value, height))
-      }
-    }
-  })
-  return strategies
-}
 const paramStrategies = createParamStrategies()
 
 const defaultOptions = {
@@ -122,23 +33,7 @@ function setStyle (target: HTMLElement, styleKey: string | object, styleValue?: 
   target.style[styleKey] = styleValue
 }
 
-
-
-function createParentPosition ({ left, top, width, height }, pointSize: number) {
-  const halfPointSize = pointSize / 2
-  return {
-    lt: [left - halfPointSize, top - halfPointSize, 'nw-resize'],
-    lb: [left - halfPointSize, top + height - halfPointSize, 'ne-resize'],
-    rt: [left + width - halfPointSize, top - halfPointSize, 'ne-resize'],
-    rb: [left + width - halfPointSize, top + height - halfPointSize, 'nw-resize'],
-    t: [left + width / 2 - halfPointSize, top - halfPointSize, 'n-resize', 'X'],
-    b: [left + width / 2 - halfPointSize, top + height - halfPointSize, 'n-resize', 'X'],
-    l: [left - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y'],
-    r: [left + width - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y']
-  }
-}
-
-const defaultStyle = {
+const defaultStyle: { [key: string]: string } = {
   position: 'absolute',
   boxSizing: 'border-box',
   border: '1px solid #999',
@@ -146,19 +41,19 @@ const defaultStyle = {
   display: 'none',
   zIndex: '999'
 }
+
+interface InitPointOption {
+  pointPosition: PointPosition
+  direction: Direction
+  pointSize: number
+}
 // initializes the style of the contour points
-function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }) {
+function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }: InitPointOption) {
   setStyle(point, defaultStyle)
   setStyle(point, 'width', pointSize + 'px')
   setStyle(point, 'height', pointSize + 'px')
   setStyle(point, 'cursor', pointPosition[direction][2])
   setPosition(point, pointPosition, direction)
-}
-
-// set element position
-function setPosition (point: HTMLElement, pointPosition, direction) {
-  setStyle(point, 'left', pointPosition[direction][0] + 'px')
-  setStyle(point, 'top', pointPosition[direction][1] + 'px')
 }
 
 // creates/updates objects that record coordinate and dimension information for target elements
@@ -186,7 +81,7 @@ function getCoordinateByElement (element: HTMLElement) {
   }
 }
 
-export default function useDragResize (targetSelector: string | HTMLElement, options: any = {}) {
+export default function useDragResize (targetSelector: string | HTMLElement, options = {}) {
   // check whether targetSelector is a selector or an HTMLElement
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
@@ -204,7 +99,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   }
 
   options = mergeObject(defaultOptions, options)
-  console.log(options)
   const { minWidth, minHeight, pointSize, pageHasScrollBar, skill } = options
   const { resize, drag, limitRatio } = skill
 
@@ -248,7 +142,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 	}
 
   // a policy to limit the minimum size when resizing a target
-  const resizeLimitStrategies: any = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
+  const resizeLimitStrategies = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
 
   // create outline points for dragging
   function createDragPoint (target: HTMLElement, pointSize: number) {
@@ -260,7 +154,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       const pointPosition = createParentPosition(initialTarget, pointSize)
       for (const direction in pointPosition) {
         const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
-        initPointStyle(point, { pointPosition, direction, pointSize })
+        initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize })
         parentNode.appendChild(point)
 
         const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
@@ -301,7 +195,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       // 不需要更新当前拖拽的点
       if (innerDirection === direction) continue
       // 设置 innerDirection 对应点的位置信息
-      setPosition(pointElements[innerDirection], pointPosition, innerDirection)
+      setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
     }
   }
 
