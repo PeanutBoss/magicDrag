@@ -8,7 +8,7 @@
 import { getElement } from "../utils/tools.ts";
 import { onMounted, reactive, watch, onBeforeUnmount } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
-import { markLog } from "./toosl.ts";
+import { markLog } from "../utils/toosl.ts";
 
 const pointElements = {}
 export function createUseDragResize () {
