@@ -36,6 +36,47 @@ function createCoordinateStrategies () {
 // 移动不同轮廓点的策略 可以优化为获取样式信息的策略
 const pointStrategies: any = createCoordinateStrategies()
 
+// 创建调整目标大小时限制最小尺寸的策略
+function createResizeLimitStrategies (initialTarget, minWidth, minHeight) {
+  const strategies = {}
+  const leftTask = (movementX, moveMaxDistanceX) => {
+    if (movementX.value > moveMaxDistanceX) {
+      movementX.value = moveMaxDistanceX
+    }
+  }
+  const topTask = (movementY, moveMaxDistanceY) => {
+    if (movementY.value > moveMaxDistanceY) {
+      movementY.value = moveMaxDistanceY
+    }
+  }
+  const bottomTask = (movementY, moveMaxDistanceY) => {
+    if (-movementY.value > moveMaxDistanceY) {
+      movementY.value = -moveMaxDistanceY
+    }
+  }
+  const rightTask = (movementX, moveMaxDistanceX) => {
+    if (-movementX.value > moveMaxDistanceX) {
+      movementX.value = -moveMaxDistanceX
+    }
+  }
+
+  All_DIRECTION.forEach(direction => {
+    strategies[direction] = ({ movementX, movementY }) => {
+      const { width, height } = initialTarget
+      const { hasT, hasR, hasB, hasL } = getDirectionExplain(direction)
+      // the maximum distance that can be moved
+      const moveMaxDistanceX = width - minWidth
+      const moveMaxDistanceY = height - minHeight
+
+      hasL && leftTask(movementX, moveMaxDistanceX)
+      hasT && topTask(movementY, moveMaxDistanceY)
+      hasR && rightTask(movementX, moveMaxDistanceX)
+      hasB && bottomTask(movementY, moveMaxDistanceY)
+    }
+  })
+  return strategies
+}
+
 function conditionExecute (condition, task1, task2) {
   return condition ? task1 : task2
 }
@@ -207,86 +248,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 	}
 
   // a policy to limit the minimum size when resizing a target
-  const resizeLimitStrategies: any = {
-    lt ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      // the maximum distance that can be moved
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (movementX.value > moveMaxDistanceX) {
-        movementX.value = moveMaxDistanceX
-      }
-
-      if (movementY.value > moveMaxDistanceY) {
-        movementY.value = moveMaxDistanceY
-      }
-    },
-    lb ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (movementX.value > moveMaxDistanceX) {
-        movementX.value = moveMaxDistanceX
-      }
-      if (-movementY.value > moveMaxDistanceY) {
-        movementY.value = -moveMaxDistanceY
-      }
-    },
-    rt ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (-movementX.value > moveMaxDistanceX) {
-        movementX.value = -moveMaxDistanceX
-      }
-
-      if (movementY.value > moveMaxDistanceY) {
-        movementY.value = moveMaxDistanceY
-      }
-    },
-    rb ({ movementX, movementY }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceX = width - minWidth
-      const moveMaxDistanceY = height - minHeight
-      if (-movementX.value > moveMaxDistanceX) {
-        movementX.value = -moveMaxDistanceX
-      }
-
-      if (-movementY.value > moveMaxDistanceY) {
-        movementY.value = -moveMaxDistanceY
-      }
-    },
-    l ({ movementX }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceX = width - minWidth
-      if (movementX.value > moveMaxDistanceX) {
-        movementX.value = moveMaxDistanceX
-      }
-    },
-    r ({ movementX }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceX = width - minWidth
-      if (-movementX.value > moveMaxDistanceX) {
-        movementX.value = -moveMaxDistanceX
-      }
-    },
-    t ({ movementY }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceY = height - minHeight
-
-      if (movementY.value > moveMaxDistanceY) {
-        movementY.value = moveMaxDistanceY
-      }
-    },
-    b ({ movementY }) {
-      const { width, height } = initialTarget
-      const moveMaxDistanceY = height - minHeight
-
-      if (-movementY.value > moveMaxDistanceY) {
-        movementY.value = -moveMaxDistanceY
-      }
-    }
-  }
+  const resizeLimitStrategies: any = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
 
   // create outline points for dragging
   function createDragPoint (target: HTMLElement, pointSize: number) {

@@ -65,7 +65,7 @@ const paramStrategies = {
 }
 }
 
-function setStyle() {
+function setStyle(a, b) {
 
 }
 
@@ -127,5 +127,87 @@ const pointStrategies: any = {
 			width: width + offsetX + 'px'
 		}
 		setStyle(target, styleData)
+	}
+}
+
+let initialTarget = {}, minWidth, minHeight
+const resizeLimitStrategies: any = {
+	lt ({ movementX, movementY }) {
+		const { width, height } = initialTarget
+		// the maximum distance that can be moved
+		const moveMaxDistanceX = width - minWidth
+		const moveMaxDistanceY = height - minHeight
+		if (movementX.value > moveMaxDistanceX) {
+			movementX.value = moveMaxDistanceX
+		}
+
+		if (movementY.value > moveMaxDistanceY) {
+			movementY.value = moveMaxDistanceY
+		}
+	},
+	lb ({ movementX, movementY }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceX = width - minWidth
+		const moveMaxDistanceY = height - minHeight
+		if (movementX.value > moveMaxDistanceX) {
+			movementX.value = moveMaxDistanceX
+		}
+		if (-movementY.value > moveMaxDistanceY) {
+			movementY.value = -moveMaxDistanceY
+		}
+	},
+	rt ({ movementX, movementY }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceX = width - minWidth
+		const moveMaxDistanceY = height - minHeight
+		if (-movementX.value > moveMaxDistanceX) {
+			movementX.value = -moveMaxDistanceX
+		}
+
+		if (movementY.value > moveMaxDistanceY) {
+			movementY.value = moveMaxDistanceY
+		}
+	},
+	rb ({ movementX, movementY }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceX = width - minWidth
+		const moveMaxDistanceY = height - minHeight
+		if (-movementX.value > moveMaxDistanceX) {
+			movementX.value = -moveMaxDistanceX
+		}
+
+		if (-movementY.value > moveMaxDistanceY) {
+			movementY.value = -moveMaxDistanceY
+		}
+	},
+	l ({ movementX }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceX = width - minWidth
+		if (movementX.value > moveMaxDistanceX) {
+			movementX.value = moveMaxDistanceX
+		}
+	},
+	r ({ movementX }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceX = width - minWidth
+		if (-movementX.value > moveMaxDistanceX) {
+			movementX.value = -moveMaxDistanceX
+		}
+	},
+	t ({ movementY }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceY = height - minHeight
+
+		if (movementY.value > moveMaxDistanceY) {
+			movementY.value = moveMaxDistanceY
+		}
+	},
+	b ({ movementY }) {
+		const { width, height } = initialTarget
+		const moveMaxDistanceY = height - minHeight
+
+		if (-movementY.value > moveMaxDistanceY) {
+			movementY.value = -moveMaxDistanceY
+		}
 	}
 }
