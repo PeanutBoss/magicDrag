@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "css-loader": "^6.8.1",
+    "lodash": "^4.17.21",
     "sass": "^1.63.6",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",

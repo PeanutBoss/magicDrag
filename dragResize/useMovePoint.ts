@@ -1,27 +1,33 @@
-import { reactive, ref, toRef, nextTick, watch, readonly } from "vue/dist/vue.esm-bundler.js";
+import { reactive, ref, toRef, nextTick, watch, readonly, onUnmounted } from "vue/dist/vue.esm-bundler.js";
 import { getElement } from '../utils/tools.ts'
-
-/*
-* TODO 测试文本选中
-* */
+import { throttle } from 'lodash'
 
 /**
- * @description 移动点
+ * @description 移动元素
  * @param selector 要移动的元素或选择器
  * @param moveCallback 移动时的回调
  * @param limitOption 限制移动的配置项
  */
-interface LimitOption {
+interface moveOption {
   direction?: 'X' | 'Y' | null
   updateX?: boolean
   updateY?: boolean
+  throttleTime?: number
 }
-export default function useMovePoint (selector: string | HTMLElement, moveCallback?, limitOption: LimitOption = {}) {
-  const { direction: limitDirection, updateX = true, updateY = true } = limitOption
+export default function useMovePoint (selector: string | HTMLElement, moveCallback?, limitOption: moveOption = {}) {
+  const { direction: limitDirection, updateX = true, updateY = true, throttleTime = 10 } = limitOption
+  if (throttleTime >= 100) {
+    console.warn('the throttleTime is greater than 100 and the visual effects may not be smooth')
+  }
   nextTick(() => {
 		$ele = getElement(selector)
-		$ele.onmousedown = mouseDown
+		$ele.addEventListener('mousedown', mouseDown)
 	})
+  onUnmounted(() => {
+    $ele.removeEventListener('mousedown', mouseDown)
+    window.removeEventListener('mousedown', throttleMouseMove)
+    window.removeEventListener('mouseup', mouseUp)
+  })
 	let $ele
 
 	// 是否可以移动
@@ -49,7 +55,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
   const isUpdateMovementX = limitDirection !== 'X' && updateX
   const isUpdateMovementY = limitDirection !== 'Y' && updateY
 	function mouseDown (event) {
-    // event.preventDefault()
+    event.preventDefault()
 		isPress.value = true
     // 初始化鼠标移动的距离
 		movement.x = 0
@@ -60,9 +66,10 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
     // 更新鼠标的坐标
 		startOffset.x = event.pageX
 		startOffset.y = event.pageY
-		window.onmousemove = mouseMove
-		window.onmouseup = mouseUp
+		window.addEventListener('mousemove', throttleMouseMove)
+		window.addEventListener('mouseup', mouseUp)
 	}
+  const throttleMouseMove = throttle(mouseMove, throttleTime, { leading: true })
 	function mouseMove (event) {
     if (!isPress.value) return
     const moveAction = () => {

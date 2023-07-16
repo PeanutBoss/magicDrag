@@ -1,5 +1,5 @@
 import { getElement, isNullOrUndefined, mergeObject, removeElements, baseErrorTips, insertAfter, EXECUTE_NEXT_TASK } from "../utils/tools.ts";
-import {onMounted, reactive, watch, onUnmounted, Ref, onUpdated} from 'vue'
+import { onMounted, reactive, watch, onUnmounted, Ref } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import { createCoordinateStrategies, createParamStrategies, createResizeLimitStrategies, setPosition, createParentPosition } from '../utils/dragResize.ts'
 import type { Direction, PointPosition } from '../utils/dragResize.ts'

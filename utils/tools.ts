@@ -1,12 +1,17 @@
 export const EXECUTE_NEXT_TASK = 'EXECUTE_NEXT_TASK'
 
-export function throttle (fn: any, delay: number) {
+export function throttle (fn: any, delay: number, options: any = {}) {
+  let { immediate = false } = options
 	let flag = true
-	return () => {
-		if ( !flag ) return
+	return (...rest) => {
+		if (!flag) return
+    if (immediate) {
+      fn(...rest)
+      immediate = false
+    }
 		flag = false
 		setTimeout(() => {
-			fn()
+			fn(...rest)
 			flag = true // 核心
 		}, delay)
 	}
