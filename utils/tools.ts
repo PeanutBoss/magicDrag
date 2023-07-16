@@ -73,3 +73,33 @@ export function insertAfter () {
     }
   })
 }
+
+type SetStyle = {
+  (target: HTMLElement, styleData: { [key: string]: string }): void
+  (target: HTMLElement, styleKey: string, styleValue: string): void
+}
+export const setStyle: SetStyle = (target: HTMLElement, styleKey: string | object, styleValue?: string) => {
+  if (typeof styleKey === 'object') {
+    const keys = Object.keys(styleKey)
+    keys.forEach(key => {
+      target.style[key] = styleKey[key]
+    })
+    return
+  }
+  target.style[styleKey] = styleValue
+}
+
+
+// check that the type of options passed in is correct
+export function checkParameterType (defaultOptions, options) {
+  for (const key in defaultOptions) {
+    const value = options[key]
+    if (isNullOrUndefined(value)) continue
+    const originType = typeof defaultOptions[key]
+    const paramsType = typeof value
+    baseErrorTips(
+      originType !== paramsType,
+      `The type of options.${key} should be ${originType}, But the ${paramsType} type is passed in.`
+    )
+  }
+}
