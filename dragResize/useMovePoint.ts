@@ -75,7 +75,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
       canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
       canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
     }
-    moveCallback ? moveCallback(moveAction) : moveAction()
+    moveCallback ? moveCallback(moveAction, movement) : moveAction()
 	}
 	function mouseUp () {
 		isPress.value = false

@@ -1,5 +1,5 @@
 import { getElement, isNullOrUndefined, mergeObject, removeElements, baseErrorTips, insertAfter, EXECUTE_NEXT_TASK } from "../utils/tools.ts";
-import {onMounted, reactive, watch, onUnmounted, Ref} from 'vue'
+import {onMounted, reactive, watch, onUnmounted, Ref, onUpdated} from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import { createCoordinateStrategies, createParamStrategies, createResizeLimitStrategies, setPosition, createParentPosition } from '../utils/dragResize.ts'
 import type { Direction, PointPosition } from '../utils/dragResize.ts'
@@ -51,6 +51,20 @@ function updateInitialTarget (targetCoordinate?, newCoordinate?) {
   })
 }
 
+// check that the type of options passed in is correct
+function checkParameterType (defaultOptions, options) {
+  for (const key in defaultOptions) {
+    const value = options[key]
+    if (isNullOrUndefined(value)) continue
+    const originType = typeof defaultOptions[key]
+    const paramsType = typeof value
+    baseErrorTips(
+      originType !== paramsType,
+      `The type of options.${key} should be ${originType}, But the ${paramsType} type is passed in.`
+    )
+  }
+}
+
 // get coordinates and size information based on dom elements
 function getCoordinateByElement (element: HTMLElement) {
   return {
@@ -99,22 +113,6 @@ const pointDefaultStyle: { [key: string]: string } = {
   zIndex: '999'
 }
 
-/*
-* {
-    targetIsPress: targetMoveInfo.isPress,
-    targetCanIMove: targetMoveInfo.canIMove,
-    targetMovement: {
-      movementX: targetMoveInfo.movementX,
-      movementY: targetMoveInfo.movementY
-    },
-    targetCoordinate: {
-      left: targetMoveInfo.left,
-      top: targetMoveInfo.top,
-      width: ref(targetMoveInfo.movementX + initialTarget.width),
-      height: ref(targetMoveInfo.movementY + initialTarget.height)
-    }
-  }
-* */
 interface DragResizeState {
   targetIsPress: Ref<boolean>
   targetCanIMove: Ref<{ x: boolean, y: boolean }>
@@ -127,22 +125,12 @@ interface DragResizeState {
   }
 }
 
-export default function useDragResize (targetSelector: string | HTMLElement, options: DragResizeOptions) {
+export default function useDragResize (targetSelector: string | HTMLElement, options?: DragResizeOptions) {
   // check whether targetSelector is a selector or an HTMLElement
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
-  // check that the type of options passed in is correct
-  for (const key in defaultOptions) {
-    const value = options[key]
-    if (isNullOrUndefined(value)) continue
-    const originType = typeof defaultOptions[key]
-    const paramsType = typeof value
-    baseErrorTips(
-      originType !== paramsType,
-      `The type of options.${key} should be ${originType}, But the ${paramsType} type is passed in.`
-      )
-  }
+  checkParameterType(defaultOptions, options)
 
   options = mergeObject(defaultOptions, options)
   const { minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
@@ -159,21 +147,29 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 	onMounted(() => {
 		initTarget()
 
-    createDragPoint($target, pointSize)
+    readyToDragAndResize($target, pointSize)
 	})
   onUnmounted(() => {
+    // unbind the mousedown event added for window to handle the target element
+    processBlurOrFocus($target, false)
     // the dom element is destroyed when the page is uninstalled
     removeElements(Object.values(pointElements))
   })
 
-	function initTarget () {
-		$target = getElement(targetSelector)
+
+
+  // initializes the target element
+  function initTarget () {
+    $target = getElement(targetSelector)
+
     baseErrorTips(!$target, 'targetSelector is an invalid selector or HTMLElement')
 
-    // Ensure element absolute positioning
-    setStyle($target, 'position', 'absolute')
-    drag && setStyle($target, 'cursor', 'all-scroll')
+    initTargetStyle()
 
+    initTargetCoordinate()
+  }
+  // initializes the target element coordinates
+  function initTargetCoordinate () {
     const { left, top, height, width } = $target.getBoundingClientRect()
     const rect = {
       left: pageHasScrollBar ? left + window.scrollX : left,
@@ -184,43 +180,85 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     for (const rectKey in initialTarget) {
       initialTarget[rectKey] = rect[rectKey]
     }
-	}
+  }
+  function initTargetStyle () {
+    // ensure element absolute positioning
+    setStyle($target, 'position', 'absolute')
+    // modify the icon for the hover state
+    drag && setStyle($target, 'cursor', 'all-scroll')
+  }
 
-  // a policy to limit the minimum size when resizing a target
-  const resizeLimitStrategies = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
 
-  // create outline points for dragging
-  function createDragPoint (target: HTMLElement, pointSize: number) {
-    const parentNode = target.parentNode
 
+  /**
+   * @description ready to drag and resize
+   * @param target
+   * @param pointSize
+   */
+  function readyToDragAndResize (target: HTMLElement, pointSize: number) {
     moveTarget(target)
 
-    if (resize) {
-      const pointPosition = createParentPosition(initialTarget, pointSize)
-      for (const direction in pointPosition) {
-        const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
-        initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize })
-        parentNode.appendChild(point)
-
-        const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
-          moveAction()
-          // movePointCallback({ target, direction, movementX, movementY, pointSize })
-          movePointCallback(target, { direction, movementX, movementY, pointSize })
-          resizeCallback?.(direction as Direction, { movementX: movementX.value, movementY: movementY.value })
-        }, { direction: pointPosition[direction][3] })
-
-        // update the width and height information when releasing the mouse
-        watch(isPress, () => {
-          if (!isPress.value) {
-            updateInitialTarget(initialTarget, getCoordinateByElement(target))
-          }
-        })
+    whetherNeedResize(target)
+  }
+  function pointIsPressChangeCallback (target) {
+    return newV => {
+      if (!newV) {
+        updateInitialTarget(initialTarget, getCoordinateByElement(target))
       }
     }
   }
+  // add drag and drop functionality for outline points
+  function addDragFunctionToPoint (target, { point, pointPosition, pointSize, direction }) {
+    const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
+      moveAction()
+      movePointCallback({ target, direction, movementX, movementY, pointSize })
+      resizeCallback?.(direction as Direction, { movementX: movementX.value, movementY: movementY.value })
+    }, { direction: pointPosition[direction][3] })
+    return isPress
+  }
+  // create contour points
+  function createContourPoint (target, { pointPosition, direction }) {
+    const parentNode = target.parentNode
+    const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
+    initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize })
+    parentNode.appendChild(point)
+    return point
+  }
+  // initialize the contour point
+  function initContourPoints (target, pointPosition) {
+    for (const direction in pointPosition) {
+      const point = createContourPoint(target, { pointPosition, direction })
+      const isPress = addDragFunctionToPoint(target, { point, pointPosition, direction, pointSize })
+      // update the width and height information when releasing the mouse
+      watch(isPress, pointIsPressChangeCallback(target))
+    }
+  }
+  // whether the resize function is required
+  function whetherNeedResize (target) {
+    if (!resize) return
+    const pointPosition = createParentPosition(initialTarget, pointSize)
+    initContourPoints(target, pointPosition)
+  }
 
-  // the callback that moves the target element
-  const movePointCallback = limitTargetResize.after(updateTargetStyle.after(updatePointPosition))
+
+  /**
+   * @description a callback function that moves contour points
+   * @param target
+   * @param direction
+   * @param movementX
+   * @param movementY
+   * @param pointSize
+   */
+  function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {
+
+    limitTargetResize(target, { direction, movementX, movementY })
+
+    updateTargetStyle(target, { direction, movementX, movementY })
+
+    updatePointPosition(target, { direction, movementX, movementY, pointSize })
+  }
+  // a policy to limit the minimum size when resizing a target
+  const resizeLimitStrategies = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
   // limits the minimum size of the target element
   function limitTargetResize (target, { direction, movementX, movementY }) {
     resizeLimitStrategies[direction]({ movementX, movementY })
@@ -240,8 +278,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     return EXECUTE_NEXT_TASK
   }
   // Obtain the latest coordinate and dimension information of target.
-  // Different strategies are used to calculate coordinates and dimensions at different points
-  // Finally, the position of the contour points is set according to the new coordinate and dimension information
+  // Different strategies are used to calculate coordinates at different points
+  // Finally, the position of the contour points is set according to the new coordinate information
   function updatePointPosition (target, { direction, movementX, movementY, pointSize }) {
     // 获取 target 最新坐标和尺寸信息，按下不同点时计算坐标和尺寸的策略不同
     const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
@@ -254,55 +292,83 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
     }
   }
-  // function movePointCallback ({ target, direction, movementX, movementY, pointSize }) {
-  //
-  //   limitTargetResize(target, { direction, movementX, movementY })
-  //
-  //   updateTargetStyle(target, { direction, movementX, movementY })
-  //
-  //   updatePointPosition(target, { direction, movementX, movementY })
-  // }
 
+
+
+  /**
+   * @description handles the drag and drop function of the target element
+   * @param target
+   */
   function moveTarget (target: HTMLElement) {
-
-    window.addEventListener('mousedown', checkIsContainsTarget.bind(null, target))
-
-    if (!drag) return
-    // used to record the position information of each contour point when the target is pressed
     const downPointPosition = {}
-    const { movementX, movementY, isPress } = useMovePoint(target, (moveAction) => {
-      moveAction()
-      for (const key in pointElements) {
-        setStyle(pointElements[key], 'left', downPointPosition[key][0] + movementX.value + 'px')
-        setStyle(pointElements[key], 'top', downPointPosition[key][1] + movementY.value + 'px')
+
+    processBlurOrFocus(target)
+
+    whetherNeedDragFunction(target, downPointPosition)
+  }
+  function showOrHideContourPoint (pointElements, isShow) {
+    for (const key in pointElements) {
+      setStyle(pointElements[key], 'display', isShow ? 'block' : 'none')
+    }
+  }
+  function checkIsContains (target, event) {
+    const blurElements = [target, ...Object.values(pointElements)]
+    if (!blurElements.includes(event.target)) {
+      // losing focus hides outline points
+      showOrHideContourPoint(pointElements, false)
+    } else {
+      // outline points are displayed when in focus
+      showOrHideContourPoint(pointElements, true)
+    }
+  }
+  // control the focus and out-of-focus display of the target element's outline points
+  function blurOrFocus () {
+    let checkIsContainsTarget
+    return (target: HTMLElement, isBind = true) => {
+      if (isBind) {
+        window.addEventListener('mousedown', checkIsContainsTarget ?? (checkIsContainsTarget = checkIsContains.bind(null, target)))
+      } else {
+        window.removeEventListener('mousedown', checkIsContainsTarget)
       }
-      dragCallback?.({ movementX: movementX.value, movementY: movementY.value })
-    })
-    watch(isPress, (newV) => {
+    }
+  }
+  const processBlurOrFocus = blurOrFocus()
+  // update the position of the contour points
+  function updateContourPointPosition (downPointPosition, movement) {
+    for (const key in pointElements) {
+      setStyle(pointElements[key], 'left', downPointPosition[key][0] + movement.x + 'px')
+      setStyle(pointElements[key], 'top', downPointPosition[key][1] + movement.y + 'px')
+    }
+  }
+  function moveTargetCallback (downPointPosition) {
+    return (moveAction, movement) => {
+      // perform the default action for movePoint
+      moveAction()
+      // update the position of the contour points
+      updateContourPointPosition(downPointPosition, movement)
+      // perform user-defined operations
+      dragCallback?.({ movementX: movement.x, movementY: movement.y })
+    }
+  }
+  function isPressChangeCallback ({ downPointPosition, movementX, movementY }) {
+    return (newV) => {
       if (newV) {
+        // the coordinates of all contour points are recorded when the target element is pressed
         for (const key in pointElements) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
       } else {
+        // mouse up to update the coordinates of the target element
         initialTarget.top += movementY.value
         initialTarget.left += movementX.value
       }
-    })
-  }
-
-  function checkIsContainsTarget (target, event) {
-    const blurElements = [target, ...Object.values(pointElements)]
-    if (!blurElements.includes(event.target)) {
-      // losing focus hides outline points
-      for (const key in pointElements) {
-        setStyle(pointElements[key], 'display', 'none')
-      }
-    } else {
-      // outline points are displayed when in focus
-      for (const key in pointElements) {
-        setStyle(pointElements[key], 'display', 'block')
-      }
     }
+  }
+  function whetherNeedDragFunction (target, downPointPosition) {
+    if (!drag) return
+    // used to record the position information of each contour point when the target is pressed
+    const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(downPointPosition))
+    watch(isPress, isPressChangeCallback({ downPointPosition, movementX, movementY }))
   }
 
   return {

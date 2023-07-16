@@ -116,8 +116,8 @@ const setStyle: SetStyle = (target: HTMLElement, styleKey: string | object, styl
 	target.style[styleKey] = styleValue
 }
 
-export interface PointPosition {
-	[key: Direction]: [number, number, string?, 'X' | 'Y'?]
+export type PointPosition = {
+	[key in Direction]: [number, number, string?, ('X' | 'Y')?]
 }
 // set element position
 export function setPosition (point: HTMLElement, pointPosition: PointPosition, direction: Direction) {
