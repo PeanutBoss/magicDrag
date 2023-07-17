@@ -9,9 +9,11 @@ interface DirectionDescription {
 	hasB: boolean
 }
 
+// each element represents the direction of a contour point
 // 每个元素代表一个轮廓点的方向
 export const All_DIRECTION: Direction[] = ['lt', 'lb', 'rt', 'rb', 'l', 'r', 't', 'b']
 
+// obtains this point according to the direction of the contour point
 // 根据轮廓点的方向获取这个点的
 export function getDirectionDescription (direction: Direction):DirectionDescription {
 	const hasL = direction.indexOf('l') > -1
@@ -26,6 +28,7 @@ export function getDirectionDescription (direction: Direction):DirectionDescript
 	}
 }
 
+// create a strategy to move each contour point to update the coordinates and dimensions of the target element
 // 创建移动各个轮廓点更新目标元素坐标与尺寸信息的策略
 export function createCoordinateStrategies () {
 	const strategies = {}
@@ -43,6 +46,7 @@ export function createCoordinateStrategies () {
 	return strategies
 }
 
+// create a policy to limit the minimum size when resizing the target
 // 创建调整目标大小时限制最小尺寸的策略
 export function createResizeLimitStrategies (initialTarget, minWidth, minHeight) {
 	const strategies = {}
@@ -84,6 +88,7 @@ export function createResizeLimitStrategies (initialTarget, minWidth, minHeight)
 	return strategies
 }
 
+// get the latest contour point coordinate policy after creating updated target dimensions/coordinates
 // 创建更新目标尺寸/坐标后获取最新的轮廓点坐标策略
 export function createParamStrategies () {
 	const strategies = {}
@@ -105,6 +110,7 @@ export type PointPosition = {
 	[key in Direction]: [number, number, string?, ('X' | 'Y')?]
 }
 // set element position
+// 设置元素坐标信息
 export function setPosition (point: HTMLElement, pointPosition: PointPosition, direction: Direction) {
 	setStyle(point, 'left', pointPosition[direction][0] + 'px')
 	setStyle(point, 'top', pointPosition[direction][1] + 'px')
@@ -130,6 +136,7 @@ interface InitPointOption {
   pointSize: number
 }
 // initializes the style of the contour points
+// 初始化轮廓点的样式
 export function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }: InitPointOption, pointDefaultStyle) {
   setStyle(point, pointDefaultStyle)
   setStyle(point, 'width', pointSize + 'px')
@@ -142,6 +149,7 @@ export function initPointStyle (point: HTMLElement, { pointPosition, direction, 
 
 /* moveTarget */
 // controls how elements are displayed and hidden
+// 控制元素的显示和隐藏
 function showOrHideContourPoint (pointElements, isShow) {
   for (const key in pointElements) {
     setStyle(pointElements[key], 'display', isShow ? 'block' : 'none')
@@ -151,13 +159,16 @@ function checkIsContains (target, pointElements, event) {
   const blurElements = [target, ...Object.values(pointElements)]
   if (!blurElements.includes(event.target)) {
     // losing focus hides outline points
+    // 失焦时隐藏轮廓点
     showOrHideContourPoint(pointElements, false)
   } else {
     // outline points are displayed when in focus
+    // 聚焦时将显示轮廓点
     showOrHideContourPoint(pointElements, true)
   }
 }
 // control the focus and out-of-focus display of the target element's outline points
+// 控制目标元素轮廓点的焦点和失焦显示
 export function blurOrFocus (pointElements) {
   let checkIsContainsTarget
   return (target: HTMLElement, isBind = true) => {
@@ -170,6 +181,7 @@ export function blurOrFocus (pointElements) {
 }
 
 // update the position of the contour points
+// 更新轮廓点位置
 export function updateContourPointPosition (downPointPosition, movement, pointElements) {
   for (const key in pointElements) {
     setStyle(pointElements[key], 'left', downPointPosition[key][0] + movement.x + 'px')
@@ -179,10 +191,13 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 export function moveTargetCallback (downPointPosition, dragCallback, pointElements) {
   return (moveAction, movement) => {
     // perform the default action for movePoint
+    // 执行movePoint的默认动作
     moveAction()
     // update the position of the contour points
+    // 更新轮廓点位置
     updateContourPointPosition(downPointPosition, movement, pointElements)
     // perform user-defined operations
+    // 执行用户自定义操作
     dragCallback?.({ movementX: movement.x, movementY: movement.y })
   }
 }
@@ -191,9 +206,11 @@ export function moveTargetCallback (downPointPosition, dragCallback, pointElemen
 
 /* movePoint */
 // updates the coordinates and dimensions of the target element
+// 更新目标元素的坐标和尺寸
 export function updateTargetStyle (target, { direction, movementX, movementY }, { initialTarget }) {
   const pointStrategies = createCoordinateStrategies()
   // the browser calculates and updates the element style information with each frame update to avoid unnecessary calculations
+  // 浏览器在每次帧更新时计算并更新元素样式信息，以避免不必要的计算
   const styleData = pointStrategies[direction]({
     left: initialTarget.left,
     top: initialTarget.top,
@@ -206,24 +223,30 @@ export function updateTargetStyle (target, { direction, movementX, movementY }, 
   return EXECUTE_NEXT_TASK
 }
 // update the coordinate information of contour points
+// 更新轮廓点坐标信息
 export function updatePointPosition (target, { direction, movementX, movementY, pointSize }, { initialTarget, pointElements }) {
   const paramStrategies = createParamStrategies()
-  // make sure that updates to the mobile process are synchronized with the browser's refresh rate
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
+  // 获取目标的最新坐标和尺寸信息。使用不同的策略计算不同点的坐标和尺寸
   const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
   // set the position of the contour points based on the new coordinates and dimension information
+  // 根据新的坐标和尺寸信息设置轮廓点的位置
   const pointPosition = createParentPosition(coordinate, pointSize)
   for (const innerDirection in pointPosition) {
+    // there is no need to update the current drag point
     // 不需要更新当前拖拽的点
     if (innerDirection === direction) continue
     // set the innerDirection position of the contour point
+    // 设置轮廓点的innerDirection位置
     setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
   }
 }
 // limits the minimum size of the target element
+// 限制目标元素的最小尺寸
 export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, minWidth, minHeight }) {
   // a policy to limit the minimum size when resizing a target
+  // 调整目标大小时限制最小尺寸的策略
   const resizeLimitStrategies = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
   resizeLimitStrategies[direction]({ movementX, movementY })
   return EXECUTE_NEXT_TASK
@@ -231,8 +254,9 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
 
 
 
-/* ready to drag and resize */
+/* ready to drag and resize - 准备拖动和调整大小 */
 // get coordinates and size information based on dom elements
+// 获取基于dom元素的坐标和大小信息
 function getCoordinateByElement (element: HTMLElement) {
   return {
     width: element.offsetWidth,
@@ -249,6 +273,7 @@ export function pointIsPressChangeCallback (target, initialTarget) {
   }
 }
 // creates/updates objects that record coordinate and dimension information for target elements
+// 创建/更新记录目标元素坐标和维度信息的对象
 export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
   if (targetCoordinate && newCoordinate) {
     for (const key in targetCoordinate) {
@@ -264,7 +289,9 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
 }
 export function initTargetStyle (target, drag) {
   // ensure element absolute positioning
+  // 确保元素绝对定位
   setStyle(target, 'position', 'absolute')
   // modify the icon for the hover state
+  // 修改悬停状态的图标
   drag && setStyle(target, 'cursor', 'all-scroll')
 }
