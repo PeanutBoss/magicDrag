@@ -52,20 +52,6 @@ const pointDefaultStyle: { [key: string]: string } = {
   zIndex: '999'
 }
 
-
-/*
-    targetLeft: toRef(targetState, 'left'),
-    targetTop: toRef(targetState, 'top'),
-    targetWidth: toRef(targetState, 'width'),
-    targetHeight: toRef(targetState, 'height'),
-    targetIsPress: toRef(targetState, 'isPress'),
-    pointLeft: toRef(pointState, 'left'),
-    pointTop: toRef(pointState, 'top'),
-    direction: toRef(pointState, 'direction'),
-    pointIsPress: toRef(pointState, 'isPress'),
-    pointMovementX: toRef(pointState, 'movementX'),
-    pointMovementY: toRef(pointState, 'movementY')
-* */
 interface DragResizeState {
   targetLeft: Ref<number>
   targetTop: Ref<number>
