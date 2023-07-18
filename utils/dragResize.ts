@@ -1,4 +1,4 @@
-import {conditionExecute, EXECUTE_NEXT_TASK, setStyle} from "./tools.ts";
+import {conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl} from "./tools.ts";
 import {reactive, watch} from 'vue';
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
@@ -190,15 +190,20 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 }
 export function moveTargetCallback (downPointPosition, dragCallback, pointElements) {
   return (moveAction, movement) => {
-    // perform the default action for movePoint
-    // 执行movePoint的默认动作
-    moveAction()
-    // update the position of the contour points
-    // 更新轮廓点位置
-    updateContourPointPosition(downPointPosition, movement, pointElements)
-    // perform user-defined operations
-    // 执行用户自定义操作
-    dragCallback?.({ movementX: movement.x, movementY: movement.y })
+    // Wrap the action to move the target element as a separate new function, and if the user defines a callback
+    // use moveTargetAction as an argument to that callback
+    // 将移动目标元素的操作包装为单独新的函数,如果用户有定义回调，则将moveTargetAction作为这个回调的参数
+    const moveTargetAction = () => {
+      // perform the default action for movePoint
+      // 执行movePoint的默认动作
+      moveAction()
+      // update the position of the contour points
+      // 更新轮廓点位置
+      updateContourPointPosition(downPointPosition, movement, pointElements)
+    }
+    // Hand over control (moveTargetAction)
+    // 将控制权（moveTargetAction）交出
+    transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
   }
 }
 

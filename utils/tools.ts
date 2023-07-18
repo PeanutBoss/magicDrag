@@ -104,3 +104,7 @@ export function checkParameterType (defaultOptions, options) {
     )
   }
 }
+
+export function transferControl (defaultAction, callback?, ...rest) {
+  callback ? callback(defaultAction, ...rest) : defaultAction()
+}

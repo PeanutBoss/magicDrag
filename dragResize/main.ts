@@ -25,21 +25,26 @@ const App = {
     </div>
   `,
   setup () {
-    useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, skill: { resize: false, drag: true } })
+    useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, skill: { resize: true, drag: false } })
 
     const a = ref(0)
     const targetCoordinate: any = useDragResize('.box1', {
       minHeight: 100,
       minWidth: 100,
       pageHasScrollBar: true,
-      skill: { resize: true, drag: false },
+      skill: { resize: true, drag: true },
       callbacks: {
-        resizeCallback(direction) {
+        dragCallback(moveTargetAction, direction) {
+          moveTargetAction()
           a.value = direction
+        },
+        resizeCallback(resizeTargetAction, direction, movement) {
+          resizeTargetAction()
+          a.value = direction + movement.movementX
         }
       }
     })
-    useDragResize('.box2', { pageHasScrollBar: true })
+    useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
       // targetCoordinate
       a

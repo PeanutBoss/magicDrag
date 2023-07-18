@@ -1,4 +1,4 @@
-import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter, checkParameterType } from "../utils/tools.ts";
+import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter, checkParameterType, transferControl } from "../utils/tools.ts";
 import { onMounted, watch, onUnmounted, Ref } from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import {
@@ -19,10 +19,11 @@ interface DragResizeOptions {
     resize?: boolean
     drag?: boolean
     limitRatio?: [number, number]
+    limitDragDirection?: 'X' | 'Y' | null
   },
   callbacks?: {
-    dragCallback?: (movement: { movementX: number, movementY: number }) => void
-    resizeCallback?: (direction: Direction, movement: { movementX: number, movementY: number } ) => void
+    dragCallback?: (moveTargetAction: () => void, movement: { movementX: number, movementY: number }) => void
+    resizeCallback?: (moveResizeAction: () => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
   }
 }
 // default configuration
@@ -34,7 +35,8 @@ const defaultOptions: DragResizeOptions = {
   pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
   skill: {
     resize: true, // whether the size adjustment is supported - 是否支持大小调整
-    drag: true // whether to support dragging - 是否支持拖动
+    drag: true, // whether to support dragging - 是否支持拖动
+    limitDragDirection: null // restricted direction of movement - 限制移动方向
   },
   callbacks: {}
 }
@@ -71,7 +73,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
   options = mergeObject(defaultOptions, options)
   const { minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
-  const { resize, drag } = skill
+  const { resize, drag, limitDragDirection } = skill
   const { dragCallback, resizeCallback } = callbacks
 
   // the target element being manipulated
@@ -142,9 +144,13 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   // add drag and drop functionality for outline points - 为轮廓点添加拖放功能
   function addDragFunctionToPoint (target, { point, pointPosition, pointSize, direction }) {
     const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
-      moveAction()
-      movePointCallback(target, { direction, movementX, movementY, pointSize })
-      resizeCallback?.(direction as Direction, { movementX: movementX.value, movementY: movementY.value })
+      const moveResizeAction = () => {
+        moveAction()
+        movePointCallback(target, { direction, movementX, movementY, pointSize })
+      }
+      // Hand over control (moveResizeAction)
+      // 将控制权（moveResizeAction）交出
+      transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value })
     }, { direction: pointPosition[direction][3] })
     return isPress
   }
@@ -225,7 +231,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   }
   function whetherNeedDragFunction (target, downPointPosition) {
     if (!drag) return
-    const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(downPointPosition, dragCallback, pointElements))
+    const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(downPointPosition, dragCallback, pointElements), { direction: limitDragDirection })
     watch(isPress, isPressChangeCallback({ downPointPosition, movementX, movementY }))
   }
 
