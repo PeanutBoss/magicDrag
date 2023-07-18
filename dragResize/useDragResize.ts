@@ -52,19 +52,35 @@ const pointDefaultStyle: { [key: string]: string } = {
   zIndex: '999'
 }
 
+
+/*
+    targetLeft: toRef(targetState, 'left'),
+    targetTop: toRef(targetState, 'top'),
+    targetWidth: toRef(targetState, 'width'),
+    targetHeight: toRef(targetState, 'height'),
+    targetIsPress: toRef(targetState, 'isPress'),
+    pointLeft: toRef(pointState, 'left'),
+    pointTop: toRef(pointState, 'top'),
+    direction: toRef(pointState, 'direction'),
+    pointIsPress: toRef(pointState, 'isPress'),
+    pointMovementX: toRef(pointState, 'movementX'),
+    pointMovementY: toRef(pointState, 'movementY')
+* */
 interface DragResizeState {
+  targetLeft: Ref<number>
+  targetTop: Ref<number>
+  targetWidth: Ref<number>
+  targetHeight: Ref<number>
+  pointLeft: Ref<number>
+  pointTop: Ref<number>
+  pointMovementX: Ref<number>
+  pointMovementY: Ref<number>
   targetIsPress: Ref<boolean>
-  targetCanIMove: Ref<{ x: boolean, y: boolean }>
-  targetMovement: { movementX: Ref<number>, movementY: Ref<number> }
-  targetCoordinate: {
-    left: Ref<number>
-    top: Ref<number>
-    width: Ref<number>
-    height: Ref<number>
-  }
+  pointIsPress: Ref<boolean>
+  direction: Ref<string | null>
 }
 
-export default function useDragResize (targetSelector: string | HTMLElement, options?: DragResizeOptions) {
+export default function useDragResize (targetSelector: string | HTMLElement, options?: DragResizeOptions): DragResizeState {
   // check whether targetSelector is a selector or an HTMLElement
   // 检查 targetSelector 是否为选择器或 HTMLElement
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
@@ -93,6 +109,14 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     height: 0,
     width: 0,
     isPress: false
+  })
+  const pointState = reactive({
+    left: 0,
+    top: 0,
+    direction: null,
+    isPress: false,
+    movementX: 0,
+    movementY: 0
   })
 
 	onMounted(() => {
@@ -180,7 +204,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       const isPress = addDragFunctionToPoint(target, { point, pointPosition, direction, pointSize })
       // update the width and height information when releasing the mouse
       // 当释放鼠标时更新宽度和高度信息
-      watch(isPress, pointIsPressChangeCallback(target, initialTarget))
+      watch(isPress, pointIsPressChangeCallback(target, { initialTarget, pointState }))
     }
   }
   // whether the resize function is required - 是否需要调整大小功能
@@ -205,7 +229,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
     updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
 
-    updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize })
+    updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
   }
 
 
@@ -253,6 +277,12 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     targetTop: toRef(targetState, 'top'),
     targetWidth: toRef(targetState, 'width'),
     targetHeight: toRef(targetState, 'height'),
-    targetIsPress: toRef(targetState, 'isPress')
+    targetIsPress: toRef(targetState, 'isPress'),
+    pointLeft: toRef(pointState, 'left'),
+    pointTop: toRef(pointState, 'top'),
+    direction: toRef(pointState, 'direction'),
+    pointIsPress: toRef(pointState, 'isPress'),
+    pointMovementX: toRef(pointState, 'movementX'),
+    pointMovementY: toRef(pointState, 'movementY')
   }
 }

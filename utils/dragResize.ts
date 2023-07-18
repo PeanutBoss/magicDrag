@@ -258,7 +258,7 @@ function whetherUpdateState (direction, targetState, newState) {
 
 // update the coordinate information of contour points
 // 更新轮廓点坐标信息
-export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize }) {
+export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }) {
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
@@ -270,7 +270,17 @@ export function updatePointPosition (target, { direction, movementX, movementY }
   for (const innerDirection in pointPosition) {
     // there is no need to update the current drag point
     // 不需要更新当前拖拽的点
-    if (innerDirection === direction) continue
+    if (innerDirection === direction) {
+      const newState = {
+        direction,
+        left: pointPosition[innerDirection][0],
+        top: pointPosition[innerDirection][1],
+        movementX: movementX.value,
+        movementY: movementY.value
+      }
+      updateState(pointState, newState)
+      continue
+    }
     // set the innerDirection position of the contour point
     // 设置轮廓点的innerDirection位置
     setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
@@ -299,8 +309,9 @@ function getCoordinateByElement (element: HTMLElement) {
     top: element.offsetTop
   }
 }
-export function pointIsPressChangeCallback (target, initialTarget) {
+export function pointIsPressChangeCallback (target, { initialTarget, pointState }) {
   return newV => {
+    pointState.isPress = newV
     if (!newV) {
       updateInitialTarget(initialTarget, getCoordinateByElement(target))
     }

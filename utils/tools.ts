@@ -110,7 +110,7 @@ export function transferControl (defaultAction, callback?, ...rest) {
   callback ? callback(defaultAction, ...rest) : defaultAction()
 }
 
-export function getObjectIntValue (object) {
+export function getObjectIntValue (object): any {
 	const newObject = {}
 	for (const key in object) {
 		newObject[key] = parseInt(object[key])
