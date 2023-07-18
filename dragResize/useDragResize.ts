@@ -1,10 +1,11 @@
 import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter, checkParameterType, transferControl } from "../utils/tools.ts";
-import { onMounted, watch, onUnmounted, Ref } from 'vue'
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
 import useMovePoint from "./useMovePoint.ts";
 import {
   createParentPosition, blurOrFocus,
   updateTargetStyle, updatePointPosition, limitTargetResize, moveTargetCallback,
-  pointIsPressChangeCallback, updateInitialTarget, initPointStyle, initTargetStyle
+  pointIsPressChangeCallback, updateInitialTarget, initPointStyle, initTargetStyle,
+  updateState
 } from '../utils/dragResize.ts'
 import type { Direction } from '../utils/dragResize.ts'
 
@@ -86,6 +87,13 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   // 保存轮廓点
   const pointElements = {}
   const processBlurOrFocus = blurOrFocus(pointElements)
+  const targetState = reactive({
+    left: 0,
+    top: 0,
+    height: 0,
+    width: 0,
+    isPress: false
+  })
 
 	onMounted(() => {
 		initTarget()
@@ -113,6 +121,9 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     initTargetStyle($target, drag)
 
     initTargetCoordinate()
+
+    // 初始化结束后更新状态
+    updateState(targetState, initialTarget)
   }
   // initializes the target element coordinates
   // 初始化目标元素的坐标
@@ -192,9 +203,9 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
     limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, minWidth, minHeight })
 
-    updateTargetStyle(target, { direction, movementX, movementY }, { initialTarget })
+    updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
 
-    updatePointPosition(target, { direction, movementX, movementY, pointSize }, { initialTarget, pointElements })
+    updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize })
   }
 
 
@@ -212,9 +223,10 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
 
     whetherNeedDragFunction(target, downPointPosition)
   }
-  // A callback that is executed when isPress changes - isPress发生变化时执行的回调
+  // a callback that is executed when isPress changes - isPress发生变化时执行的回调
   function isPressChangeCallback ({ downPointPosition, movementX, movementY }) {
     return (newV) => {
+      targetState.isPress = newV
       if (newV) {
         // the coordinates of all contour points are recorded when the target element is pressed
         // 当按下目标元素时，记录所有轮廓点的坐标
@@ -224,29 +236,23 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
       } else {
         // mouse up to update the coordinates of the target element
         // 鼠标抬起时更新目标元素的坐标
-        initialTarget.top += movementY.value
-        initialTarget.left += movementX.value
+        updateInitialTarget(initialTarget, { top: initialTarget.top + movementY.value, left: initialTarget.left + movementX.value })
       }
     }
   }
   function whetherNeedDragFunction (target, downPointPosition) {
     if (!drag) return
-    const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(downPointPosition, dragCallback, pointElements), { direction: limitDragDirection })
+    const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(dragCallback, {
+      downPointPosition, pointElements, targetState, initialTarget
+    }), { direction: limitDragDirection })
     watch(isPress, isPressChangeCallback({ downPointPosition, movementX, movementY }))
   }
 
   return {
-    // targetIsPress: targetMoveInfo.isPress,
-    // targetCanIMove: targetMoveInfo.canIMove,
-    // targetMovement: {
-    //   movementX: targetMoveInfo.movementX,
-    //   movementY: targetMoveInfo.movementY
-    // },
-    // targetCoordinate: {
-    //   left: targetMoveInfo.left,
-    //   top: targetMoveInfo.top,
-    //   width: ref(targetMoveInfo.movementX + initialTarget.width),
-    //   height: ref(targetMoveInfo.movementY + initialTarget.height)
-    // }
+    targetLeft: toRef(targetState, 'left'),
+    targetTop: toRef(targetState, 'top'),
+    targetWidth: toRef(targetState, 'width'),
+    targetHeight: toRef(targetState, 'height'),
+    targetIsPress: toRef(targetState, 'isPress')
   }
 }

@@ -1,4 +1,4 @@
-import {conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl} from "./tools.ts";
+import {conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl, getObjectIntValue} from "./tools.ts";
 import {reactive, watch} from 'vue';
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
@@ -145,6 +145,13 @@ export function initPointStyle (point: HTMLElement, { pointPosition, direction, 
   setPosition(point, pointPosition, direction)
 }
 
+// update state - 更新状态
+export function updateState (state, newState) {
+	for (const targetKey in state) {
+		state[targetKey] = newState[targetKey] ?? state[targetKey]
+	}
+}
+
 
 
 /* moveTarget */
@@ -188,7 +195,7 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
     setStyle(pointElements[key], 'top', downPointPosition[key][1] + movement.y + 'px')
   }
 }
-export function moveTargetCallback (downPointPosition, dragCallback, pointElements) {
+export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, initialTarget }) {
   return (moveAction, movement) => {
     // Wrap the action to move the target element as a separate new function, and if the user defines a callback
     // use moveTargetAction as an argument to that callback
@@ -204,6 +211,8 @@ export function moveTargetCallback (downPointPosition, dragCallback, pointElemen
     // Hand over control (moveTargetAction)
     // 将控制权（moveTargetAction）交出
     transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
+		// update the state of the target element - 更新目标元素状态
+		updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
   }
 }
 
@@ -212,7 +221,7 @@ export function moveTargetCallback (downPointPosition, dragCallback, pointElemen
 /* movePoint */
 // updates the coordinates and dimensions of the target element
 // 更新目标元素的坐标和尺寸
-export function updateTargetStyle (target, { direction, movementX, movementY }, { initialTarget }) {
+export function updateTargetStyle (target, { direction, movementX, movementY }, { targetState, initialTarget }) {
   const pointStrategies = createCoordinateStrategies()
   // the browser calculates and updates the element style information with each frame update to avoid unnecessary calculations
   // 浏览器在每次帧更新时计算并更新元素样式信息，以避免不必要的计算
@@ -224,12 +233,32 @@ export function updateTargetStyle (target, { direction, movementX, movementY }, 
     offsetX: movementX.value,
     offsetY: movementY.value
   })
+
+	whetherUpdateState(direction, targetState, styleData)
+
   setStyle(target, styleData)
   return EXECUTE_NEXT_TASK
 }
+
+// updates are required only if hasL or hasT is satisfied
+// 只有满足 hasL 或 hasT 的情况下才需要更新
+function whetherUpdateState (direction, targetState, newState) {
+	const { hasL, hasT } = getDirectionDescription(direction)
+	const { left, top, width, height } = getObjectIntValue(newState)
+	if (hasT && hasL) {
+		updateState(targetState, { left, top, width, height })
+	} else if (hasT) {
+		updateState(targetState, { top, width, height })
+	} else if (hasL) {
+		updateState(targetState, { left, width, height })
+	} else {
+		updateState(targetState, { width, height })
+	}
+}
+
 // update the coordinate information of contour points
 // 更新轮廓点坐标信息
-export function updatePointPosition (target, { direction, movementX, movementY, pointSize }, { initialTarget, pointElements }) {
+export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize }) {
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
@@ -281,9 +310,7 @@ export function pointIsPressChangeCallback (target, initialTarget) {
 // 创建/更新记录目标元素坐标和维度信息的对象
 export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
   if (targetCoordinate && newCoordinate) {
-    for (const key in targetCoordinate) {
-      targetCoordinate[key] = newCoordinate[key]
-    }
+		updateState(targetCoordinate, newCoordinate)
   }
   return reactive({
     left: 0,

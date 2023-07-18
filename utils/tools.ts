@@ -105,6 +105,15 @@ export function checkParameterType (defaultOptions, options) {
   }
 }
 
+// 将defaultAction的控制权交给callback
 export function transferControl (defaultAction, callback?, ...rest) {
   callback ? callback(defaultAction, ...rest) : defaultAction()
+}
+
+export function getObjectIntValue (object) {
+	const newObject = {}
+	for (const key in object) {
+		newObject[key] = parseInt(object[key])
+	}
+	return newObject
 }
