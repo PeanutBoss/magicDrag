@@ -1,5 +1,5 @@
 import { reactive, ref, toRef, nextTick, watch, readonly, onUnmounted } from "vue/dist/vue.esm-bundler.js";
-import { getElement } from '../utils/tools.ts'
+import { getElement, transferControl } from '../utils/tools.ts'
 import { throttle } from 'lodash'
 
 /**
@@ -82,7 +82,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
       canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
       canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
     }
-    moveCallback ? moveCallback(moveAction, movement) : moveAction()
+    transferControl(moveAction, moveCallback, movement)
 	}
 	function mouseUp () {
 		isPress.value = false
