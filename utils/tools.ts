@@ -34,7 +34,7 @@ export function mergeObject (target, source) {
 			mergedObject[key] = originVal :
 			mergedObject[key] = curVal
 
-		if (typeof curVal === 'object') {
+		if (typeof curVal === 'object' && !(curVal instanceof HTMLElement)) {
 			mergedObject[key] = mergeObject(originVal, curVal)
 		}
 	}
@@ -116,4 +116,8 @@ export function getObjectIntValue (object): any {
 		newObject[key] = parseInt(object[key])
 	}
 	return newObject
+}
+
+export function appendChild (parent: HTMLElement, ...child: HTMLElement[]) {
+	parent.append(...child)
 }

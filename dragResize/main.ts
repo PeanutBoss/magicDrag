@@ -10,7 +10,7 @@ const App = {
       <hr>
       <div class="point"></div>
     </div>
-    <div style="height: 800px">
+    <div class="wrap" style="height: 800px">
       {{ state.targetIsPress }}<br>
       {{ state.targetLeft }} - {{ state.targetTop }}<br>
       {{ state.targetWidth }} - {{ state.targetHeight }}<br>
@@ -19,35 +19,31 @@ const App = {
       {{ state.direction }} - {{ state.pointIsPress }}<br>
       {{ state.pointMovementX }} - {{ state.pointMovementY }}
       <hr>
-      {{ JSON.stringify(a) }}
       <div class="box"></div>
-      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
-      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>
+<!--      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>-->
+<!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
     </div>
   `,
   setup () {
-    const state = useDragResize('.box', { minHeight: 150, pageHasScrollBar: true })
+    const state = useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, containerSelector: '.wrap' })
 
-    const a = ref(0)
-    const targetCoordinate: any = useDragResize('.box1', {
-      minHeight: 100,
-      minWidth: 100,
-      pageHasScrollBar: true,
-      skill: { resize: true, drag: true },
-      callbacks: {
-        dragCallback(moveTargetAction, direction) {
-          moveTargetAction()
-          a.value = direction
-        },
-        resizeCallback(resizeTargetAction, direction, movement) {
-          resizeTargetAction()
-          a.value = direction + movement.movementX
-        }
-      }
-    })
-    useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
+    // const targetCoordinate: any = useDragResize('.box1', {
+    //   minHeight: 100,
+    //   minWidth: 100,
+    //   pageHasScrollBar: true,
+    //   skill: { resize: true, drag: true },
+    //   callbacks: {
+    //     dragCallback(moveTargetAction, direction) {
+    //       moveTargetAction()
+    //     },
+    //     resizeCallback(resizeTargetAction, direction, movement) {
+    //       resizeTargetAction()
+    //     }
+    //   }
+    // })
+
+    // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
-      a,
       state
     }
   }

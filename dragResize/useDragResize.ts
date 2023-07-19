@@ -1,5 +1,6 @@
-import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter, checkParameterType, transferControl } from '../utils/tools.ts'
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
+import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
+  checkParameterType, transferControl, appendChild } from '../utils/tools.ts'
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick} from 'vue'
 import useMovePoint from './useMovePoint.ts'
 import {
   createParentPosition, blurOrFocus,
@@ -12,6 +13,7 @@ import type { Direction } from '../utils/dragResize.ts'
 insertAfter()
 
 interface DragResizeOptions {
+  containerSelector: string
   minWidth?: number
   minHeight?: number
   pointSize?: number
@@ -38,6 +40,7 @@ interface DragResizeOptions {
 // default configuration
 // 默认配置
 const defaultOptions: DragResizeOptions = {
+  containerSelector: '',
   minWidth: 100, // minimum width - 最小宽度
   minHeight: 100, // minimum height - 最小高度
   pointSize: 10, // the size of the contour point - 轮廓点的大小
@@ -83,19 +86,19 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   checkParameterType(defaultOptions, options)
 
   options = mergeObject(defaultOptions, options)
-  const { minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
+  const { containerSelector, minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
   const { resize, drag, limitDragDirection } = skill
   const { dragCallback, resizeCallback } = callbacks
-
   // the target element being manipulated
   // 操作的目标元素
-  let $target
-  // coordinates and dimensions of the target element
-  // 目标元素的坐标和尺寸
+  let $target, container
+  // coordinates and dimensions of the target element - 目标元素的坐标和尺寸
   const initialTarget = updateInitialTarget()
-  // save contour point
-  // 保存轮廓点
+  // save contour point - 保存轮廓点
   const pointElements = {}
+  // It is used to record the position information of each contour point when the target element is pressed
+  // 用于记录目标元素被按下时各个轮廓点的位置信息
+  const downPointPosition = {}
   const processBlurOrFocus = blurOrFocus(pointElements)
   const targetState = reactive({
     left: 0,
@@ -114,6 +117,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   })
 
 	onMounted(() => {
+    container = document.querySelector(containerSelector)
+
 		initTarget()
 
     readyToDragAndResize($target, pointSize)
@@ -158,17 +163,16 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
 
-
-
   /**
    * @description ready to drag and resize - 准备拖动和调整大小
    * @param target
    * @param pointSize
    */
+  // used to record the position information of each contour point when the target is pressed
   function readyToDragAndResize (target: HTMLElement, pointSize: number) {
-    moveTarget(target)
+    whetherNeedDragFunction(target, downPointPosition)
 
-    whetherNeedResize(target, pointSize, resize)
+    whetherNeedResizeFunction(target, pointSize, resize)
   }
   // add drag and drop functionality for outline points - 为轮廓点添加拖放功能
   function addDragFunctionToPoint (target, { point, pointPosition, pointSize, direction }) {
@@ -184,17 +188,16 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     return isPress
   }
   // create contour points - 创建轮廓点
-  function createContourPoint (target, { pointPosition, direction, pointSize }) {
-    const parentNode = target.parentNode
-    const point = pointElements[direction] || (pointElements[direction] = document.createElement('div'))
-    initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointDefaultStyle)
-    parentNode.appendChild(point)
-    return point
+  function createContourPoint (target, { direction }) {
+    return pointElements[direction] || (pointElements[direction] = document.createElement('div'))
   }
   // initialize the contour point - 初始化轮廓点
   function initContourPoints (target, pointPosition, pointSize) {
     for (const direction in pointPosition) {
-      const point = createContourPoint(target, { pointPosition, direction, pointSize })
+      const point = createContourPoint(target, { direction })
+      initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointDefaultStyle)
+      appendChild(target.parentNode, point)
+
       const isPress = addDragFunctionToPoint(target, { point, pointPosition, direction, pointSize })
       // update the width and height information when releasing the mouse
       // 当释放鼠标时更新宽度和高度信息
@@ -202,7 +205,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
   // whether the resize function is required - 是否需要调整大小功能
-  function whetherNeedResize (target, pointSize, resize) {
+  function whetherNeedResizeFunction (target, pointSize, resize) {
     if (!resize) return
     const pointPosition = createParentPosition(initialTarget, pointSize)
     initContourPoints(target, pointPosition, pointSize)
@@ -232,14 +235,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
    * @description handles the drag and drop function of the target element - 处理目标元素的拖放函数
    * @param target
    */
-    // used to record the position information of each contour point when the target is pressed
-    // 用于记录目标元素被按下时各个轮廓点的位置信息
-  const downPointPosition = {}
-  function moveTarget (target: HTMLElement) {
-    processBlurOrFocus(target)
-
-    whetherNeedDragFunction(target, downPointPosition)
-  }
   // a callback that is executed when isPress changes - isPress发生变化时执行的回调
   function isPressChangeCallback ({ downPointPosition, movementX, movementY }) {
     return (newV) => {
@@ -250,6 +245,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
         for (const key in pointElements) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
+        console.log(downPointPosition)
       } else {
         // mouse up to update the coordinates of the target element
         // 鼠标抬起时更新目标元素的坐标
@@ -258,6 +254,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     }
   }
   function whetherNeedDragFunction (target, downPointPosition) {
+    processBlurOrFocus(target)
     if (!drag) return
     const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(dragCallback, {
       downPointPosition, pointElements, targetState, initialTarget
