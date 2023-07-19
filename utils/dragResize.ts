@@ -293,6 +293,8 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
   // 调整目标大小时限制最小尺寸的策略
   const resizeLimitStrategies = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
   resizeLimitStrategies[direction]({ movementX, movementY })
+
+  // TODO 限制最大尺寸
   return EXECUTE_NEXT_TASK
 }
 

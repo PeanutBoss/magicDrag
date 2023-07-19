@@ -1,6 +1,6 @@
-import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter, checkParameterType, transferControl } from "../utils/tools.ts";
+import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter, checkParameterType, transferControl } from '../utils/tools.ts'
 import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
-import useMovePoint from "./useMovePoint.ts";
+import useMovePoint from './useMovePoint.ts'
 import {
   createParentPosition, blurOrFocus,
   updateTargetStyle, updatePointPosition, limitTargetResize, moveTargetCallback,
@@ -16,6 +16,14 @@ interface DragResizeOptions {
   minHeight?: number
   pointSize?: number
   pageHasScrollBar?: boolean
+  containerRange?: {
+    left?: number
+    top?: number
+    width?: number
+    height?: number
+    bottom?: number
+    right?: number
+  }
   skill?: {
     resize?: boolean
     drag?: boolean
@@ -224,11 +232,10 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
    * @description handles the drag and drop function of the target element - 处理目标元素的拖放函数
    * @param target
    */
-  function moveTarget (target: HTMLElement) {
     // used to record the position information of each contour point when the target is pressed
     // 用于记录目标元素被按下时各个轮廓点的位置信息
-    const downPointPosition = {}
-
+  const downPointPosition = {}
+  function moveTarget (target: HTMLElement) {
     processBlurOrFocus(target)
 
     whetherNeedDragFunction(target, downPointPosition)
