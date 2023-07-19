@@ -48,7 +48,7 @@ export function createCoordinateStrategies () {
 
 // create a policy to limit the minimum size when resizing the target
 // 创建调整目标大小时限制最小尺寸的策略
-export function createResizeLimitStrategies (initialTarget, minWidth, minHeight) {
+export function createResizeLimitStrategies ({ minWidth, minHeight }, { initialTarget, containerInfo }) {
 	const strategies = {}
 	const leftTask = (movementX, moveMaxDistanceX) => {
 		if (movementX.value > moveMaxDistanceX) {
@@ -195,7 +195,7 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
     setStyle(pointElements[key], 'top', downPointPosition[key][1] + movement.y + 'px')
   }
 }
-export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, initialTarget }) {
+export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, initialTarget, containerInfo }) {
   return (moveAction, movement) => {
     // Wrap the action to move the target element as a separate new function, and if the user defines a callback
     // use moveTargetAction as an argument to that callback
@@ -204,6 +204,8 @@ export function moveTargetCallback (dragCallback, { downPointPosition, pointElem
       // perform the default action for movePoint
       // 执行movePoint的默认动作
       moveAction()
+			// 限制目标元素在容器内移动
+			limitTargetMove(initialTarget, containerInfo, movement)
       // update the position of the contour points
       // 更新轮廓点位置
       updateContourPointPosition(downPointPosition, movement, pointElements)
@@ -214,6 +216,22 @@ export function moveTargetCallback (dragCallback, { downPointPosition, pointElem
 		// update the state of the target element - 更新目标元素状态
 		updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
   }
+}
+
+// 限制目标元素在container内拖拽
+function limitTargetMove (initialTarget, containerInfo, movement) {
+	const { left, top, width: targetWidth , height: targetHeight } = initialTarget
+	const { width: containerWidth, height: containerHeight } = containerInfo
+
+	const comeAcrossLeft = movement.x + left <= 0
+	const comeAcrossTop = movement.y + top <= 0
+	const comeAcrossRight = movement.x + left + targetWidth >= containerWidth
+	const comeAcrossBottom = movement.y + top + targetHeight >= containerHeight
+
+	comeAcrossLeft && (movement.x = -left)
+	comeAcrossTop && (movement.y = -top)
+	comeAcrossRight && (movement.x = containerWidth - targetWidth - left)
+	comeAcrossBottom && (movement.y = containerHeight - targetHeight - top)
 }
 
 
@@ -288,10 +306,10 @@ export function updatePointPosition (target, { direction, movementX, movementY }
 }
 // limits the minimum size of the target element
 // 限制目标元素的最小尺寸
-export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, minWidth, minHeight }) {
+export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight }) {
   // a policy to limit the minimum size when resizing a target
   // 调整目标大小时限制最小尺寸的策略
-  const resizeLimitStrategies = createResizeLimitStrategies(initialTarget, minWidth, minHeight)
+  const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight }, { initialTarget, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
 
   // TODO 限制最大尺寸

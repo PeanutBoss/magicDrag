@@ -1,6 +1,6 @@
 import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
   checkParameterType, transferControl, appendChild } from '../utils/tools.ts'
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick} from 'vue'
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
 import useMovePoint from './useMovePoint.ts'
 import {
   createParentPosition, blurOrFocus,
@@ -86,20 +86,24 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   checkParameterType(defaultOptions, options)
 
   options = mergeObject(defaultOptions, options)
-  const { containerSelector, minWidth, minHeight, pointSize, pageHasScrollBar, skill, callbacks } = options
+  const { containerSelector, minWidth, minHeight, pointSize, skill, callbacks } = options
   const { resize, drag, limitDragDirection } = skill
   const { dragCallback, resizeCallback } = callbacks
   // the target element being manipulated
-  // 操作的目标元素
-  let $target, container
+  // 操作的目标元素和容器元素
+  let $target, $container
   // coordinates and dimensions of the target element - 目标元素的坐标和尺寸
   const initialTarget = updateInitialTarget()
   // save contour point - 保存轮廓点
   const pointElements = {}
+  // 容器元素的坐标信息
+  let containerInfo = {}
   // It is used to record the position information of each contour point when the target element is pressed
   // 用于记录目标元素被按下时各个轮廓点的位置信息
   const downPointPosition = {}
+  // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(pointElements)
+  // 目标元素的状态
   const targetState = reactive({
     left: 0,
     top: 0,
@@ -107,6 +111,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     width: 0,
     isPress: false
   })
+  // 轮廓点的状态
   const pointState = reactive({
     left: 0,
     top: 0,
@@ -117,7 +122,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   })
 
 	onMounted(() => {
-    container = document.querySelector(containerSelector)
+    $container = getElement(containerSelector)
+    containerInfo = $container.getBoundingClientRect() // scrollChange时会发生变化
 
 		initTarget()
 
@@ -229,7 +235,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
    */
   function movePointCallback (target, { direction, movementX, movementY, pointSize }) {
 
-    limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, minWidth, minHeight })
+    limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight })
 
     updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
 
@@ -262,9 +268,12 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   function whetherNeedDragFunction (target, downPointPosition) {
     processBlurOrFocus(target)
     if (!drag) return
-    const { movementX, movementY, isPress } = useMovePoint(target, moveTargetCallback(dragCallback, {
-      downPointPosition, pointElements, targetState, initialTarget
-    }), { direction: limitDragDirection })
+    const { movementX, movementY, isPress } = useMovePoint(
+      target,
+      moveTargetCallback(dragCallback, {
+        downPointPosition, pointElements, targetState, initialTarget, containerInfo
+      }),
+      { direction: limitDragDirection })
     watch(isPress, isPressChangeCallback({ downPointPosition, movementX, movementY }))
   }
 
