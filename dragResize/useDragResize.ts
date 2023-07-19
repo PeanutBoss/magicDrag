@@ -151,12 +151,19 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   // initializes the target element coordinates
   // 初始化目标元素的坐标
   function initTargetCoordinate () {
-    const { left, top, height, width } = $target.getBoundingClientRect()
+    // const { left, top, height, width } = $target.getBoundingClientRect()
+    // const rect = {
+    //   left: pageHasScrollBar ? left + window.scrollX : left,
+    //   top: pageHasScrollBar ? top + window.scrollY : top,
+    //   height,
+    //   width
+    // }
+    // 直接获取相对于父元素的坐标
     const rect = {
-      left: pageHasScrollBar ? left + window.scrollX : left,
-      top: pageHasScrollBar ? top + window.scrollY : top,
-      height,
-      width
+      left: $target.offsetLeft,
+      top: $target.offsetTop,
+      width: $target.offsetWidth,
+      height: $target.offsetHeight
     }
     for (const rectKey in initialTarget) {
       initialTarget[rectKey] = rect[rectKey]
@@ -245,7 +252,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
         for (const key in pointElements) {
           downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
         }
-        console.log(downPointPosition)
       } else {
         // mouse up to update the coordinates of the target element
         // 鼠标抬起时更新目标元素的坐标

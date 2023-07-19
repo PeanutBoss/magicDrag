@@ -117,7 +117,6 @@ export function setPosition (point: HTMLElement, pointPosition: PointPosition, d
 }
 
 export function createParentPosition ({ left, top, width, height }, pointSize: number): PointPosition {
-	console.log({ left, top, width, height }, 'initialTarget')
 	const halfPointSize = pointSize / 2
 	return {
 		lt: [left - halfPointSize, top - halfPointSize, 'nw-resize'],
