@@ -54,21 +54,33 @@ export function createResizeLimitStrategies ({ minWidth, minHeight }, { initialT
 		if (movementX.value > moveMaxDistanceX) {
 			movementX.value = moveMaxDistanceX
 		}
+    if (movementX.value + initialTarget.left <= 0) {
+      movementX.value = -initialTarget.left
+    }
 	}
 	const topTask = (movementY, moveMaxDistanceY) => {
 		if (movementY.value > moveMaxDistanceY) {
 			movementY.value = moveMaxDistanceY
 		}
+    if (movementY.value + initialTarget.top <= 0) {
+      movementY.value = -initialTarget.top
+    }
 	}
 	const bottomTask = (movementY, moveMaxDistanceY) => {
 		if (-movementY.value > moveMaxDistanceY) {
 			movementY.value = -moveMaxDistanceY
 		}
+    if (movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height) {
+      movementY.value = containerInfo.height - initialTarget.top - initialTarget.height
+    }
 	}
 	const rightTask = (movementX, moveMaxDistanceX) => {
 		if (-movementX.value > moveMaxDistanceX) {
 			movementX.value = -moveMaxDistanceX
 		}
+    if (movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width) {
+      movementX.value = containerInfo.width - initialTarget.left - initialTarget.width
+    }
 	}
 
 	All_DIRECTION.forEach(direction => {
