@@ -97,7 +97,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   // save contour point - 保存轮廓点
   const pointElements = {}
   // 容器元素的坐标信息
-  let containerInfo = {}
+  let containerInfo: any = {}
   // It is used to record the position information of each contour point when the target element is pressed
   // 用于记录目标元素被按下时各个轮廓点的位置信息
   const downPointPosition = {}
@@ -122,8 +122,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   })
 
 	onMounted(() => {
-    $container = getElement(containerSelector)
-    containerInfo = $container.getBoundingClientRect() // scrollChange时会发生变化
+    initContainer()
 
 		initTarget()
 
@@ -138,10 +137,16 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     removeElements(Object.values(pointElements))
   })
 
-
-
-  // initializes the target element
-  // 初始化目标元素
+  // initializes the container element - 初始化容器元素
+  function initContainer () {
+    $container = getElement(containerSelector)
+    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle($container)
+    const containerWidth = parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight)
+    const containerHeight = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)
+    containerInfo.width = containerWidth
+    containerInfo.height = containerHeight
+  }
+  // initializes the target element - 初始化目标元素
   function initTarget () {
     $target = getElement(targetSelector)
 
@@ -157,13 +162,6 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   // initializes the target element coordinates
   // 初始化目标元素的坐标
   function initTargetCoordinate () {
-    // const { left, top, height, width } = $target.getBoundingClientRect()
-    // const rect = {
-    //   left: pageHasScrollBar ? left + window.scrollX : left,
-    //   top: pageHasScrollBar ? top + window.scrollY : top,
-    //   height,
-    //   width
-    // }
     // 直接获取相对于父元素的坐标
     const rect = {
       left: $target.offsetLeft,
