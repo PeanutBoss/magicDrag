@@ -25,7 +25,7 @@ const App = {
     </div>
   `,
   setup () {
-    const state = useDragResize('.box', { minHeight: 150, pageHasScrollBar: true, containerSelector: '.wrap' })
+    const state = useDragResize('.box', { minHeight: 150, maxWidth: 350, maxHeight: 300, pageHasScrollBar: true, containerSelector: '.wrap' })
 
     // const targetCoordinate: any = useDragResize('.box1', {
     //   minHeight: 100,

@@ -16,6 +16,8 @@ interface DragResizeOptions {
   containerSelector: string
   minWidth?: number
   minHeight?: number
+  maxWidth?: number
+  maxHeight?: number
   pointSize?: number
   pageHasScrollBar?: boolean
   containerRange?: {
@@ -40,9 +42,11 @@ interface DragResizeOptions {
 // default configuration
 // 默认配置
 const defaultOptions: DragResizeOptions = {
-  containerSelector: '',
+  containerSelector: 'body',
   minWidth: 100, // minimum width - 最小宽度
   minHeight: 100, // minimum height - 最小高度
+  maxWidth: 100000, // 最大宽度
+  maxHeight: 100000, // 最大高度
   pointSize: 10, // the size of the contour point - 轮廓点的大小
   pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
   skill: {
@@ -86,7 +90,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
   checkParameterType(defaultOptions, options)
 
   options = mergeObject(defaultOptions, options)
-  const { containerSelector, minWidth, minHeight, pointSize, skill, callbacks } = options
+  const { containerSelector, minWidth, minHeight, maxWidth, maxHeight, pointSize, skill, callbacks } = options
   const { resize, drag, limitDragDirection } = skill
   const { dragCallback, resizeCallback } = callbacks
   // the target element being manipulated
@@ -233,7 +237,7 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
    */
   function movePointCallback (target, { direction, movementX, movementY, pointSize }) {
 
-    limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight })
+    limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
 
     updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
 

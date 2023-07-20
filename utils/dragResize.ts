@@ -1,4 +1,5 @@
-import {conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl, getObjectIntValue} from "./tools.ts";
+import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
+	getObjectIntValue } from "./tools.ts";
 import {reactive, watch} from 'vue';
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
@@ -46,41 +47,71 @@ export function createCoordinateStrategies () {
 	return strategies
 }
 
+/*
+* movementX/Y: 鼠标移动的距离
+* limitMinDistanceX/Y: 限制最小尺寸时可移动的最大距离
+* limitMaxDistanceX/Y: 限制最大尺寸时可移动的最大距离
+* */
+// 限制目标元素尺寸
+const limitSizeTasks = {
+	left ({ movementX, limitMinDistanceX, limitMaxDistanceX }) {
+		// 限制最小尺寸
+		movementX.value > limitMinDistanceX && (movementX.value = limitMinDistanceX)
+		// 限制最大之村
+		limitMaxDistanceX + movementX.value < 0 && (movementX.value = -limitMaxDistanceX)
+	},
+	right ({ movementX, limitMinDistanceX, limitMaxDistanceX }) {
+		-movementX.value > limitMinDistanceX && (movementX.value = -limitMinDistanceX)
+
+		movementX.value > limitMaxDistanceX && (movementX.value = limitMaxDistanceX)
+	},
+	top ({ movementY, limitMinDistanceY, limitMaxDistanceY }) {
+		movementY.value > limitMinDistanceY && (movementY.value = limitMinDistanceY)
+
+		limitMaxDistanceY + movementY.value < 0 && (movementY.value = -limitMaxDistanceY)
+	},
+	bottom ({ movementY, limitMinDistanceY, limitMaxDistanceY }) {
+		-movementY.value > limitMinDistanceY && (movementY.value = -limitMinDistanceY)
+
+		movementY.value > limitMaxDistanceY && (movementY.value = limitMaxDistanceY)
+	}
+}
+// 限制目标元素的移动边界
+const limitBoundaryTasks = {
+	left ({ movementX, initialTarget }) {
+		movementX.value + initialTarget.left <= 0 && (movementX.value = -initialTarget.left)
+	},
+	right ({ movementX, initialTarget, containerInfo }) {
+		movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width &&
+		(movementX.value = containerInfo.width - initialTarget.left - initialTarget.width)
+	},
+	top ({ movementY, initialTarget }) {
+		movementY.value + initialTarget.top <= 0 && (movementY.value = -initialTarget.top)
+	},
+	bottom ({ movementY, initialTarget, containerInfo }) {
+		movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height &&
+		(movementY.value = containerInfo.height - initialTarget.top - initialTarget.height)
+	}
+}
 // create a policy to limit the minimum size when resizing the target
 // 创建调整目标大小时限制最小尺寸的策略
-export function createResizeLimitStrategies ({ minWidth, minHeight }, { initialTarget, containerInfo }) {
+export function createResizeLimitStrategies ({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo }) {
 	const strategies = {}
-	const leftTask = (movementX, moveMaxDistanceX) => {
-		if (movementX.value > moveMaxDistanceX) {
-			movementX.value = moveMaxDistanceX
-		}
-    if (movementX.value + initialTarget.left <= 0) {
-      movementX.value = -initialTarget.left
-    }
+	const leftTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
+		limitSizeTasks.left({ movementX, limitMinDistanceX, limitMaxDistanceX })
+		limitBoundaryTasks.left({ movementX, initialTarget })
 	}
-	const topTask = (movementY, moveMaxDistanceY) => {
-		if (movementY.value > moveMaxDistanceY) {
-			movementY.value = moveMaxDistanceY
-		}
-    if (movementY.value + initialTarget.top <= 0) {
-      movementY.value = -initialTarget.top
-    }
+	const topTask = (movementY, limitMinDistanceY, limitMaxDistanceY) => {
+		limitSizeTasks.top({ movementY, limitMinDistanceY, limitMaxDistanceY })
+		limitBoundaryTasks.top({ movementY, initialTarget })
 	}
-	const bottomTask = (movementY, moveMaxDistanceY) => {
-		if (-movementY.value > moveMaxDistanceY) {
-			movementY.value = -moveMaxDistanceY
-		}
-    if (movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height) {
-      movementY.value = containerInfo.height - initialTarget.top - initialTarget.height
-    }
+	const bottomTask = (movementY, limitMinDistanceY, limitMaxDistanceY) => {
+		limitSizeTasks.bottom({ movementY, limitMinDistanceY, limitMaxDistanceY })
+		limitBoundaryTasks.bottom({ movementY, initialTarget, containerInfo })
 	}
-	const rightTask = (movementX, moveMaxDistanceX) => {
-		if (-movementX.value > moveMaxDistanceX) {
-			movementX.value = -moveMaxDistanceX
-		}
-    if (movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width) {
-      movementX.value = containerInfo.width - initialTarget.left - initialTarget.width
-    }
+	const rightTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
+		limitSizeTasks.right({ movementX, limitMinDistanceX, limitMaxDistanceX })
+		limitBoundaryTasks.right({ movementX, initialTarget, containerInfo })
 	}
 
 	All_DIRECTION.forEach(direction => {
@@ -88,13 +119,15 @@ export function createResizeLimitStrategies ({ minWidth, minHeight }, { initialT
 			const { width, height } = initialTarget
 			const { hasT, hasR, hasB, hasL } = getDirectionDescription(direction)
 			// the maximum distance that can be moved
-			const moveMaxDistanceX = width - minWidth
-			const moveMaxDistanceY = height - minHeight
+			const limitMinDistanceX = width - minWidth
+			const limitMinDistanceY = height - minHeight
+			const limitMaxDistanceX = maxWidth - width
+			const limitMaxDistanceY = maxHeight - height
 
-			hasL && leftTask(movementX, moveMaxDistanceX)
-			hasT && topTask(movementY, moveMaxDistanceY)
-			hasR && rightTask(movementX, moveMaxDistanceX)
-			hasB && bottomTask(movementY, moveMaxDistanceY)
+			hasL && leftTask(movementX, limitMinDistanceX, limitMaxDistanceX)
+			hasT && topTask(movementY, limitMinDistanceY, limitMaxDistanceY)
+			hasR && rightTask(movementX, limitMinDistanceX, limitMaxDistanceX)
+			hasB && bottomTask(movementY, limitMinDistanceY, limitMaxDistanceY)
 		}
 	})
 	return strategies
@@ -318,14 +351,12 @@ export function updatePointPosition (target, { direction, movementX, movementY }
 }
 // limits the minimum size of the target element
 // 限制目标元素的最小尺寸
-export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight }) {
+export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight }) {
   // a policy to limit the minimum size when resizing a target
   // 调整目标大小时限制最小尺寸的策略
-  const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight }, { initialTarget, containerInfo })
+  const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
-
-  // TODO 限制最大尺寸
-  return EXECUTE_NEXT_TASK
+	return EXECUTE_NEXT_TASK
 }
 
 
