@@ -3,6 +3,9 @@ export interface Plugin {
 	init (target: HTMLElement, initialTarget): void
 }
 
+const ContainerClassName = 'drag_resize-menu-container'
+const ItemClassName = 'drag_resize-menu-item'
+
 export function executePluginInit (plugins: Plugin[], target: HTMLElement, initialTarget) {
 	plugins.forEach(plugin => {
 		plugin.init(target, initialTarget)
@@ -14,7 +17,7 @@ let menuBox
 function getMenuBox () {
 	if (!menuBox) {
 		menuBox = document.createElement('div')
-		menuBox.className = 'drag_resize-menu-container'
+		menuBox.className = ContainerClassName
 		document.body.append(menuBox)
 	}
 	return menuBox
@@ -38,6 +41,19 @@ export function showMenu (isShow, position = {}) {
 	if (isShow) {
 		window.addEventListener('mousedown', bindHidden)
 	}
+}
+
+export function insertAction (actionName: string | HTMLElement, actionCallback) {
+	const menuBox = getMenuBox()
+	console.log(menuBox)
+	let actionDom
+	if (typeof actionName === 'string') {
+		actionDom = document.createElement('div')
+		actionDom.className = ItemClassName
+		actionDom.textContent = actionName
+	}
+	actionDom.onclick = actionCallback
+	menuBox.appendChild(actionDom)
 }
 
 function bindHidden (event) {
