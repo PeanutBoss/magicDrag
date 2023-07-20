@@ -57,7 +57,7 @@ const limitSizeTasks = {
 	left ({ movementX, limitMinDistanceX, limitMaxDistanceX }) {
 		// 限制最小尺寸
 		movementX.value > limitMinDistanceX && (movementX.value = limitMinDistanceX)
-		// 限制最大之村
+		// 限制最大尺寸
 		limitMaxDistanceX + movementX.value < 0 && (movementX.value = -limitMaxDistanceX)
 	},
 	right ({ movementX, limitMinDistanceX, limitMaxDistanceX }) {

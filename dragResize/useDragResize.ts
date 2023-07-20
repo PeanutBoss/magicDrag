@@ -8,7 +8,9 @@ import {
   pointIsPressChangeCallback, updateInitialTarget, initPointStyle, initTargetStyle,
   updateState
 } from '../utils/dragResize.ts'
+import { executePluginInit } from './plugins/index.ts'
 import type { Direction } from '../utils/dragResize.ts'
+import type { Plugin } from './plugins/index.ts'
 
 insertAfter()
 
@@ -35,9 +37,10 @@ interface DragResizeOptions {
     limitDragDirection?: 'X' | 'Y' | null
   },
   callbacks?: {
-    dragCallback?: (moveTargetAction: () => void, movement: { movementX: number, movementY: number }) => void
-    resizeCallback?: (moveResizeAction: () => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
-  }
+    dragCallback?: (moveTargetAction: (moveAction) => void, movement: { movementX: number, movementY: number }) => void
+    resizeCallback?: (moveResizeAction: (moveAction) => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
+  },
+  plugins?: Plugin[]
 }
 // default configuration
 // 默认配置
@@ -81,7 +84,11 @@ interface DragResizeState {
   direction: Ref<string | null>
 }
 
-export default function useDragResize (targetSelector: string | HTMLElement, options?: DragResizeOptions): DragResizeState {
+export default function useDragResize (
+  targetSelector: string | HTMLElement,
+  options?: DragResizeOptions,
+  plugins?: Plugin[]
+): DragResizeState {
   // check whether targetSelector is a selector or an HTMLElement
   // 检查 targetSelector 是否为选择器或 HTMLElement
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
@@ -129,6 +136,8 @@ export default function useDragResize (targetSelector: string | HTMLElement, opt
     initContainer()
 
 		initTarget()
+
+    executePluginInit(plugins, $target, initialTarget)
 
     readyToDragAndResize($target, pointSize)
 	})

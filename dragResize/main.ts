@@ -1,5 +1,6 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
+import Lock from "./plugins/lock.ts";
 
 const App = {
   template: `
@@ -25,7 +26,29 @@ const App = {
     </div>
   `,
   setup () {
-    const state = useDragResize('.box', { minHeight: 150, maxWidth: 350, maxHeight: 300, pageHasScrollBar: true, containerSelector: '.wrap' })
+    let pressShift = false
+    window.addEventListener('keydown', event => {
+      pressShift = event.key === 'Shift'
+    })
+    window.addEventListener('keyup', event => {
+      pressShift = false
+    })
+    const state = useDragResize(
+      '.box',
+      {
+        minHeight: 150,
+        maxWidth: 350,
+        maxHeight: 300,
+        pageHasScrollBar: true,
+        containerSelector: '.wrap',
+        callbacks: {
+          // dragCallback (moveAction) {
+          //   pressShift && moveAction()
+          // }
+        }
+      },
+      [Lock]
+    )
 
     // const targetCoordinate: any = useDragResize('.box1', {
     //   minHeight: 100,
