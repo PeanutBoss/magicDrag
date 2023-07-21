@@ -1,6 +1,11 @@
 import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
-	getObjectIntValue } from "./tools.ts";
-import {reactive, watch} from 'vue';
+	getObjectIntValue } from './tools.ts'
+import {reactive, watch} from 'vue'
+import { getActionCallbacks, executeActionCallbacks } from '../dragResize/plugins/contextMenu.ts'
+
+const dragActions = getActionCallbacks('dragCallbacks')
+const resizeActions = getActionCallbacks('resizeCallbacks')
+const mousedownActions = getActionCallbacks('mousedownCallbacks')
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
 interface DirectionDescription {
@@ -207,13 +212,16 @@ function showOrHideContourPoint (pointElements, isShow) {
     setStyle(pointElements[key], 'display', isShow ? 'block' : 'none')
   }
 }
-function checkIsContains (target, pointElements, event) {
+function checkIsContains (target, pointElements, targetState, event) {
   const blurElements = [target, ...Object.values(pointElements)]
   if (!blurElements.includes(event.target)) {
     // losing focus hides outline points
     // 失焦时隐藏轮廓点
     showOrHideContourPoint(pointElements, false)
   } else {
+    const isContinue = executeActionCallbacks(mousedownActions, targetState, 'beforeCallback')
+    if (isContinue === false) return
+
     // outline points are displayed when in focus
     // 聚焦时将显示轮廓点
     showOrHideContourPoint(pointElements, true)
@@ -221,11 +229,11 @@ function checkIsContains (target, pointElements, event) {
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
-export function blurOrFocus (pointElements) {
+export function blurOrFocus (pointElements, targetState) {
   let checkIsContainsTarget
   return (target: HTMLElement, isBind = true) => {
     if (isBind) {
-      window.addEventListener('mousedown', checkIsContainsTarget ?? (checkIsContainsTarget = checkIsContains.bind(null, target, pointElements)))
+      window.addEventListener('mousedown', checkIsContainsTarget ?? (checkIsContainsTarget = checkIsContains.bind(null, target, pointElements, targetState)))
     } else {
       window.removeEventListener('mousedown', checkIsContainsTarget)
     }
@@ -242,6 +250,10 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 }
 export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, initialTarget, containerInfo }) {
   return (moveAction, movement) => {
+    // 如果目标元素处于锁定状态则不允许拖拽
+    const isContinue = executeActionCallbacks(dragActions, targetState, 'beforeCallback')
+    if (isContinue === false) return
+
     // Wrap the action to move the target element as a separate new function, and if the user defines a callback
     // use moveTargetAction as an argument to that callback
     // 将移动目标元素的操作包装为单独新的函数,如果用户有定义回调，则将moveTargetAction作为这个回调的参数
@@ -260,6 +272,8 @@ export function moveTargetCallback (dragCallback, { downPointPosition, pointElem
     transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 		// update the state of the target element - 更新目标元素状态
 		updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
+
+    executeActionCallbacks(dragActions, targetState, 'afterCallback')
   }
 }
 

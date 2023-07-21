@@ -75,6 +75,7 @@ interface DragResizeState {
   targetTop: Ref<number>
   targetWidth: Ref<number>
   targetHeight: Ref<number>
+  targetIsLock: Ref<boolean>
   pointLeft: Ref<number>
   pointTop: Ref<number>
   pointMovementX: Ref<number>
@@ -112,15 +113,14 @@ export default function useDragResize (
   // It is used to record the position information of each contour point when the target element is pressed
   // 用于记录目标元素被按下时各个轮廓点的位置信息
   const downPointPosition = {}
-  // 显示或隐藏轮廓点的方法
-  const processBlurOrFocus = blurOrFocus(pointElements)
   // 目标元素的状态
   const targetState = reactive({
     left: 0,
     top: 0,
     height: 0,
     width: 0,
-    isPress: false
+    isPress: false,
+    isLock: false
   })
   // 轮廓点的状态
   const pointState = reactive({
@@ -131,13 +131,15 @@ export default function useDragResize (
     movementX: 0,
     movementY: 0
   })
+  // 显示或隐藏轮廓点的方法
+  const processBlurOrFocus = blurOrFocus(pointElements, targetState)
 
 	onMounted(() => {
     initContainer()
 
 		initTarget()
 
-    executePluginInit(plugins, $target, initialTarget)
+    executePluginInit(plugins, $target, { targetState })
 
     readyToDragAndResize($target, pointSize)
 	})
@@ -294,6 +296,7 @@ export default function useDragResize (
     targetWidth: toRef(targetState, 'width'),
     targetHeight: toRef(targetState, 'height'),
     targetIsPress: toRef(targetState, 'isPress'),
+    targetIsLock: toRef(targetState, 'isLock'),
     pointLeft: toRef(pointState, 'left'),
     pointTop: toRef(pointState, 'top'),
     direction: toRef(pointState, 'direction'),

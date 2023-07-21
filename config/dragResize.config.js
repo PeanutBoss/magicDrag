@@ -19,16 +19,21 @@ module.exports = {
             }
           }
         ]
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
       }
     ]
   },
   plugins: [
     new htmlPlugin({
-      template: path.resolve(__dirname, '../dragResize/template.html')
+      template: path.resolve(__dirname, '../dragResize/template.html'),
+      inject: 'head' // 将css插入head标签
     })
   ],
   // resolve: {
-  //   extensions: ['.ts', 'json', '.tsx']
+  //   extensions: ['.ts', '.json', '.tsx']
   // },
   devServer: {
     // open: true,

@@ -11,6 +11,7 @@
     "serve:move": "webpack serve --config ./config/moveProcess.config.js",
     "serve:point": "webpack serve --config ./config/point.config.js",
     "serve:drag": "webpack serve --config ./config/dragResize.config.js",
+    "build:drag": "webpack --config ./config/dragResize.config.js",
     "serve:container": "webpack serve --config ./config/dragContainer.config.js"
   },
   "repository": {

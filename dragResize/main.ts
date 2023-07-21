@@ -1,6 +1,7 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
-import Lock from "./plugins/lock.ts";
+import ContextMenu from './plugins/contextMenu.ts'
+import "./style/index.css"
 
 const App = {
   template: `
@@ -18,7 +19,8 @@ const App = {
       <hr>
       {{ state.pointLeft }} - {{ state.pointTop }}<br>
       {{ state.direction }} - {{ state.pointIsPress }}<br>
-      {{ state.pointMovementX }} - {{ state.pointMovementY }}
+      {{ state.pointMovementX }} - {{ state.pointMovementY }}<br>
+      {{ state.targetIsLock }}
       <hr>
       <div class="box"></div>
 <!--      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>-->
@@ -47,23 +49,10 @@ const App = {
           // }
         }
       },
-      [Lock]
+      [ContextMenu]
     )
 
-    // const targetCoordinate: any = useDragResize('.box1', {
-    //   minHeight: 100,
-    //   minWidth: 100,
-    //   pageHasScrollBar: true,
-    //   skill: { resize: true, drag: true },
-    //   callbacks: {
-    //     dragCallback(moveTargetAction, direction) {
-    //       moveTargetAction()
-    //     },
-    //     resizeCallback(resizeTargetAction, direction, movement) {
-    //       resizeTargetAction()
-    //     }
-    //   }
-    // })
+    // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu])
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
