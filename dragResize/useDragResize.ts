@@ -1,12 +1,10 @@
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
   checkParameterType, transferControl, appendChild } from '../utils/tools.ts'
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
 import useMovePoint from './useMovePoint.ts'
 import {
-  createParentPosition, blurOrFocus,
-  updateTargetStyle, updatePointPosition, limitTargetResize, moveTargetCallback,
-  pointIsPressChangeCallback, updateInitialTarget, initPointStyle, initTargetStyle,
-  updateState
+  createParentPosition, blurOrFocus, moveTargetCallback, pointIsPressChangeCallback,
+  updateInitialTarget, initPointStyle, initTargetStyle, updateState, movePointCallback
 } from '../utils/dragResize.ts'
 import { executePluginInit } from './plugins/index.ts'
 import type { Direction } from '../utils/dragResize.ts'
@@ -139,7 +137,7 @@ export default function useDragResize (
 
 		initTarget()
 
-    executePluginInit(plugins, $target, { targetState })
+    executePluginInit(plugins, { target: $target, pointElements, pointState }, { targetState, initialTarget })
 
     readyToDragAndResize($target, pointSize)
 	})
@@ -204,8 +202,14 @@ export default function useDragResize (
   function addDragFunctionToPoint (target, { point, pointPosition, pointSize, direction }) {
     const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
       const moveResizeAction = () => {
-        moveAction()
-        movePointCallback(target, { direction, movementX, movementY, pointSize })
+        // moveAction()
+        movePointCallback(
+          moveAction,
+          target,
+          { direction, movementX, movementY },
+          { initialTarget, containerInfo, targetState, pointState },
+          { pointSize, pointElements, maxHeight, maxWidth, minWidth, minHeight }
+        )
       }
       // Hand over control (moveResizeAction)
       // 将控制权（moveResizeAction）交出
@@ -246,14 +250,14 @@ export default function useDragResize (
    * @param movementY
    * @param pointSize
    */
-  function movePointCallback (target, { direction, movementX, movementY, pointSize }) {
-
-    limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
-
-    updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
-
-    updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
-  }
+  // function movePointCallback (target, { direction, movementX, movementY, pointSize }) {
+  //
+  //   limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
+  //
+  //   updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
+  //
+  //   updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
+  // }
 
 
 

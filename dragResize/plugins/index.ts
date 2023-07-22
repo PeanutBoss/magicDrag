@@ -1,11 +1,11 @@
 export interface Plugin {
 	name: string
-	init (target: HTMLElement, targetState): void
-  unbind (): void
+	init (domInfo, payload): void
+  unbind (target: HTMLElement): void
 }
 
-export function executePluginInit (plugins: Plugin[], target: HTMLElement, targetState) {
+export function executePluginInit (plugins: Plugin[], domInfo, payload) {
 	plugins.forEach(plugin => {
-		plugin.init(target, targetState)
+		plugin.init(domInfo, payload)
 	})
 }

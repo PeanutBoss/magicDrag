@@ -1,11 +1,28 @@
+import { updatePointPosition } from '../../utils/dragResize.ts'
+import { Plugin } from '../plugins/index.ts'
+
 const ContainerClassName = 'drag_resize-menu-container'
 const ItemClassName = 'drag_resize-menu-item'
+const LockItemClassName = ' drag_resize-menu-item-lock'
 
+const BLOW_UP_STAGE = 20
+
+interface ActionState {
+  state: {
+    targetState: any
+    initialTarget: any
+    pointState: any
+  },
+  domInfo: {
+    target: HTMLElement
+    pointElements: { [key: string]: HTMLElement }
+  }
+}
 interface ActionDescribe {
   name?: string
   actionDom: HTMLElement | null
   actionName: string
-  actionCallback (state, event): void
+  actionCallback (state: ActionState, event): void
   // 最好显式的返回一个布尔值
   dragCallbacks?: {
     beforeCallback? (targetState): boolean
@@ -24,14 +41,16 @@ interface ActionMap {
   [key: string]: ActionDescribe
 }
 
+// MARK callbacks如果要终止执行，必须显式的返回false
 const actionMap: ActionMap = {
   lock: {
     name: 'lock',
     actionName: '锁定',
     actionDom: null,
-    actionCallback: function ({ targetState }, event) {
-      targetState.isLock = !targetState.isLock
-      this.actionDom.innerText = targetState.isLock ? '解锁' : '锁定'
+    actionCallback: function ({ state }, event) {
+      state.targetState.isLock = !state.targetState.isLock
+      this.actionDom.innerText = state.targetState.isLock ? '解锁' : '锁定'
+      lockCallback(actionMap, state.targetState.isLock)
     },
     dragCallbacks: {
       beforeCallback(targetState) {
@@ -41,11 +60,7 @@ const actionMap: ActionMap = {
         return true
       }
     },
-    resizeCallbacks: {
-      beforeCallback(targetState) {
-        return !targetState.isLock
-      }
-    },
+    resizeCallbacks: {},
     mousedownCallbacks: {
       beforeCallback(targetState) {
         return !targetState.isLock
@@ -56,14 +71,56 @@ const actionMap: ActionMap = {
     name: 'blowUp',
     actionName: '放大',
     actionDom: null,
-    actionCallback(state, event) {
-      console.log('放大')
-    },
-    dragCallbacks: {
-      beforeCallback(targetState): boolean {
-        return true
-      }
+    actionCallback({ state: { targetState, pointState, initialTarget }, domInfo: { target, pointElements } }, event) {
+      if (targetState.isLock) return
+
+      targetState.width += BLOW_UP_STAGE
+      targetState.height += BLOW_UP_STAGE
+      target.style.width = targetState.width + 'px'
+      target.style.height = targetState.height + 'px'
+      updatePointPosition(
+        target,
+        { direction: 'rb', movementX: { value: BLOW_UP_STAGE }, movementY: { value: BLOW_UP_STAGE } },
+        { initialTarget, pointElements, pointSize: 10, pointState },
+        false
+      )
+      initialTarget.width += BLOW_UP_STAGE
+      initialTarget.height += BLOW_UP_STAGE
     }
+  },
+  reduce: {
+    name: 'reduce',
+    actionName: '缩小',
+    actionDom: null,
+    actionCallback({ state: { targetState, pointState, initialTarget }, domInfo: { target, pointElements } }, event) {
+      if (targetState.isLock) return
+
+      targetState.width -= BLOW_UP_STAGE
+      targetState.height -= BLOW_UP_STAGE
+      console.log(target, this.actionDom)
+      target.style.width = targetState.width + 'px'
+      target.style.height = targetState.height + 'px'
+      updatePointPosition(
+        target,
+        { direction: 'rb', movementX: { value: -BLOW_UP_STAGE }, movementY: { value: -BLOW_UP_STAGE } },
+        { initialTarget, pointElements, pointSize: 10, pointState },
+        false
+      )
+      initialTarget.width -= BLOW_UP_STAGE
+      initialTarget.height -= BLOW_UP_STAGE
+    }
+  }
+}
+
+function lockCallback (actionMap: ActionMap, isLock: boolean) {
+  for (const [key, action] of Object.entries(actionMap)) {
+    if (key === 'lock') continue
+    if (isLock) {
+      action.actionDom.className += LockItemClassName
+    } else {
+      action.actionDom.className = action.actionDom.className.replace(LockItemClassName, '')
+    }
+    console.log(action.actionDom.className)
   }
 }
 
@@ -102,21 +159,19 @@ export function executeActionCallbacks (actionData: ActionData[], targetState, t
   return isContinue
 }
 
-class ContextMenu {
+class ContextMenu implements Plugin {
   name: 'ContextMenu'
   private isInsert = false
   private menuBox
   private actions: Actions
-  private state: any
   constructor(private actionList: Array<string>) {
     this.menuBox = this.getMenuBox()
 
     this.bindContextCallback = this.contextCallback.bind(this)
-    this.bindHidden = this.hidden.bind(this)
   }
-  init (target: HTMLElement, targetState) {
-    this.state = targetState
-    this.actions = new Actions(this.actionList, this.menuBox, this.state)
+  init ({ target, pointElements }, payload) {
+    this.actions = new Actions(this.actionList, this.menuBox, { state: payload, domInfo: { target, pointElements } })
+    this.bindHidden = this.hidden.bind(this, this.actions)
     target.addEventListener('contextmenu', this.bindContextCallback)
   }
   unbind (target: HTMLElement) {
@@ -148,7 +203,8 @@ class ContextMenu {
     this.menuBox = null
   }
 
-  hidden (event) {
+  hidden (actions, event) {
+    if (actions.actionElementList.includes(event.target) && actions.pluginData.state.targetState.isLock) return
     // if (![...this.actions.actionElementList].includes(event.target)) {
       this.showMenu(false)
     // }
@@ -164,7 +220,7 @@ class ContextMenu {
 class Actions {
   public actionElementList: HTMLElement[] = []
   private actionMap: ActionMap
-  constructor(actionList: string[], actionContainer: HTMLElement, private state: any) {
+  constructor(actionList: string[], actionContainer: HTMLElement, private pluginData: any) {
     this.actionMap = this.getMapByActionList(actionList)
     this.insertAction(actionContainer)
   }
@@ -189,14 +245,14 @@ class Actions {
   }
   getActionDom (ele: HTMLElement | string, action: ActionDescribe): HTMLElement {
     if (ele instanceof HTMLElement) {
-      ele.onclick = action.actionCallback.bind(action, this.state)
+      ele.onclick = action.actionCallback.bind(action, this.pluginData)
       return ele
     }
 
     let actionElement = document.createElement('div')
     actionElement.className = ItemClassName
     actionElement.textContent = action.actionName
-    actionElement.onclick = action.actionCallback.bind(action, this.state)
+    actionElement.onclick = action.actionCallback.bind(action, this.pluginData)
     return actionElement
   }
 }

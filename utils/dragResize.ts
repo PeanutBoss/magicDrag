@@ -335,7 +335,7 @@ function whetherUpdateState (direction, targetState, newState) {
 
 // update the coordinate information of contour points
 // 更新轮廓点坐标信息
-export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }) {
+export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, excludeCurPoint = true) {
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
@@ -362,6 +362,9 @@ export function updatePointPosition (target, { direction, movementX, movementY }
     // 设置轮廓点的innerDirection位置
     setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
   }
+	if (!excludeCurPoint) {
+		setPosition(pointElements[direction], pointPosition, direction as Direction)
+	}
 }
 // limits the minimum size of the target element
 // 限制目标元素的最小尺寸
@@ -371,6 +374,18 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
   const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
 	return EXECUTE_NEXT_TASK
+}
+export function movePointCallback (moveAction, target, { direction, movementX, movementY }, { initialTarget, containerInfo, pointState, targetState }, { pointElements, pointSize, minWidth, minHeight, maxWidth, maxHeight }) {
+	const isContinue = executeActionCallbacks(resizeActions, targetState, 'beforeCallback')
+	if (isContinue === false) return
+
+	moveAction()
+
+	limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
+
+	updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
+
+	updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
 }
 
 
