@@ -204,10 +204,9 @@ class ContextMenu implements Plugin {
   }
 
   hidden (actions, event) {
-    if (actions.actionElementList.includes(event.target) && actions.pluginData.state.targetState.isLock) return
-    // if (![...this.actions.actionElementList].includes(event.target)) {
-      this.showMenu(false)
-    // }
+    const excludeLockDom = actions.actionElementList.slice(1)
+    if (excludeLockDom.includes(event.target) && actions.pluginData.state.targetState.isLock) return
+    this.showMenu(false)
   }
   contextCallback (event) {
     event.preventDefault()
