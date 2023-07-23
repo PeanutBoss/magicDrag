@@ -9,3 +9,5 @@ export function executePluginInit (plugins: Plugin[], domInfo, payload) {
 		plugin.init(domInfo, payload)
 	})
 }
+
+// TODO 防止手动篡改element

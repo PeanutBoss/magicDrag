@@ -92,7 +92,7 @@ export const setStyle: SetStyle = (target: HTMLElement, styleKey: string | objec
 
 // check that the type of options passed in is correct
 // 检查传入的选项类型是否正确
-export function checkParameterType (defaultOptions, options) {
+export function checkParameterType (defaultOptions, options = {}) {
   for (const key in defaultOptions) {
     const value = options[key]
     if (isNullOrUndefined(value)) continue

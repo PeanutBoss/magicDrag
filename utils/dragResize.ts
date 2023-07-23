@@ -419,7 +419,9 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
     left: 0,
     top: 0,
     width: 0,
-    height: 0
+    height: 0,
+    originWidth: 0,
+    originHeight: 0
   })
 }
 export function initTargetStyle (target, drag) {

@@ -1,11 +1,24 @@
 import { updatePointPosition } from '../../utils/dragResize.ts'
+import useDragResize from "../useDragResize.ts";
 import { Plugin } from '../plugins/index.ts'
 
 const ContainerClassName = 'drag_resize-menu-container'
 const ItemClassName = 'drag_resize-menu-item'
 const LockItemClassName = ' drag_resize-menu-item-lock'
+const LockTargetClassName = ' drag_resize-target-lock'
 
-const BLOW_UP_STAGE = 20
+// TODO 1.锁定状态 2.zIndex从movePoint更新 3.复制元素的类名
+const menuState = {
+  isLock: false
+}
+const lockMap = new Map()
+
+function getScaleSize (originSize, ratio) {
+  return {
+    x: originSize.width * ratio,
+    y: originSize.height * ratio
+  }
+}
 
 interface ActionState {
   state: {
@@ -16,10 +29,11 @@ interface ActionState {
   domInfo: {
     target: HTMLElement
     pointElements: { [key: string]: HTMLElement }
+    container: HTMLElement
   }
 }
 interface ActionDescribe {
-  name?: string
+  name: string
   actionDom: HTMLElement | null
   actionName: string
   actionCallback (state: ActionState, event): void
@@ -36,6 +50,7 @@ interface ActionDescribe {
     beforeCallback? (targetState): boolean
     afterCallback? (targetState): boolean
   }
+  [key: string]: any
 }
 interface ActionMap {
   [key: string]: ActionDescribe
@@ -47,10 +62,10 @@ const actionMap: ActionMap = {
     name: 'lock',
     actionName: '锁定',
     actionDom: null,
-    actionCallback: function ({ state }, event) {
+    actionCallback: function ({ state, domInfo }, event) {
       state.targetState.isLock = !state.targetState.isLock
       this.actionDom.innerText = state.targetState.isLock ? '解锁' : '锁定'
-      lockCallback(actionMap, state.targetState.isLock)
+      lockCallback(domInfo.target, actionMap, state.targetState.isLock)
     },
     dragCallbacks: {
       beforeCallback(targetState) {
@@ -74,18 +89,20 @@ const actionMap: ActionMap = {
     actionCallback({ state: { targetState, pointState, initialTarget }, domInfo: { target, pointElements } }, event) {
       if (targetState.isLock) return
 
-      targetState.width += BLOW_UP_STAGE
-      targetState.height += BLOW_UP_STAGE
+      const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
+
+      targetState.width += scaleSize.x
+      targetState.height += scaleSize.y
       target.style.width = targetState.width + 'px'
       target.style.height = targetState.height + 'px'
       updatePointPosition(
         target,
-        { direction: 'rb', movementX: { value: BLOW_UP_STAGE }, movementY: { value: BLOW_UP_STAGE } },
+        { direction: 'rb', movementX: { value: scaleSize.x }, movementY: { value: scaleSize.y } },
         { initialTarget, pointElements, pointSize: 10, pointState },
         false
       )
-      initialTarget.width += BLOW_UP_STAGE
-      initialTarget.height += BLOW_UP_STAGE
+      initialTarget.width += scaleSize.x
+      initialTarget.height += scaleSize.y
     }
   },
   reduce: {
@@ -95,32 +112,63 @@ const actionMap: ActionMap = {
     actionCallback({ state: { targetState, pointState, initialTarget }, domInfo: { target, pointElements } }, event) {
       if (targetState.isLock) return
 
-      targetState.width -= BLOW_UP_STAGE
-      targetState.height -= BLOW_UP_STAGE
-      console.log(target, this.actionDom)
+      const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
+
+      targetState.width -= scaleSize.x
+      targetState.height -= scaleSize.y
       target.style.width = targetState.width + 'px'
       target.style.height = targetState.height + 'px'
       updatePointPosition(
         target,
-        { direction: 'rb', movementX: { value: -BLOW_UP_STAGE }, movementY: { value: -BLOW_UP_STAGE } },
+        { direction: 'rb', movementX: { value: -scaleSize.x }, movementY: { value: -scaleSize.y } },
         { initialTarget, pointElements, pointSize: 10, pointState },
         false
       )
-      initialTarget.width -= BLOW_UP_STAGE
-      initialTarget.height -= BLOW_UP_STAGE
+      initialTarget.width -= scaleSize.x
+      initialTarget.height -= scaleSize.y
+    }
+  },
+  copy: {
+    name: 'copy',
+    actionName: '复制',
+    actionDom: null,
+    actionCallback(state: ActionState, event) {
+      console.log('复制', state)
+      const { target, container } = state.domInfo
+      const { initialTarget } = state.state
+      const parent = target.parentNode
+      const copyTarget = target.cloneNode() as HTMLElement
+      copyTarget.className = 'box_copy_1'
+      copyTarget.style.width = target.offsetWidth + 'px'
+      copyTarget.style.height = target.offsetHeight + 'px'
+      copyTarget.style.left = initialTarget.left + 20 + 'px'
+      copyTarget.style.top = initialTarget.top + 20 + 'px'
+      parent.appendChild(copyTarget)
+      useDragResize('.box_copy_1', { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap))])
+    }
+  },
+  delete: {
+    name: 'delete',
+    actionName: '删除',
+    actionDom: null,
+    actionCallback(state: ActionState, event) {
+      const { target } = state.domInfo
+      console.log(target)
+      target.remove()
     }
   }
 }
 
-function lockCallback (actionMap: ActionMap, isLock: boolean) {
+function lockCallback (target, actionMap: ActionMap, isLock: boolean) {
   for (const [key, action] of Object.entries(actionMap)) {
     if (key === 'lock') continue
     if (isLock) {
       action.actionDom.className += LockItemClassName
+      target.className += LockTargetClassName
     } else {
       action.actionDom.className = action.actionDom.className.replace(LockItemClassName, '')
+      target.className = target.className.replace(LockTargetClassName, '')
     }
-    console.log(action.actionDom.className)
   }
 }
 

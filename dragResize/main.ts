@@ -3,6 +3,13 @@ import useDragResize from './useDragResize.ts'
 import ContextMenu from './plugins/contextMenu.ts'
 import "./style/index.css"
 
+const imgSource = ref(null)
+// @ts-ignore
+import('./assets/image/suolong.png').then(res => {
+  console.log(res.default)
+  imgSource.value = res.default
+})
+
 const App = {
   template: `
     <div v-if="false">
@@ -22,7 +29,7 @@ const App = {
       {{ state.pointMovementX }} - {{ state.pointMovementY }}<br>
       {{ state.targetIsLock }}
       <hr>
-      <div class="box"></div>
+      <img :src="imgSource" class="box">
 <!--      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>-->
 <!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
     </div>
@@ -56,7 +63,8 @@ const App = {
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
-      state
+      state,
+      imgSource
     }
   }
 }

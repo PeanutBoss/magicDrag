@@ -1,4 +1,4 @@
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef} from 'vue'
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick} from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
   checkParameterType, transferControl, appendChild } from '../utils/tools.ts'
 import useMovePoint from './useMovePoint.ts'
@@ -132,12 +132,12 @@ export default function useDragResize (
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(pointElements, targetState)
 
-	onMounted(() => {
+	nextTick(() => {
     initContainer()
 
 		initTarget()
 
-    executePluginInit(plugins, { target: $target, pointElements, pointState }, { targetState, initialTarget })
+    executePluginInit(plugins, { target: $target, pointElements, pointState, container: $container }, { targetState, initialTarget })
 
     readyToDragAndResize($target, pointSize)
 	})
@@ -175,6 +175,7 @@ export default function useDragResize (
   // initializes the target element coordinates
   // 初始化目标元素的坐标
   function initTargetCoordinate () {
+    // console.log($target.naturalWidth, $target.naturalHeight) // img.onload
     // 直接获取相对于父元素的坐标
     const rect = {
       left: $target.offsetLeft,
@@ -185,6 +186,8 @@ export default function useDragResize (
     for (const rectKey in initialTarget) {
       initialTarget[rectKey] = rect[rectKey]
     }
+    initialTarget.originWidth = $target.offsetWidth
+    initialTarget.originHeight = $target.offsetHeight
   }
 
   /**
