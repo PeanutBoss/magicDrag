@@ -9,9 +9,77 @@ const LockTargetClassName = ' drag_resize-target-lock'
 
 // TODO 1.锁定状态 2.zIndex从movePoint更新 3.复制元素的类名
 const menuState = {
-  isLock: false
+  isLock: false,
+  actions: null,
+  currentTarget: null,
+  classCopyPrefix: 'box_copy_',
+  copyIndex: 0
 }
-const lockMap = new Map()
+const lockMap: Map<HTMLElement, boolean> = new Map()
+const lockActionMap: Map<HTMLElement, HTMLElement[]> = new Map()
+
+/*
+* TODO 右击菜单元素复用的问题，主要问题在于独立目标元素的状态信息
+* */
+class ContextMenu implements Plugin {
+  name: 'ContextMenu'
+  private isInsert = false
+  private menuBox
+  private actions: Actions
+  constructor(private actionList: Array<string>) {
+    this.menuBox = this.getMenuBox()
+
+    this.bindContextCallback = this.contextCallback.bind(this)
+  }
+  init ({ target, pointElements }, payload) {
+    this.actions = new Actions(this.actionList, this.menuBox, { state: payload, domInfo: { target, pointElements } })
+    lockActionMap.set(target, this.actions.actionElementList)
+    this.bindHidden = this.hidden.bind(this, this.actions)
+    target.addEventListener('contextmenu', this.bindContextCallback)
+  }
+  unbind (target: HTMLElement) {
+    target.removeEventListener('contextmenu', this.bindContextCallback)
+    window.removeEventListener('click', this.bindHidden)
+    this.destroyMenu()
+  }
+
+  showMenu (isShow, position: any = {}) {
+    const { left = 0, top = 0 } = position
+    this.menuBox.style.left = left + 'px'
+    this.menuBox.style.top = top + 'px'
+    this.menuBox && (this.menuBox.style.display = isShow ? 'block' : 'none')
+
+    if (!this.isInsert) {
+      window.addEventListener('click', this.bindHidden)
+    }
+  }
+  getMenuBox () {
+    if (!this.menuBox) {
+      this.menuBox = document.createElement('div')
+      this.menuBox.className = ContainerClassName
+      document.body.append(this.menuBox)
+    }
+    return this.menuBox
+  }
+  destroyMenu () {
+    this.menuBox.remove()
+    this.menuBox = null
+  }
+
+  hidden (actions, event) {
+    const excludeLockDom = actions.actionElementList.slice(1)
+    if (excludeLockDom.includes(event.target) && actions.pluginData.state.targetState.isLock) return
+    this.showMenu(false)
+  }
+  contextCallback (event) {
+    event.preventDefault()
+    menuState.currentTarget = event.target ?? false
+    this.menuBox.children[0].innerText = lockMap.get(event.target) ? '解锁' : '锁定'
+    this.showMenu(true, { left: event.pageX, top: event.pageY })
+  }
+  bindHidden: null
+  bindContextCallback: null
+}
 
 function getScaleSize (originSize, ratio) {
   return {
@@ -63,9 +131,11 @@ const actionMap: ActionMap = {
     actionName: '锁定',
     actionDom: null,
     actionCallback: function ({ state, domInfo }, event) {
-      state.targetState.isLock = !state.targetState.isLock
-      this.actionDom.innerText = state.targetState.isLock ? '解锁' : '锁定'
-      lockCallback(domInfo.target, actionMap, state.targetState.isLock)
+      // 没有则说明这个元素现在是未锁定状态
+      const isLock = lockMap.get(menuState.currentTarget) ?? false
+      state.targetState.isLock = !isLock
+      lockMap.set(menuState.currentTarget, !isLock)
+      lockCallback(menuState.currentTarget, lockActionMap.get(domInfo.target), !isLock)
     },
     dragCallbacks: {
       beforeCallback(targetState) {
@@ -132,41 +202,44 @@ const actionMap: ActionMap = {
     name: 'copy',
     actionName: '复制',
     actionDom: null,
-    actionCallback(state: ActionState, event) {
-      console.log('复制', state)
-      const { target, container } = state.domInfo
-      const { initialTarget } = state.state
+    actionCallback({ state, domInfo }, event) {
+      if (state.targetState.isLock) return
+
+      const { target, container } = domInfo
+      const { initialTarget } = state
       const parent = target.parentNode
       const copyTarget = target.cloneNode() as HTMLElement
-      copyTarget.className = 'box_copy_1'
+      const newClassName = menuState.classCopyPrefix + menuState.copyIndex++
+      copyTarget.className = newClassName
       copyTarget.style.width = target.offsetWidth + 'px'
       copyTarget.style.height = target.offsetHeight + 'px'
       copyTarget.style.left = initialTarget.left + 20 + 'px'
       copyTarget.style.top = initialTarget.top + 20 + 'px'
       parent.appendChild(copyTarget)
-      useDragResize('.box_copy_1', { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap))])
+      useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap))])
     }
   },
   delete: {
     name: 'delete',
     actionName: '删除',
     actionDom: null,
-    actionCallback(state: ActionState, event) {
-      const { target } = state.domInfo
-      console.log(target)
+    actionCallback({ state, domInfo }, event) {
+      if (state.targetState.isLock) return
+
+      const { target } = domInfo
       target.remove()
     }
   }
 }
 
-function lockCallback (target, actionMap: ActionMap, isLock: boolean) {
-  for (const [key, action] of Object.entries(actionMap)) {
-    if (key === 'lock') continue
+function lockCallback (target, actionDoms: HTMLElement[], isLock: boolean) {
+  for (const [index, action] of Object.entries(actionDoms)) {
+    if (index === '0') continue
     if (isLock) {
-      action.actionDom.className += LockItemClassName
+      action.className += LockItemClassName
       target.className += LockTargetClassName
     } else {
-      action.actionDom.className = action.actionDom.className.replace(LockItemClassName, '')
+      action.className = action.className.replace(LockItemClassName, '')
       target.className = target.className.replace(LockTargetClassName, '')
     }
   }
@@ -205,63 +278,6 @@ export function executeActionCallbacks (actionData: ActionData[], targetState, t
     return false
   }
   return isContinue
-}
-
-class ContextMenu implements Plugin {
-  name: 'ContextMenu'
-  private isInsert = false
-  private menuBox
-  private actions: Actions
-  constructor(private actionList: Array<string>) {
-    this.menuBox = this.getMenuBox()
-
-    this.bindContextCallback = this.contextCallback.bind(this)
-  }
-  init ({ target, pointElements }, payload) {
-    this.actions = new Actions(this.actionList, this.menuBox, { state: payload, domInfo: { target, pointElements } })
-    this.bindHidden = this.hidden.bind(this, this.actions)
-    target.addEventListener('contextmenu', this.bindContextCallback)
-  }
-  unbind (target: HTMLElement) {
-    target.removeEventListener('contextmenu', this.bindContextCallback)
-    window.removeEventListener('click', this.bindHidden)
-    this.destroyMenu()
-  }
-
-  showMenu (isShow, position: any = {}) {
-    const { left = 0, top = 0 } = position
-    this.menuBox.style.left = left + 'px'
-    this.menuBox.style.top = top + 'px'
-    this.menuBox && (this.menuBox.style.display = isShow ? 'block' : 'none')
-
-    if (!this.isInsert) {
-      window.addEventListener('click', this.bindHidden)
-    }
-  }
-  getMenuBox () {
-    if (!this.menuBox) {
-      this.menuBox = document.createElement('div')
-      this.menuBox.className = ContainerClassName
-      document.body.append(this.menuBox)
-    }
-    return this.menuBox
-  }
-  destroyMenu () {
-    this.menuBox.remove()
-    this.menuBox = null
-  }
-
-  hidden (actions, event) {
-    const excludeLockDom = actions.actionElementList.slice(1)
-    if (excludeLockDom.includes(event.target) && actions.pluginData.state.targetState.isLock) return
-    this.showMenu(false)
-  }
-  contextCallback (event) {
-    event.preventDefault()
-    this.showMenu(true, { left: event.pageX, top: event.pageY })
-  }
-  bindHidden: null
-  bindContextCallback: null
 }
 
 class Actions {
@@ -305,4 +321,3 @@ class Actions {
 }
 
 export default new ContextMenu(Object.keys(actionMap))
-
