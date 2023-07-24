@@ -1,9 +1,0 @@
-html, body {
-  box-sizing: border-box;
-  padding: 200px;
-}
-.point {
-  width: 20px;
-  height: 20px;
-  background-color: aqua;
-}

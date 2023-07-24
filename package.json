@@ -1,18 +1,12 @@
 {
-  "name": "interesting-api",
+  "name": "nimble-drag-resize",
   "version": "1.0.0",
-  "description": "一些有趣的Web API的应用",
+  "description": "拖拽",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "syncMusic": "node ./Audio/syncMusic.js",
     "build": "webpack --config ./config/webpack.tsconfig.js",
-    "serve:ts": "webpack serve --config ./config/webpack.tsconfig.js",
-    "serve:move": "webpack serve --config ./config/moveProcess.config.js",
-    "serve:point": "webpack serve --config ./config/point.config.js",
-    "serve:drag": "webpack serve --config ./config/dragResize.config.js",
-    "build:drag": "webpack --config ./config/dragResize.config.js",
-    "serve:container": "webpack serve --config ./config/dragContainer.config.js"
+    "serve": "webpack serve --config ./config/nimbleDragResize.config.js"
   },
   "repository": {
     "type": "git",
