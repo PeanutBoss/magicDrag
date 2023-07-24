@@ -15,6 +15,7 @@ const menuState = {
   classCopyPrefix: 'box_copy_',
   copyIndex: 0
 }
+// TODO WeakMap优化
 const lockMap: Map<HTMLElement, boolean> = new Map()
 const lockActionMap: Map<HTMLElement, HTMLElement[]> = new Map()
 
@@ -31,11 +32,13 @@ class ContextMenu implements Plugin {
 
     this.bindContextCallback = this.contextCallback.bind(this)
   }
-  init ({ target, pointElements }, payload) {
-    this.actions = new Actions(this.actionList, this.menuBox, { state: payload, domInfo: { target, pointElements } })
-    lockActionMap.set(target, this.actions.actionElementList)
+  // elementParameter, stateParameter, globalDataParameter, options
+  init (elementParameter, stateParameter, globalDataParameter, options) {
+    this.actions = new Actions(this.actionList, this.menuBox, { state: { ...stateParameter, ...globalDataParameter, ...options }, domInfo: elementParameter })
+    lockActionMap.set(elementParameter.target, this.actions.actionElementList)
     this.bindHidden = this.hidden.bind(this, this.actions)
-    target.addEventListener('contextmenu', this.bindContextCallback)
+    console.log(elementParameter)
+    elementParameter.target.value.addEventListener('contextmenu', this.bindContextCallback)
   }
   unbind (target: HTMLElement) {
     target.removeEventListener('contextmenu', this.bindContextCallback)

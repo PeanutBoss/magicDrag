@@ -1,4 +1,4 @@
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick, computed} from 'vue'
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick, computed, ref} from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
   checkParameterType, transferControl, appendChild } from './utils/tools.ts'
 import {
@@ -102,7 +102,7 @@ export default function useDragResize (
   const { dragCallback, resizeCallback } = callbacks
   // the target element being manipulated
   // 操作的目标元素和容器元素
-  let $target, $container
+  let $target = ref(null), $container = ref(null)
   // coordinates and dimensions of the target element - 目标元素的坐标和尺寸
   const initialTarget = updateInitialTarget()
   // save contour point - 保存轮廓点
@@ -142,14 +142,14 @@ export default function useDragResize (
 
 		initTarget()
 
-    executePluginInit(plugins, { target: $target, pointElements, pointState, container: $container }, { targetState, initialTarget })
+    executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 
-    readyToDragAndResize($target, pointSize)
+    readyToDragAndResize($target.value, pointSize)
 	})
   onUnmounted(() => {
     // unbind the mousedown event added for window to handle the target element
     //  解绑为 window 添加的 mousedown 事件以处理目标元素
-    processBlurOrFocus($target, false)
+    processBlurOrFocus($target.value, false)
     // the dom element is destroyed when the page is uninstalled
     // 页面卸载时销毁 dom 元素
     removeElements(Object.values(pointElements))
@@ -157,8 +157,8 @@ export default function useDragResize (
 
   // initializes the container element - 初始化容器元素
   function initContainer () {
-    $container = getElement(containerSelector)
-    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle($container)
+    $container.value = getElement(containerSelector)
+    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle($container.value)
     const containerWidth = parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight)
     const containerHeight = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)
     containerInfo.width = containerWidth
@@ -167,13 +167,13 @@ export default function useDragResize (
 
   // initializes the target element - 初始化目标元素
   function initTarget () {
-    $target = getElement(targetSelector)
+    $target.value = getElement(targetSelector)
 
-    baseErrorTips(!$target, 'targetSelector is an invalid selector or HTMLElement')
+    baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
 
-    initTargetStyle($target, drag)
+    initTargetStyle($target.value, drag)
 
-    initTargetCoordinate($target, initialTarget)
+    initTargetCoordinate($target.value, initialTarget)
 
     // 初始化结束后更新状态
     updateState(targetState, initialTarget)
@@ -191,7 +191,7 @@ export default function useDragResize (
     whetherNeedResizeFunction(target, pointSize, resize)
   }
   // add drag and drop functionality for outline points - 为轮廓点添加拖放功能
-  function addDragFunctionToPoint (target, { point, pointPosition, pointSize, direction }) {
+  function addDragFunctionToPoint (target, { point, pointPosition, direction }) {
     const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
       const moveResizeAction = () => {
         // moveAction()
@@ -220,7 +220,7 @@ export default function useDragResize (
       initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointDefaultStyle)
       appendChild(target.parentNode, point)
 
-      const isPress = addDragFunctionToPoint(target, { point, pointPosition, direction, pointSize })
+      const isPress = addDragFunctionToPoint(target, { point, pointPosition, direction })
       // update the width and height information when releasing the mouse
       // 当释放鼠标时更新宽度和高度信息
       watch(isPress, pointIsPressChangeCallback(target, { initialTarget, pointState }))
