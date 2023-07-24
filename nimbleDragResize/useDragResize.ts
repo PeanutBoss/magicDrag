@@ -1,9 +1,10 @@
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick} from 'vue'
+import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick, computed} from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
   checkParameterType, transferControl, appendChild } from './utils/tools.ts'
 import {
   createParentPosition, blurOrFocus, moveTargetCallback, pointIsPressChangeCallback,
-  updateInitialTarget, initPointStyle, initTargetStyle, updateState, movePointCallback
+  updateInitialTarget, initPointStyle, initTargetStyle, updateState, movePointCallback,
+  initTargetCoordinate
 } from './utils/dragResize.ts'
 import { executePluginInit } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
@@ -132,6 +133,10 @@ export default function useDragResize (
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(pointElements, targetState)
 
+  const stateParameter = { pointState, targetState }
+  const elementParameter = { target: $target, container: $container, pointElements }
+  const globalDataParameter = { initialTarget, containerInfo, downPointPosition }
+
 	nextTick(() => {
     initContainer()
 
@@ -159,6 +164,7 @@ export default function useDragResize (
     containerInfo.width = containerWidth
     containerInfo.height = containerHeight
   }
+
   // initializes the target element - 初始化目标元素
   function initTarget () {
     $target = getElement(targetSelector)
@@ -167,27 +173,10 @@ export default function useDragResize (
 
     initTargetStyle($target, drag)
 
-    initTargetCoordinate()
+    initTargetCoordinate($target, initialTarget)
 
     // 初始化结束后更新状态
     updateState(targetState, initialTarget)
-  }
-  // initializes the target element coordinates
-  // 初始化目标元素的坐标
-  function initTargetCoordinate () {
-    // console.log($target.naturalWidth, $target.naturalHeight) // img.onload
-    // 直接获取相对于父元素的坐标
-    const rect = {
-      left: $target.offsetLeft,
-      top: $target.offsetTop,
-      width: $target.offsetWidth,
-      height: $target.offsetHeight
-    }
-    for (const rectKey in initialTarget) {
-      initialTarget[rectKey] = rect[rectKey]
-    }
-    initialTarget.originWidth = $target.offsetWidth
-    initialTarget.originHeight = $target.offsetHeight
   }
 
   /**
@@ -207,11 +196,11 @@ export default function useDragResize (
       const moveResizeAction = () => {
         // moveAction()
         movePointCallback(
-          moveAction,
-          target,
-          { direction, movementX, movementY },
-          { initialTarget, containerInfo, targetState, pointState },
-          { pointSize, pointElements, maxHeight, maxWidth, minWidth, minHeight }
+          stateParameter,
+          elementParameter,
+          globalDataParameter,
+          options,
+          { direction, movementX, movementY, moveAction, target }
         )
       }
       // Hand over control (moveResizeAction)
@@ -243,24 +232,6 @@ export default function useDragResize (
     const pointPosition = createParentPosition(initialTarget, pointSize)
     initContourPoints(target, pointPosition, pointSize)
   }
-
-
-  /**
-   * @description a callback function that moves contour points - 移动轮廓点的回调函数
-   * @param target
-   * @param direction
-   * @param movementX
-   * @param movementY
-   * @param pointSize
-   */
-  // function movePointCallback (target, { direction, movementX, movementY, pointSize }) {
-  //
-  //   limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
-  //
-  //   updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
-  //
-  //   updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
-  // }
 
 
 

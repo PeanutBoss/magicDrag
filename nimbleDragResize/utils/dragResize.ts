@@ -375,7 +375,14 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
   resizeLimitStrategies[direction]({ movementX, movementY })
 	return EXECUTE_NEXT_TASK
 }
-export function movePointCallback (moveAction, target, { direction, movementX, movementY }, { initialTarget, containerInfo, pointState, targetState }, { pointElements, pointSize, minWidth, minHeight, maxWidth, maxHeight }) {
+// a callback function that moves contour points - 移动轮廓点的回调函数
+export function movePointCallback (stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
+	const { targetState, pointState } = stateParameter
+	const { pointElements } = elementParameter
+	const { initialTarget, containerInfo } = globalParameter
+	const { minWidth, minHeight, maxWidth, maxHeight, pointSize } = options
+	const { moveAction, target, direction, movementX, movementY } = runTimeParameter
+
 	const isContinue = executeActionCallbacks(resizeActions, targetState, 'beforeCallback')
 	if (isContinue === false) return
 
@@ -431,4 +438,23 @@ export function initTargetStyle (target, drag) {
   // modify the icon for the hover state
   // 修改悬停状态的图标
   drag && setStyle(target, 'cursor', 'all-scroll')
+}
+
+// initializes the target element coordinates
+// 初始化目标元素的坐标
+export function initTargetCoordinate (target, initialTarget) {
+	// console.log($target.naturalWidth, $target.naturalHeight) // img.onload
+	// 直接获取相对于父元素的坐标
+	const rect = {
+		left: target.offsetLeft,
+		top: target.offsetTop,
+		width: target.offsetWidth,
+		height: target.offsetHeight
+	}
+	for (const rectKey in initialTarget) {
+		initialTarget[rectKey] = rect[rectKey]
+	}
+	// 放大缩小是需要用到原始尺寸
+	initialTarget.originWidth = target.offsetWidth
+	initialTarget.originHeight = target.offsetHeight
 }
