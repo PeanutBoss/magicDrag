@@ -2,6 +2,7 @@ import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
 import ContextMenu from './plugins/contextMenu.ts'
 import Drag from './plugins/drag.ts'
+import Resize from './plugins/resize.ts'
 import "./style/index.css"
 
 const imgSource = ref(null)
@@ -57,7 +58,7 @@ const App = {
           // }
         }
       },
-      [ContextMenu, Drag]
+      [ContextMenu, Drag, Resize]
     )
 
     // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu])

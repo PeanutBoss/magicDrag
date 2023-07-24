@@ -1,7 +1,7 @@
 import { Plugin } from './index.ts'
-import useMovePoint from "../useMovePoint.ts";
-import {blurOrFocus, moveTargetCallback, updateInitialTarget} from "../utils/dragResize.ts";
-import { watch } from "vue";
+import useMovePoint from '../useMovePoint.ts'
+import {blurOrFocus, moveTargetCallback, updateInitialTarget} from '../utils/dragResize.ts'
+import { watch } from 'vue'
 
 function isPressChangeCallback ({ pointElements }, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
   return (newV) => {

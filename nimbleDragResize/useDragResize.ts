@@ -188,7 +188,7 @@ export default function useDragResize (
   function readyToDragAndResize (target: HTMLElement, pointSize: number) {
     // whetherNeedDragFunction(target, downPointPosition)
 
-    whetherNeedResizeFunction(target, pointSize, resize)
+    // whetherNeedResizeFunction(target, pointSize, resize)
   }
   // add drag and drop functionality for outline points - 为轮廓点添加拖放功能
   function addDragFunctionToPoint (target, { point, pointPosition, direction }) {
