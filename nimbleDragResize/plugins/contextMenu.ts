@@ -1,6 +1,9 @@
 import { updatePointPosition } from '../utils/dragResize.ts'
 import useDragResize from "../useDragResize.ts";
 import { Plugin } from '../plugins/index.ts'
+import {Ref} from "vue";
+import Drag from "./drag.ts";
+import Resize from "./resize.ts";
 
 const ContainerClassName = 'drag_resize-menu-container'
 const ItemClassName = 'drag_resize-menu-item'
@@ -98,9 +101,9 @@ interface ActionState {
     pointState: any
   },
   domInfo: {
-    target: HTMLElement
+    target: Ref<HTMLElement>
     pointElements: { [key: string]: HTMLElement }
-    container: HTMLElement
+    container: Ref<HTMLElement>
   }
 }
 interface ActionDescribe {
@@ -138,7 +141,7 @@ const actionMap: ActionMap = {
       const isLock = lockMap.get(menuState.currentTarget) ?? false
       state.targetState.isLock = !isLock
       lockMap.set(menuState.currentTarget, !isLock)
-      lockCallback(menuState.currentTarget, lockActionMap.get(domInfo.target), !isLock)
+      lockCallback(menuState.currentTarget, lockActionMap.get(domInfo.target.value), !isLock)
     },
     dragCallbacks: {
       beforeCallback(targetState) {
@@ -160,16 +163,17 @@ const actionMap: ActionMap = {
     actionName: '放大',
     actionDom: null,
     actionCallback({ state: { targetState, pointState, initialTarget }, domInfo: { target, pointElements } }, event) {
+      console.log({ ...targetState })
       if (targetState.isLock) return
 
       const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
 
       targetState.width += scaleSize.x
       targetState.height += scaleSize.y
-      target.style.width = targetState.width + 'px'
-      target.style.height = targetState.height + 'px'
+      target.value.style.width = targetState.width + 'px'
+      target.value.style.height = targetState.height + 'px'
       updatePointPosition(
-        target,
+        target.value,
         { direction: 'rb', movementX: { value: scaleSize.x }, movementY: { value: scaleSize.y } },
         { initialTarget, pointElements, pointSize: 10, pointState },
         false
@@ -189,10 +193,10 @@ const actionMap: ActionMap = {
 
       targetState.width -= scaleSize.x
       targetState.height -= scaleSize.y
-      target.style.width = targetState.width + 'px'
-      target.style.height = targetState.height + 'px'
+      target.value.style.width = targetState.width + 'px'
+      target.value.style.height = targetState.height + 'px'
       updatePointPosition(
-        target,
+        target.value,
         { direction: 'rb', movementX: { value: -scaleSize.x }, movementY: { value: -scaleSize.y } },
         { initialTarget, pointElements, pointSize: 10, pointState },
         false
@@ -210,16 +214,17 @@ const actionMap: ActionMap = {
 
       const { target, container } = domInfo
       const { initialTarget } = state
-      const parent = target.parentNode
-      const copyTarget = target.cloneNode() as HTMLElement
+      const parent = target.value.parentNode
+      const copyTarget = target.value.cloneNode() as HTMLElement
+      console.log(copyTarget)
       const newClassName = menuState.classCopyPrefix + menuState.copyIndex++
       copyTarget.className = newClassName
-      copyTarget.style.width = target.offsetWidth + 'px'
-      copyTarget.style.height = target.offsetHeight + 'px'
+      copyTarget.style.width = target.value.offsetWidth + 'px'
+      copyTarget.style.height = target.value.offsetHeight + 'px'
       copyTarget.style.left = initialTarget.left + 20 + 'px'
       copyTarget.style.top = initialTarget.top + 20 + 'px'
       parent.appendChild(copyTarget)
-      useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap))])
+      useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap)), Drag, Resize])
     }
   },
   delete: {
@@ -230,7 +235,7 @@ const actionMap: ActionMap = {
       if (state.targetState.isLock) return
 
       const { target } = domInfo
-      target.remove()
+      target.value.remove()
     }
   }
 }

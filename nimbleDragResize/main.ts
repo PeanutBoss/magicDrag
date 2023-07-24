@@ -48,8 +48,8 @@ const App = {
       '.box',
       {
         minHeight: 150,
-        // maxWidth: 350,
-        // maxHeight: 300,
+        // maxWidth: 600,
+        // maxHeight: 400,
         pageHasScrollBar: true,
         containerSelector: '.wrap',
         callbacks: {
