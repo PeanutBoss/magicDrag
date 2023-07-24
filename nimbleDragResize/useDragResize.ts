@@ -186,7 +186,7 @@ export default function useDragResize (
    */
   // used to record the position information of each contour point when the target is pressed
   function readyToDragAndResize (target: HTMLElement, pointSize: number) {
-    whetherNeedDragFunction(target, downPointPosition)
+    // whetherNeedDragFunction(target, downPointPosition)
 
     whetherNeedResizeFunction(target, pointSize, resize)
   }
