@@ -1,7 +1,8 @@
 import { Plugin } from './index.ts'
 import useMovePoint from '../useMovePoint.ts'
-import {blurOrFocus, moveTargetCallback, updateInitialTarget} from '../utils/dragResize.ts'
+import { blurOrFocus, moveTargetCallback, updateInitialTarget } from '../utils/dragResize.ts'
 import { watch } from 'vue'
+import {setStyle} from '../utils/tools.ts'
 
 function isPressChangeCallback ({ pointElements }, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
   return (newV) => {
@@ -30,18 +31,18 @@ class Drag implements Plugin {
     const { skill = {}, callbacks = {} } = options
     const { drag, limitDragDirection } = skill
     const { dragCallback } = callbacks
-		// 显示或隐藏轮廓点的方法
-		const processBlurOrFocus = blurOrFocus(pointElements, targetState)
-		processBlurOrFocus(target.value)
-		if (!drag) return
+
+		// if (!drag) return
+
+		// modify the icon for the hover state - 修改悬停状态的图标
+		drag && setStyle(target.value, 'cursor', 'all-scroll')
+
 		const { movementX, movementY, isPress } = useMovePoint(
 			target.value,
 			moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, initialTarget, containerInfo
 			}),
 			{ direction: limitDragDirection })
-
-    console.log(movementX.value, movementY.value)
 
 		watch(isPress, isPressChangeCallback(
       {pointElements},
@@ -50,7 +51,7 @@ class Drag implements Plugin {
       { movementX, movementY }
     ))
 	}
-	unbind(target: HTMLElement) {
+	unbind(elementParameter, stateParameter, globalDataParameter, options) {
 	}
 }
 

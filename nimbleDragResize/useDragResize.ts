@@ -1,17 +1,11 @@
-import {onMounted, watch, onUnmounted, Ref, reactive, toRef, nextTick, computed, ref} from 'vue'
-import { getElement, mergeObject, removeElements, baseErrorTips, insertAfter,
-  checkParameterType, transferControl, appendChild } from './utils/tools.ts'
+import { onUnmounted, Ref, reactive, toRef, nextTick, ref } from 'vue'
+import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools.ts'
 import {
-  createParentPosition, blurOrFocus, moveTargetCallback, pointIsPressChangeCallback,
-  updateInitialTarget, initPointStyle, initTargetStyle, updateState, movePointCallback,
-  initTargetCoordinate
+  blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
 } from './utils/dragResize.ts'
 import { executePluginInit } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import type { Plugin } from './plugins/index.ts'
-import useMovePoint from './useMovePoint.ts'
-
-insertAfter()
 
 interface DragResizeOptions {
   containerSelector: string
@@ -97,7 +91,7 @@ export default function useDragResize (
   checkParameterType(defaultOptions, options)
 
   options = mergeObject(defaultOptions, options)
-  const { containerSelector, minWidth, minHeight, maxWidth, maxHeight, pointSize, skill, callbacks } = options
+  const { containerSelector, pointSize, skill, callbacks } = options
   const { resize, drag, limitDragDirection } = skill
   const { dragCallback, resizeCallback } = callbacks
   // the target element being manipulated
@@ -144,8 +138,9 @@ export default function useDragResize (
 
     executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 
-    readyToDragAndResize($target.value, pointSize)
-	})
+    // 处理点击目标元素显示/隐藏轮廓点的逻辑
+    processBlurOrFocus($target.value)
+  })
   onUnmounted(() => {
     // unbind the mousedown event added for window to handle the target element
     //  解绑为 window 添加的 mousedown 事件以处理目标元素
@@ -177,95 +172,6 @@ export default function useDragResize (
 
     // 初始化结束后更新状态
     updateState(targetState, initialTarget)
-  }
-
-  /**
-   * @description ready to drag and resize - 准备拖动和调整大小
-   * @param target
-   * @param pointSize
-   */
-  // used to record the position information of each contour point when the target is pressed
-  function readyToDragAndResize (target: HTMLElement, pointSize: number) {
-    // whetherNeedDragFunction(target, downPointPosition)
-
-    // whetherNeedResizeFunction(target, pointSize, resize)
-  }
-  // add drag and drop functionality for outline points - 为轮廓点添加拖放功能
-  function addDragFunctionToPoint (target, { point, pointPosition, direction }) {
-    const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
-      const moveResizeAction = () => {
-        // moveAction()
-        movePointCallback(
-          stateParameter,
-          elementParameter,
-          globalDataParameter,
-          options,
-          { direction, movementX, movementY, moveAction, target }
-        )
-      }
-      // Hand over control (moveResizeAction)
-      // 将控制权（moveResizeAction）交出
-      transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value })
-    }, { direction: pointPosition[direction][3] })
-    return isPress
-  }
-  // create contour points - 创建轮廓点
-  function createContourPoint (target, { direction }) {
-    return pointElements[direction] || (pointElements[direction] = document.createElement('div'))
-  }
-  // initialize the contour point - 初始化轮廓点
-  function initContourPoints (target, pointPosition, pointSize) {
-    for (const direction in pointPosition) {
-      const point = createContourPoint(target, { direction })
-      initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointDefaultStyle)
-      appendChild(target.parentNode, point)
-
-      const isPress = addDragFunctionToPoint(target, { point, pointPosition, direction })
-      // update the width and height information when releasing the mouse
-      // 当释放鼠标时更新宽度和高度信息
-      watch(isPress, pointIsPressChangeCallback(target, { initialTarget, pointState }))
-    }
-  }
-  // whether the resize function is required - 是否需要调整大小功能
-  function whetherNeedResizeFunction (target, pointSize, resize) {
-    if (!resize) return
-    const pointPosition = createParentPosition(initialTarget, pointSize)
-    initContourPoints(target, pointPosition, pointSize)
-  }
-
-
-
-  /**
-   * @description handles the drag and drop function of the target element - 处理目标元素的拖放函数
-   * @param target
-   */
-  // a callback that is executed when isPress changes - isPress发生变化时执行的回调
-  function isPressChangeCallback ({ downPointPosition, movementX, movementY }) {
-    return (newV) => {
-      targetState.isPress = newV
-      if (newV) {
-        // the coordinates of all contour points are recorded when the target element is pressed
-        // 当按下目标元素时，记录所有轮廓点的坐标
-        for (const key in pointElements) {
-          downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
-        }
-      } else {
-        // mouse up to update the coordinates of the target element
-        // 鼠标抬起时更新目标元素的坐标
-        updateInitialTarget(initialTarget, { top: initialTarget.top + movementY.value, left: initialTarget.left + movementX.value })
-      }
-    }
-  }
-  function whetherNeedDragFunction (target, downPointPosition) {
-    processBlurOrFocus(target)
-    if (!drag) return
-    const { movementX, movementY, isPress } = useMovePoint(
-      target,
-      moveTargetCallback(dragCallback, {
-        downPointPosition, pointElements, targetState, initialTarget, containerInfo
-      }),
-      { direction: limitDragDirection })
-    watch(isPress, isPressChangeCallback({ downPointPosition, movementX, movementY }))
   }
 
   return {

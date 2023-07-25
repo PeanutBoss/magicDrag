@@ -437,7 +437,7 @@ export function initTargetStyle (target, drag) {
   setStyle(target, 'position', 'absolute')
   // modify the icon for the hover state
   // 修改悬停状态的图标
-  drag && setStyle(target, 'cursor', 'all-scroll')
+  // drag && setStyle(target, 'cursor', 'all-scroll')
 }
 
 // initializes the target element coordinates

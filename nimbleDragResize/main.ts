@@ -32,7 +32,7 @@ const App = {
       {{ state.targetIsLock }}
       <hr>
       <img :src="imgSource" class="box">
-      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
+<!--      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>-->
 <!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
     </div>
   `,
@@ -52,6 +52,10 @@ const App = {
         // maxHeight: 400,
         pageHasScrollBar: true,
         containerSelector: '.wrap',
+        skill: {
+          drag: false,
+          resize: false
+        },
         callbacks: {
           // dragCallback (moveAction) {
           //   pressShift && moveAction()
@@ -61,7 +65,7 @@ const App = {
       [ContextMenu, Drag, Resize]
     )
 
-    const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu, Drag, Resize])
+    // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu, Drag, Resize])
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
