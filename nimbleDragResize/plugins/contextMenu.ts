@@ -2,8 +2,6 @@ import { updatePointPosition } from '../utils/dragResize.ts'
 import useDragResize from "../useDragResize.ts";
 import { Plugin } from '../plugins/index.ts'
 import {Ref} from "vue";
-import Drag from "./drag.ts";
-import Resize from "./resize.ts";
 
 const ContainerClassName = 'drag_resize-menu-container'
 const ItemClassName = 'drag_resize-menu-item'
@@ -225,7 +223,7 @@ const actionMap: ActionMap = {
       copyTarget.style.left = initialTarget.left + 20 + 'px'
       copyTarget.style.top = initialTarget.top + 20 + 'px'
       parent.appendChild(copyTarget)
-      useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap)), Drag, Resize])
+      useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(Object.keys(actionMap))])
     }
   },
   delete: {

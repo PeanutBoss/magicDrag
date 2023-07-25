@@ -3,9 +3,10 @@ import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterT
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
 } from './utils/dragResize.ts'
-import { executePluginInit } from './plugins/index.ts'
+import { executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
-import type { Plugin } from './plugins/index.ts'
+import Drag from './plugins/drag.ts'
+import Resize from './plugins/resize.ts'
 
 interface DragResizeOptions {
   containerSelector: string
@@ -53,15 +54,7 @@ const defaultOptions: DragResizeOptions = {
   callbacks: {}
 }
 
-// default style for contour points - 轮廓点的默认样式
-const pointDefaultStyle: { [key: string]: string } = {
-  position: 'absolute',
-  boxSizing: 'border-box',
-  border: '1px solid #999',
-  borderRadius: '50%',
-  display: 'none',
-  zIndex: '999'
-}
+const allTarget: HTMLElement[] = []
 
 interface DragResizeState {
   targetLeft: Ref<number>
@@ -78,22 +71,13 @@ interface DragResizeState {
   direction: Ref<string | null>
 }
 
-export default function useDragResize (
+function useDragResizeAPI (
   targetSelector: string | HTMLElement,
   options?: DragResizeOptions,
   plugins?: Plugin[]
 ): DragResizeState {
-  // check whether targetSelector is a selector or an HTMLElement
-  // 检查 targetSelector 是否为选择器或 HTMLElement
-  const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
-  baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
+  const { containerSelector } = options
 
-  checkParameterType(defaultOptions, options)
-
-  options = mergeObject(defaultOptions, options)
-  const { containerSelector, pointSize, skill, callbacks } = options
-  const { resize, drag, limitDragDirection } = skill
-  const { dragCallback, resizeCallback } = callbacks
   // the target element being manipulated
   // 操作的目标元素和容器元素
   let $target = ref(null), $container = ref(null)
@@ -128,7 +112,7 @@ export default function useDragResize (
   const processBlurOrFocus = blurOrFocus(pointElements, targetState)
 
   const stateParameter = { pointState, targetState }
-  const elementParameter = { target: $target, container: $container, pointElements }
+  const elementParameter = { target: $target, container: $container, pointElements, allTarget }
   const globalDataParameter = { initialTarget, containerInfo, downPointPosition }
 
 	nextTick(() => {
@@ -163,10 +147,11 @@ export default function useDragResize (
   // initializes the target element - 初始化目标元素
   function initTarget () {
     $target.value = getElement(targetSelector)
+    allTarget.push($target.value)
 
     baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
 
-    initTargetStyle($target.value, drag)
+    initTargetStyle($target.value)
 
     initTargetCoordinate($target.value, initialTarget)
 
@@ -188,4 +173,29 @@ export default function useDragResize (
     pointMovementX: toRef(pointState, 'movementX'),
     pointMovementY: toRef(pointState, 'movementY')
   }
+}
+
+export default function useDragResize (
+  targetSelector: string | HTMLElement,
+  options?: DragResizeOptions,
+  plugins?: Plugin[]
+) {
+  // check whether targetSelector is a selector or an HTMLElement
+  // 检查 targetSelector 是否为选择器或 HTMLElement
+  const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
+  baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
+
+  checkParameterType(defaultOptions, options)
+
+  options = mergeObject(defaultOptions, options)
+  const { drag, resize } = options.skill
+
+  drag && plugins.push(Drag)
+  resize && plugins.push(Resize)
+
+  return useDragResizeAPI(
+    targetSelector,
+    options,
+    plugins
+  )
 }

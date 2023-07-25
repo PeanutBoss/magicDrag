@@ -431,13 +431,10 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
     originHeight: 0
   })
 }
-export function initTargetStyle (target, drag) {
+export function initTargetStyle (target) {
   // ensure element absolute positioning
   // 确保元素绝对定位
   setStyle(target, 'position', 'absolute')
-  // modify the icon for the hover state
-  // 修改悬停状态的图标
-  // drag && setStyle(target, 'cursor', 'all-scroll')
 }
 
 // initializes the target element coordinates

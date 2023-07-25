@@ -1,8 +1,6 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
 import ContextMenu from './plugins/contextMenu.ts'
-import Drag from './plugins/drag.ts'
-import Resize from './plugins/resize.ts'
 import "./style/index.css"
 
 const imgSource = ref(null)
@@ -14,13 +12,6 @@ import('./assets/image/suolong.png').then(res => {
 
 const App = {
   template: `
-    <div v-if="false">
-      <h2>left-top: {{ left }} - {{ top }}</h2>
-      <hr>
-      <h2>x-y: {{ movementX }} - {{ movementY }}</h2>
-      <hr>
-      <div class="point"></div>
-    </div>
     <div class="wrap" style="height: 800px">
       {{ state.targetIsPress }}<br>
       {{ state.targetLeft }} - {{ state.targetTop }}<br>
@@ -41,7 +32,7 @@ const App = {
     window.addEventListener('keydown', event => {
       pressShift = event.key === 'Shift'
     })
-    window.addEventListener('keyup', event => {
+    window.addEventListener('keyup', () => {
       pressShift = false
     })
     const state = useDragResize(
@@ -54,7 +45,7 @@ const App = {
         containerSelector: '.wrap',
         skill: {
           drag: false,
-          resize: false
+          // resize: true
         },
         callbacks: {
           // dragCallback (moveAction) {
@@ -62,7 +53,7 @@ const App = {
           // }
         }
       },
-      [ContextMenu, Drag, Resize]
+      [ContextMenu]
     )
 
     // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu, Drag, Resize])
