@@ -38,7 +38,7 @@ class ContextMenu implements Plugin {
   // elementParameter, stateParameter, globalDataParameter, options
   init (elementParameter, stateParameter, globalDataParameter, options) {
     this.actions = new Actions(this.actionList, this.menuBox, { state: { ...stateParameter, ...globalDataParameter, ...options }, domInfo: elementParameter })
-    lockActionMap.set(elementParameter.target, this.actions.actionElementList)
+    lockActionMap.set(elementParameter.target.value, this.actions.actionElementList)
     this.bindHidden = this.hidden.bind(this, this.actions)
     console.log(elementParameter)
     elementParameter.target.value.addEventListener('contextmenu', this.bindContextCallback)
@@ -141,6 +141,7 @@ const actionMap: ActionMap = {
       const isLock = lockMap.get(menuState.currentTarget) ?? false
       state.targetState.isLock = !isLock
       lockMap.set(menuState.currentTarget, !isLock)
+      console.log(lockActionMap)
       lockCallback(menuState.currentTarget, lockActionMap.get(domInfo.target.value), !isLock)
     },
     dragCallbacks: {
