@@ -7,6 +7,7 @@ import { executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
+import { setParameter } from './utils/parameter.ts'
 
 interface DragResizeOptions {
   containerSelector: string
@@ -147,6 +148,8 @@ function useDragResizeAPI (
   // initializes the target element - 初始化目标元素
   function initTarget () {
     $target.value = getElement(targetSelector)
+    $target.value.dataIndex = allTarget.length
+    setParameter(allTarget.length, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     allTarget.push($target.value)
 
     baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')

@@ -43,10 +43,6 @@ const App = {
         // maxHeight: 400,
         pageHasScrollBar: true,
         containerSelector: '.wrap',
-        skill: {
-          drag: false,
-          // resize: true
-        },
         callbacks: {
           // dragCallback (moveAction) {
           //   pressShift && moveAction()

@@ -162,7 +162,6 @@ const actionMap: ActionMap = {
     actionName: '放大',
     actionDom: null,
     actionCallback({ state: { targetState, pointState, initialTarget }, domInfo: { target, pointElements } }, event) {
-      console.log({ ...targetState })
       if (targetState.isLock) return
 
       const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
