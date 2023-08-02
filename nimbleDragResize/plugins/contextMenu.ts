@@ -38,7 +38,7 @@ class ContextMenu implements Plugin {
     this.actions = new Actions(this.actionList, this.menuBox, { state: { ...stateParameter, ...globalDataParameter, ...options }, domInfo: elementParameter })
     lockActionMap.set(elementParameter.target.value, this.actions.actionElementList)
     this.bindHidden = this.hidden.bind(this, this.actions)
-    console.log(elementParameter)
+    // console.log(elementParameter)
     elementParameter.target.value.addEventListener('contextmenu', this.bindContextCallback)
   }
   unbind (target: HTMLElement) {
@@ -139,7 +139,7 @@ const actionMap: ActionMap = {
       const isLock = lockMap.get(menuState.currentTarget) ?? false
       state.targetState.isLock = !isLock
       lockMap.set(menuState.currentTarget, !isLock)
-      console.log(lockActionMap)
+      // console.log(lockActionMap)
       lockCallback(menuState.currentTarget, lockActionMap.get(domInfo.target.value), !isLock)
     },
     dragCallbacks: {
@@ -214,7 +214,7 @@ const actionMap: ActionMap = {
       const { initialTarget } = state
       const parent = target.value.parentNode
       const copyTarget = target.value.cloneNode() as HTMLElement
-      console.log(copyTarget)
+      // console.log(copyTarget)
       const newClassName = menuState.classCopyPrefix + menuState.copyIndex++
       copyTarget.className = newClassName
       copyTarget.style.width = target.value.offsetWidth + 'px'

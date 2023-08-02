@@ -16,13 +16,13 @@ const pointDefaultStyle: { [key: string]: string } = {
   border: '1px solid #999',
   borderRadius: '50%',
   display: 'none',
-  zIndex: '999'
+  zIndex: '999',
+  // pointerEvents: 'none' // 防止轮廓点干扰点击事件
 }
 
 // initialize the contour point - 初始化轮廓点
 function initContourPoints (elementParameter, stateParameter, globalDataParameter, options, runtimeParameter) {
   const { target, pointElements, allTarget } = elementParameter
-  console.log(allTarget, 'allTarget')
   const { pointState } = stateParameter
   const { pointPosition } = runtimeParameter
   const { pointSize } = options

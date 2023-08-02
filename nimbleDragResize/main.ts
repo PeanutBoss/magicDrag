@@ -6,7 +6,6 @@ import "./style/index.css"
 const imgSource = ref(null)
 // @ts-ignore
 import('./assets/image/suolong.png').then(res => {
-  console.log(res.default)
   imgSource.value = res.default
 })
 
@@ -52,7 +51,7 @@ const App = {
       [ContextMenu]
     )
 
-    // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu, Drag, Resize])
+    // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu])
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {

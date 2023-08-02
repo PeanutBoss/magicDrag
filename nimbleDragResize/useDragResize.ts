@@ -1,4 +1,4 @@
-import { onUnmounted, Ref, reactive, toRef, nextTick, ref } from 'vue'
+import { onBeforeUnmount, Ref, reactive, toRef, nextTick, ref, watch } from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools.ts'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
@@ -7,7 +7,7 @@ import { executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
-import { setParameter } from './utils/parameter.ts'
+import { getParameter, setParameter } from './utils/parameter.ts'
 
 interface DragResizeOptions {
   containerSelector: string
@@ -72,6 +72,61 @@ interface DragResizeState {
   direction: Ref<string | null>
 }
 
+// the target element being manipulated
+// 操作的目标元素和容器元素
+let $target = ref(null), $container = ref(null)
+// coordinates and dimensions of the target element - 目标元素的坐标和尺寸
+let initialTarget
+// save contour point - 保存轮廓点
+let pointElements
+// 容器元素的坐标信息
+let containerInfo
+// It is used to record the position information of each contour point when the target element is pressed
+// 用于记录目标元素被按下时各个轮廓点的位置信息
+let downPointPosition
+// 目标元素的状态
+const targetState = reactive({
+  left: 0,
+  top: 0,
+  height: 0,
+  width: 0,
+  isPress: false,
+  isLock: false
+})
+// 轮廓点的状态
+const pointState = reactive({
+  left: 0,
+  top: 0,
+  direction: null,
+  isPress: false,
+  movementX: 0,
+  movementY: 0
+})
+
+function initGlobalData () {
+  $target.value = null
+  $container.value = null
+  initialTarget = updateInitialTarget()
+  pointElements = pointElements || {}
+  containerInfo = {}
+  downPointPosition = {}
+  Object.assign(targetState, { left: 0, top: 0, height: 0, width: 0, isPress: false, isLock: false })
+  Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
+}
+function updateGlobalData (target) {
+  console.log(getParameter(target.dataIndex))
+  // const wholeParameter = getParameter(target.dataIndex)
+  // stateParameter = wholeParameter.stateParameter
+  // elementParameter = wholeParameter.elementParameter
+  // globalDataParameter = wholeParameter.globalDataParameter
+}
+
+watch($target, (newV) => {
+  if (!newV) return
+  console.log('更新该目标元素对应的所有状态信息', newV)
+  updateGlobalData(newV)
+})
+
 function useDragResizeAPI (
   targetSelector: string | HTMLElement,
   options?: DragResizeOptions,
@@ -79,42 +134,13 @@ function useDragResizeAPI (
 ): DragResizeState {
   const { containerSelector } = options
 
-  // the target element being manipulated
-  // 操作的目标元素和容器元素
-  let $target = ref(null), $container = ref(null)
-  // coordinates and dimensions of the target element - 目标元素的坐标和尺寸
-  const initialTarget = updateInitialTarget()
-  // save contour point - 保存轮廓点
-  const pointElements = {}
-  // 容器元素的坐标信息
-  let containerInfo: any = {}
-  // It is used to record the position information of each contour point when the target element is pressed
-  // 用于记录目标元素被按下时各个轮廓点的位置信息
-  const downPointPosition = {}
-  // 目标元素的状态
-  const targetState = reactive({
-    left: 0,
-    top: 0,
-    height: 0,
-    width: 0,
-    isPress: false,
-    isLock: false
-  })
-  // 轮廓点的状态
-  const pointState = reactive({
-    left: 0,
-    top: 0,
-    direction: null,
-    isPress: false,
-    movementX: 0,
-    movementY: 0
-  })
-  // 显示或隐藏轮廓点的方法
-  const processBlurOrFocus = blurOrFocus(pointElements, targetState)
+  initGlobalData()
+  let stateParameter = { pointState, targetState }
+  let elementParameter = { target: $target, container: $container, pointElements, allTarget }
+  let globalDataParameter = { initialTarget, containerInfo, downPointPosition }
 
-  const stateParameter = { pointState, targetState }
-  const elementParameter = { target: $target, container: $container, pointElements, allTarget }
-  const globalDataParameter = { initialTarget, containerInfo, downPointPosition }
+  // 显示或隐藏轮廓点的方法
+  const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState)
 
 	nextTick(() => {
     initContainer()
@@ -126,28 +152,35 @@ function useDragResizeAPI (
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
     processBlurOrFocus($target.value)
   })
-  onUnmounted(() => {
+  onBeforeUnmount(() => {
     // unbind the mousedown event added for window to handle the target element
     //  解绑为 window 添加的 mousedown 事件以处理目标元素
     processBlurOrFocus($target.value, false)
     // the dom element is destroyed when the page is uninstalled
     // 页面卸载时销毁 dom 元素
-    removeElements(Object.values(pointElements))
+    removeElements(Object.values(elementParameter.pointElements))
+    $target.value.removeEventListener('click', updateTargetValue)
   })
 
   // initializes the container element - 初始化容器元素
   function initContainer () {
     $container.value = getElement(containerSelector)
-    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle($container.value)
+    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle(elementParameter.container.value)
     const containerWidth = parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight)
     const containerHeight = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)
-    containerInfo.width = containerWidth
-    containerInfo.height = containerHeight
+    globalDataParameter.containerInfo.width = containerWidth
+    globalDataParameter.containerInfo.height = containerHeight
   }
 
+  function updateTargetValue (event) {
+    $target.value = event.target
+  }
   // initializes the target element - 初始化目标元素
   function initTarget () {
     $target.value = getElement(targetSelector)
+
+    $target.value.addEventListener('click', updateTargetValue)
+
     $target.value.dataIndex = allTarget.length
     setParameter(allTarget.length, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     allTarget.push($target.value)
@@ -156,25 +189,26 @@ function useDragResizeAPI (
 
     initTargetStyle($target.value)
 
-    initTargetCoordinate($target.value, initialTarget)
+    initTargetCoordinate($target.value, globalDataParameter.initialTarget)
 
     // 初始化结束后更新状态
-    updateState(targetState, initialTarget)
+    updateState(stateParameter.targetState, globalDataParameter.initialTarget)
   }
 
+
   return {
-    targetLeft: toRef(targetState, 'left'),
-    targetTop: toRef(targetState, 'top'),
-    targetWidth: toRef(targetState, 'width'),
-    targetHeight: toRef(targetState, 'height'),
-    targetIsPress: toRef(targetState, 'isPress'),
-    targetIsLock: toRef(targetState, 'isLock'),
-    pointLeft: toRef(pointState, 'left'),
-    pointTop: toRef(pointState, 'top'),
-    direction: toRef(pointState, 'direction'),
-    pointIsPress: toRef(pointState, 'isPress'),
-    pointMovementX: toRef(pointState, 'movementX'),
-    pointMovementY: toRef(pointState, 'movementY')
+    targetLeft: toRef(stateParameter.targetState, 'left'),
+    targetTop: toRef(stateParameter.targetState, 'top'),
+    targetWidth: toRef(stateParameter.targetState, 'width'),
+    targetHeight: toRef(stateParameter.targetState, 'height'),
+    targetIsPress: toRef(stateParameter.targetState, 'isPress'),
+    targetIsLock: toRef(stateParameter.targetState, 'isLock'),
+    pointLeft: toRef(stateParameter.pointState, 'left'),
+    pointTop: toRef(stateParameter.pointState, 'top'),
+    direction: toRef(stateParameter.pointState, 'direction'),
+    pointIsPress: toRef(stateParameter.pointState, 'isPress'),
+    pointMovementX: toRef(stateParameter.pointState, 'movementX'),
+    pointMovementY: toRef(stateParameter.pointState, 'movementY')
   }
 }
 
@@ -196,6 +230,7 @@ export default function useDragResize (
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)
 
+  // MARK 把Parameter作为useDragResizeAPI的参数
   return useDragResizeAPI(
     targetSelector,
     options,
