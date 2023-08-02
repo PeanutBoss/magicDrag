@@ -1,3 +1,5 @@
+// 以目标元素的 dataIndex 作为key保存所有参数信息
+
 export type Parameter = {
 	elementParameter: {}
 	stateParameter: {}

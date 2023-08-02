@@ -68,14 +68,14 @@ function createContourPoint (pointElements, { direction }) {
 
 class Resize implements Plugin {
   name: 'Resize'
-  init(elementParameter, stateParameter, globalDataParameter, options) {
+  init (elementParameter, stateParameter, globalDataParameter, options) {
     // const { skill = {} } = options
     // const { resize } = skill
     // if (!resize) return
     const pointPosition = createParentPosition(globalDataParameter.initialTarget, options.pointSize)
     initContourPoints(elementParameter, stateParameter, globalDataParameter, options, { pointPosition })
   }
-  unbind(elementParameter, stateParameter, globalDataParameter, options) {
+  unbind (elementParameter, stateParameter, globalDataParameter, options) {
   }
 }
 

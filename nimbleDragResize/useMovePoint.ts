@@ -10,12 +10,12 @@ import { throttle } from 'lodash'
  */
 interface moveOption {
   direction?: 'X' | 'Y' | null
-  updateX?: boolean
-  updateY?: boolean
+  stopMovementX?: boolean
+  stopMovementY?: boolean
   throttleTime?: number
 }
 export default function useMovePoint (selector: string | HTMLElement, moveCallback?, limitOption: moveOption = {}) {
-  const { direction: limitDirection, updateX = true, updateY = true, throttleTime = 10 } = limitOption
+  const { direction: limitDirection, stopMovementX = true, stopMovementY = true, throttleTime = 10 } = limitOption
   if (throttleTime >= 100) {
     console.warn('the throttleTime is greater than 100 and the visual effects may not be smooth')
   }
@@ -31,7 +31,7 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 	let $ele
 
 	// 是否可以移动
-  const canIMove = reactive({
+  const stopCoordinate = reactive({
 		x: true,
 		y: true
 	})
@@ -52,8 +52,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		x: 0,
 		y: 0
 	})
-  const isUpdateMovementX = limitDirection !== 'X' && updateX
-  const isUpdateMovementY = limitDirection !== 'Y' && updateY
+  const isUpdateMovementX = limitDirection !== 'X' && stopMovementX
+  const isUpdateMovementY = limitDirection !== 'Y' && stopMovementY
 	function mouseDown (event) {
     event.preventDefault()
 		isPress.value = true
@@ -79,8 +79,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
       isUpdateMovementX && (movement.x = event.pageX - startOffset.x)
       isUpdateMovementY && (movement.y = event.pageY - startOffset.y)
       // 如果不能移动，则更新movement但不更新元素坐标
-      canIMove.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
-      canIMove.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
+      stopCoordinate.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
+      stopCoordinate.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
     }
     transferControl(moveAction, moveCallback, movement)
 	}
@@ -88,8 +88,8 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		isPress.value = false
 	}
   watch(movement, () => {
-    $ele.style.left = canIMove.x && startCoordinate.x + movement.x + 'px'
-    $ele.style.top = canIMove.y && startCoordinate.y + movement.y + 'px'
+    $ele.style.left = stopCoordinate.x && startCoordinate.x + movement.x + 'px'
+    $ele.style.top = stopCoordinate.y && startCoordinate.y + movement.y + 'px'
   })
 	return {
 		preStartX: toRef(startOffset, 'x'),
@@ -99,6 +99,6 @@ export default function useMovePoint (selector: string | HTMLElement, moveCallba
 		movementX: toRef(movement, 'x'),
 		movementY: toRef(movement, 'y'),
     isPress: readonly(isPress),
-    canIMove
+    stopCoordinate
 	}
 }
