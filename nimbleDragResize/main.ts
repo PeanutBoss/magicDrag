@@ -22,7 +22,7 @@ const App = {
       {{ state.targetIsLock }}
       <hr>
       <img :src="imgSource" class="box">
-<!--      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>-->
+      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
 <!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
     </div>
   `,
@@ -51,7 +51,7 @@ const App = {
       [ContextMenu]
     )
 
-    // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu])
+    const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [ContextMenu])
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {

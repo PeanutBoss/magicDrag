@@ -115,10 +115,6 @@ function initGlobalData () {
 }
 function updateGlobalData (target) {
   console.log(getParameter(target.dataIndex))
-  // const wholeParameter = getParameter(target.dataIndex)
-  // stateParameter = wholeParameter.stateParameter
-  // elementParameter = wholeParameter.elementParameter
-  // globalDataParameter = wholeParameter.globalDataParameter
 }
 
 watch($target, (newV) => {

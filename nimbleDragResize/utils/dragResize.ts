@@ -2,6 +2,7 @@ import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
 	getObjectIntValue } from './tools.ts'
 import {reactive, watch} from 'vue'
 import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu.ts'
+import { getParameter } from './parameter.ts'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -213,6 +214,9 @@ function showOrHideContourPoint (pointElements, isShow) {
   }
 }
 function checkIsContains (target, pointElements, targetState, event) {
+	// 每注册一个元素，window就多绑定一个事件，点击时也会触发window绑定的其他元素对应的mousedown事件，
+	// 判断事件目标与绑定的元素是否相同，如果不同不响应操作
+	if (event.target !== target) return
   const blurElements = [target, ...Object.values(pointElements)]
   if (!blurElements.includes(event.target)) {
     // losing focus hides outline points
@@ -221,6 +225,15 @@ function checkIsContains (target, pointElements, targetState, event) {
   } else {
     const isContinue = executeActionCallbacks(mousedownActions, targetState, 'beforeCallback')
     if (isContinue === false) return
+
+		// 按下鼠标时更新轮廓点位置信息
+		const {
+			globalDataParameter: { initialTarget, downPointPosition },
+			stateParameter: { pointState },
+			optionParameter: { pointSize }
+		} = getParameter(target.dataIndex)
+		updatePointPosition(target, { direction: "l", movementX: { value: 0 }, movementY: { value: 0 } }, { initialTarget, pointElements, pointSize, pointState }, false)
+		// TODO 更新downPointPosition
 
     // outline points are displayed when in focus
     // 聚焦时将显示轮廓点
