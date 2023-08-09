@@ -1,10 +1,24 @@
 // 以目标元素的 dataIndex 作为key保存所有参数信息
+import { DragResizeOptions } from '../useDragResize.ts'
+
+interface ElementParameter {
+  target: HTMLElement, container: HTMLElement, pointElements: any, allTarget: any
+}
+interface StateParameter {
+  pointState, targetState
+}
+interface GlobalDataParameter {
+  initialTarget, containerInfo, downPointPosition
+}
+interface OptionParameter {
+  target: HTMLElement, container: HTMLElement, pointElements: any, allTarget: any
+}
 
 export type Parameter = {
-	elementParameter: {}
-	stateParameter: {}
-	globalDataParameter: {}
-	optionParameter: {}
+	elementParameter: ElementParameter
+	stateParameter: StateParameter
+	globalDataParameter: GlobalDataParameter
+	optionParameter: DragResizeOptions
 }
 
 type WholeParameter = {

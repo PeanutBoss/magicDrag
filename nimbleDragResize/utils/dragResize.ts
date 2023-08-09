@@ -231,9 +231,12 @@ function checkIsContains (target, pointElements, targetState, event) {
 			globalDataParameter: { initialTarget, downPointPosition },
 			stateParameter: { pointState },
 			optionParameter: { pointSize }
-		} = getParameter(target.dataIndex)
-		updatePointPosition(target, { direction: "l", movementX: { value: 0 }, movementY: { value: 0 } }, { initialTarget, pointElements, pointSize, pointState }, false)
+		} = getParameter(target.dataIndex) as any
+		const pointPosition = updatePointPosition(target, { direction: "l", movementX: { value: 0 }, movementY: { value: 0 } }, { initialTarget, pointElements, pointSize, pointState }, false)
 		// TODO 更新downPointPosition
+    for (const pointKey in pointPosition) {
+      downPointPosition[pointKey] = [pointPosition[pointKey][0], pointPosition[pointKey][1]]
+    }
 
     // outline points are displayed when in focus
     // 聚焦时将显示轮廓点
@@ -378,6 +381,7 @@ export function updatePointPosition (target, { direction, movementX, movementY }
 	if (!excludeCurPoint) {
 		setPosition(pointElements[direction], pointPosition, direction as Direction)
 	}
+  return pointPosition
 }
 // limits the minimum size of the target element
 // 限制目标元素的最小尺寸
@@ -390,11 +394,14 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
 }
 // a callback function that moves contour points - 移动轮廓点的回调函数
 export function movePointCallback (stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
-	const { targetState, pointState } = stateParameter
-	const { pointElements } = elementParameter
-	const { initialTarget, containerInfo } = globalParameter
-	const { minWidth, minHeight, maxWidth, maxHeight, pointSize } = options
 	const { moveAction, target, direction, movementX, movementY } = runTimeParameter
+
+  const {
+    globalDataParameter: { initialTarget, containerInfo },
+    stateParameter: { targetState, pointState },
+    optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
+    elementParameter: { pointElements }
+  } = getParameter(target.dataIndex)
 
 	const isContinue = executeActionCallbacks(resizeActions, targetState, 'beforeCallback')
 	if (isContinue === false) return

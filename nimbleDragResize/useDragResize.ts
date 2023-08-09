@@ -9,7 +9,7 @@ import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
 import { getParameter, setParameter } from './utils/parameter.ts'
 
-interface DragResizeOptions {
+export interface DragResizeOptions {
   containerSelector: string
   minWidth?: number
   minHeight?: number
@@ -119,8 +119,8 @@ function updateGlobalData (target) {
 
 watch($target, (newV) => {
   if (!newV) return
-  console.log('更新该目标元素对应的所有状态信息', newV)
-  updateGlobalData(newV)
+  // console.log('更新该目标元素对应的所有状态信息', newV)
+  // updateGlobalData(newV)
 })
 
 function useDragResizeAPI (

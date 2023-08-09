@@ -37,7 +37,8 @@ const App = {
     const state = useDragResize(
       '.box',
       {
-        minHeight: 150,
+        minHeight: 200,
+        minWidth: 300,
         // maxWidth: 600,
         // maxHeight: 400,
         pageHasScrollBar: true,
