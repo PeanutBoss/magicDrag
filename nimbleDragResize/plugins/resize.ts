@@ -35,7 +35,7 @@ function initContourPoints (elementParameter, stateParameter, globalDataParamete
 
     const isPress = addDragFunctionToPoint(elementParameter, stateParameter, globalDataParameter, options, { point, pointPosition, direction })
     // update the width and height information when releasing the mouse - 当释放鼠标时更新宽度和高度信息
-    watch(isPress, pointIsPressChangeCallback(target.value, { initialTarget, pointState }))
+    watch(isPress, pointIsPressChangeCallback(target.value, { initialTarget, pointState, direction }))
   }
 }
 

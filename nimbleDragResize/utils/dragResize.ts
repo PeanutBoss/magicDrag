@@ -2,7 +2,7 @@ import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
 	getObjectIntValue } from './tools.ts'
 import {reactive, watch} from 'vue'
 import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu.ts'
-import { getParameter } from './parameter.ts'
+import { getParameter, setCurrentTargetByIndex, getCurrentTarget } from './parameter.ts'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -226,12 +226,14 @@ function checkIsContains (target, pointElements, targetState, event) {
     const isContinue = executeActionCallbacks(mousedownActions, targetState, 'beforeCallback')
     if (isContinue === false) return
 
+    // 设置当前选中的target
+    setCurrentTargetByIndex(target.dataIndex)
 		// 按下鼠标时更新轮廓点位置信息
 		const {
 			globalDataParameter: { initialTarget, downPointPosition },
 			stateParameter: { pointState },
 			optionParameter: { pointSize }
-		} = getParameter(target.dataIndex) as any
+		} = getParameter(target.dataIndex)
 		const pointPosition = updatePointPosition(target, { direction: "l", movementX: { value: 0 }, movementY: { value: 0 } }, { initialTarget, pointElements, pointSize, pointState }, false)
 		// TODO 更新downPointPosition
     for (const pointKey in pointPosition) {
@@ -428,9 +430,14 @@ function getCoordinateByElement (element: HTMLElement) {
     top: element.offsetTop
   }
 }
-export function pointIsPressChangeCallback (target, { initialTarget, pointState }) {
+export function pointIsPressChangeCallback (target, { initialTarget, pointState, direction }) {
   return newV => {
+    // 与window绑定mousedown同理，取消无用更新
+    const currentTarget = getCurrentTarget()
+    if (target !== currentTarget) return
+
     pointState.isPress = newV
+    pointState.direction = direction
     if (!newV) {
       updateInitialTarget(initialTarget, getCoordinateByElement(target))
     }
@@ -460,7 +467,6 @@ export function initTargetStyle (target) {
 // initializes the target element coordinates
 // 初始化目标元素的坐标
 export function initTargetCoordinate (target, initialTarget) {
-	// console.log($target.naturalWidth, $target.naturalHeight) // img.onload
 	// 直接获取相对于父元素的坐标
 	const rect = {
 		left: target.offsetLeft,

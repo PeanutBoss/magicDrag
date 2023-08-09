@@ -1,8 +1,11 @@
 // 以目标元素的 dataIndex 作为key保存所有参数信息
 import { DragResizeOptions } from '../useDragResize.ts'
+import { Ref } from 'vue'
+
+let currentTarget = null
 
 interface ElementParameter {
-  target: HTMLElement, container: HTMLElement, pointElements: any, allTarget: any
+  target: Ref<HTMLElement>, container: Ref<HTMLElement>, pointElements: any, allTarget: any
 }
 interface StateParameter {
   pointState, targetState
@@ -33,4 +36,13 @@ export function getParameter (index: number): Parameter {
 
 export function setParameter (index: number, value: Parameter) {
 	wholeParameter[index] = value
+}
+
+export function setCurrentTargetByIndex (index: number) {
+  const { elementParameter: { target } } = wholeParameter[index]
+  currentTarget = target.value
+}
+
+export function getCurrentTarget () {
+  return currentTarget
 }
