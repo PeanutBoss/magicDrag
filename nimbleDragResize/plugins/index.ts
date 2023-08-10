@@ -1,7 +1,19 @@
+import { ElementParameter, StateParameter, GlobalDataParameter, OptionParameter } from '../utils/parameter.ts'
+
 export interface Plugin {
 	name: string
-	init (elementParameter, stateParameter, globalDataParameter, options): void
-  unbind (elementParameter, stateParameter, globalDataParameter, options): void
+	init (
+		elementParameter: ElementParameter,
+		stateParameter: StateParameter,
+		globalDataParameter: GlobalDataParameter,
+		options: OptionParameter
+	): void
+  unbind (
+		elementParameter: ElementParameter,
+		stateParameter: StateParameter,
+		globalDataParameter: GlobalDataParameter,
+		options: OptionParameter
+	): void
 }
 
 export function executePluginInit (plugins: Plugin[], elementParameter, stateParameter, globalDataParameter, options) {

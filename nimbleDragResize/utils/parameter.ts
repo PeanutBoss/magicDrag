@@ -12,13 +12,13 @@ export interface ElementParameter {
 	pointElements: any
 	allTarget: any
 }
-interface StateParameter {
+export interface StateParameter {
   pointState, targetState
 }
-interface GlobalDataParameter {
+export interface GlobalDataParameter {
   initialTarget, containerInfo, downPointPosition
 }
-interface OptionParameter {
+export interface OptionParameter {
   target: HTMLElement, container: HTMLElement, pointElements: any, allTarget: any
 }
 
@@ -49,4 +49,9 @@ export function setCurrentTarget (target: HTMLElement) {
 
 export function getCurrentTarget () {
   return currentTarget
+}
+
+export function getCurrentParameter (): Parameter {
+	const target = getCurrentTarget()
+	return getParameter(target.dataIndex)
 }

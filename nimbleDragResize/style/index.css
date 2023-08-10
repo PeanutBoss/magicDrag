@@ -38,8 +38,9 @@ container开启定位后，给目标元素设置的left、top都是相对于cont
 
 
 
-.drag_resize-menu-container {
+.drag_resize-menu-container, .drag_resize-menu-container-new {
   width: 60px;
+  min-height: 20px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
   position: absolute;
   display: none;
