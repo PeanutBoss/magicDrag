@@ -1,6 +1,6 @@
 // 以目标元素的 dataIndex 作为key保存所有参数信息
 import { DragResizeOptions } from '../useDragResize.ts'
-import { Ref } from 'vue'
+import { Ref, watch } from 'vue'
 
 let currentTarget = null
 
@@ -38,9 +38,8 @@ export function setParameter (index: number, value: Parameter) {
 	wholeParameter[index] = value
 }
 
-export function setCurrentTargetByIndex (index: number) {
-  const { elementParameter: { target } } = wholeParameter[index]
-  currentTarget = target.value
+export function setCurrentTarget (target: HTMLElement) {
+  currentTarget = target
 }
 
 export function getCurrentTarget () {

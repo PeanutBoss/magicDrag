@@ -2,7 +2,7 @@ import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
 	getObjectIntValue } from './tools.ts'
 import {reactive, watch} from 'vue'
 import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu.ts'
-import { getParameter, setCurrentTargetByIndex, getCurrentTarget } from './parameter.ts'
+import { getParameter, setCurrentTarget, getCurrentTarget } from './parameter.ts'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -227,15 +227,20 @@ function checkIsContains (target, pointElements, targetState, event) {
     if (isContinue === false) return
 
     // 设置当前选中的target
-    setCurrentTargetByIndex(target.dataIndex)
+    setCurrentTarget(target)
 		// 按下鼠标时更新轮廓点位置信息
 		const {
 			globalDataParameter: { initialTarget, downPointPosition },
 			stateParameter: { pointState },
 			optionParameter: { pointSize }
 		} = getParameter(target.dataIndex)
-		const pointPosition = updatePointPosition(target, { direction: "l", movementX: { value: 0 }, movementY: { value: 0 } }, { initialTarget, pointElements, pointSize, pointState }, false)
-		// TODO 更新downPointPosition
+		const pointPosition = updatePointPosition(
+			target,
+			{ direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
+			{ initialTarget, pointElements, pointSize, pointState },
+			{ excludeCurPoint: false, updateDirection: false }
+		)
+		// 更新downPointPosition
     for (const pointKey in pointPosition) {
       downPointPosition[pointKey] = [pointPosition[pointKey][0], pointPosition[pointKey][1]]
     }
@@ -332,7 +337,7 @@ export function updateTargetStyle (target, { direction, movementX, movementY }, 
 	whetherUpdateState(direction, targetState, styleData)
 
   setStyle(target, styleData)
-  return EXECUTE_NEXT_TASK
+	return styleData
 }
 
 // updates are required only if hasL or hasT is satisfied
@@ -353,7 +358,8 @@ function whetherUpdateState (direction, targetState, newState) {
 
 // update the coordinate information of contour points
 // 更新轮廓点坐标信息
-export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, excludeCurPoint = true) {
+export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption = {}) {
+	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
@@ -367,7 +373,7 @@ export function updatePointPosition (target, { direction, movementX, movementY }
     // 不需要更新当前拖拽的点
     if (innerDirection === direction) {
       const newState = {
-        direction,
+        direction: updateDirection ? direction : null,
         left: pointPosition[innerDirection][0],
         top: pointPosition[innerDirection][1],
         movementX: movementX.value,
@@ -439,6 +445,7 @@ export function pointIsPressChangeCallback (target, { initialTarget, pointState,
     pointState.isPress = newV
     pointState.direction = direction
     if (!newV) {
+			pointState.direction = null
       updateInitialTarget(initialTarget, getCoordinateByElement(target))
     }
   }

@@ -118,6 +118,7 @@ function updateGlobalData (target) {
 }
 
 watch($target, (newV) => {
+  console.log('target change')
   if (!newV) return
   // console.log('更新该目标元素对应的所有状态信息', newV)
   // updateGlobalData(newV)
