@@ -1,4 +1,4 @@
-import { onBeforeUnmount, Ref, reactive, toRef, nextTick, ref, watch } from 'vue'
+import { onBeforeUnmount, Ref, reactive, toRef, nextTick, ref } from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools.ts'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
@@ -7,7 +7,7 @@ import { executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
-import { getParameter, setParameter } from './utils/parameter.ts'
+import {ElementParameter, setParameter} from './utils/parameter.ts'
 
 export interface DragResizeOptions {
   containerSelector: string
@@ -113,16 +113,6 @@ function initGlobalData () {
   Object.assign(targetState, { left: 0, top: 0, height: 0, width: 0, isPress: false, isLock: false })
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
 }
-function updateGlobalData (target) {
-  console.log(getParameter(target.dataIndex))
-}
-
-watch($target, (newV) => {
-  console.log('target change')
-  if (!newV) return
-  // console.log('更新该目标元素对应的所有状态信息', newV)
-  // updateGlobalData(newV)
-})
 
 function useDragResizeAPI (
   targetSelector: string | HTMLElement,
@@ -133,7 +123,7 @@ function useDragResizeAPI (
 
   initGlobalData()
   let stateParameter = { pointState, targetState }
-  let elementParameter = { target: $target, container: $container, pointElements, allTarget }
+  let elementParameter: ElementParameter = { target: $target, container: $container, pointElements, allTarget, privateContainer: null, privateTarget: null }
   let globalDataParameter = { initialTarget, containerInfo, downPointPosition }
 
   // 显示或隐藏轮廓点的方法
@@ -149,6 +139,7 @@ function useDragResizeAPI (
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
     processBlurOrFocus($target.value)
   })
+
   onBeforeUnmount(() => {
     // unbind the mousedown event added for window to handle the target element
     //  解绑为 window 添加的 mousedown 事件以处理目标元素
@@ -161,7 +152,7 @@ function useDragResizeAPI (
 
   // initializes the container element - 初始化容器元素
   function initContainer () {
-    $container.value = getElement(containerSelector)
+    elementParameter.privateContainer = $container.value = getElement(containerSelector)
     const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle(elementParameter.container.value)
     const containerWidth = parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight)
     const containerHeight = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)
@@ -174,7 +165,7 @@ function useDragResizeAPI (
   }
   // initializes the target element - 初始化目标元素
   function initTarget () {
-    $target.value = getElement(targetSelector)
+    elementParameter.privateTarget = $target.value = getElement(targetSelector)
 
     $target.value.addEventListener('click', updateTargetValue)
 

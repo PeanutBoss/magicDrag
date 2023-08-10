@@ -4,8 +4,13 @@ import { Ref, watch } from 'vue'
 
 let currentTarget = null
 
-interface ElementParameter {
-  target: Ref<HTMLElement>, container: Ref<HTMLElement>, pointElements: any, allTarget: any
+export interface ElementParameter {
+  target: Ref<HTMLElement>
+	container: Ref<HTMLElement>
+	privateTarget: HTMLElement | null
+	privateContainer: HTMLElement | null
+	pointElements: any
+	allTarget: any
 }
 interface StateParameter {
   pointState, targetState

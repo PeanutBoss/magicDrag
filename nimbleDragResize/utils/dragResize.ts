@@ -1,6 +1,6 @@
 import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
 	getObjectIntValue } from './tools.ts'
-import {reactive, watch} from 'vue'
+import { reactive } from 'vue'
 import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu.ts'
 import { getParameter, setCurrentTarget, getCurrentTarget } from './parameter.ts'
 
