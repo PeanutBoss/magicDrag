@@ -1,10 +1,7 @@
 import { updatePointPosition, showOrHideContourPoint } from '../../utils/dragResize.ts'
 import useDragResize from '../../useDragResize.ts'
-import ContextMenu, { menuState } from '../contextMenu/index.ts'
+import ContextMenu, { menuState, classNames } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
-
-const LockItemClassName = ' drag_resize-menu-item-lock' // 锁定选项的类名
-const LockTargetClassName = ' drag_resize-target-lock' // 锁定目标元素的类名
 
 function getScaleSize (originSize, ratio) {
 	return {
@@ -15,9 +12,9 @@ function getScaleSize (originSize, ratio) {
 
 function lockActionCallback (target, isLock: boolean) {
 		if (isLock) {
-			target.className += LockTargetClassName
+			target.className += classNames.LockTargetClassName
 		} else {
-			target.className = target.className.replace(LockTargetClassName, '')
+			target.className = target.className.replace(classNames.LockTargetClassName, '')
 		}
 }
 
