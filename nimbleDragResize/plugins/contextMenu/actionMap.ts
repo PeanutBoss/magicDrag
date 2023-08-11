@@ -163,11 +163,12 @@ export const actionMap: ActionMap = {
 		actionDom: null,
 		actionCallback() {
 			const {
-				elementParameter: { privateTarget },
+				elementParameter: { privateTarget, pointElements },
 				globalDataParameter: { initialTarget }
 			} = getCurrentParameter()
 			if (initialTarget.isLock) return
 
+			showOrHideContourPoint(pointElements, false)
 			privateTarget.remove()
 		}
 	}
