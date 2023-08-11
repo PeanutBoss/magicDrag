@@ -272,7 +272,7 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
     setStyle(pointElements[key], 'top', downPointPosition[key][1] + movement.y + 'px')
   }
 }
-export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, initialTarget, containerInfo }) {
+export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
   return (moveAction, movement) => {
 		const { globalDataParameter: { initialTarget } } = getCurrentParameter()
     // 如果目标元素处于锁定状态则不允许拖拽

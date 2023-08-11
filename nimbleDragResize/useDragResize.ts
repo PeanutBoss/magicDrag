@@ -7,7 +7,7 @@ import { executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
-import {ElementParameter, getParameter, setParameter} from './utils/parameter.ts'
+import {ElementParameter, setParameter} from './utils/parameter.ts'
 
 /*
 * TODO window触发resize的时候需要更新containerInfo
@@ -236,7 +236,7 @@ export default function useDragResize (
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)
 
-  // MARK 把Parameter作为useDragResizeAPI的参数
+  // TODO 注意插件去重
   return useDragResizeAPI(
     targetSelector,
     options,

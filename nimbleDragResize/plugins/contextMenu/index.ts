@@ -18,8 +18,8 @@ export const menuState: any = {
   copyIndex: 0
 }
 
-function processActionStatus (target, actionDoms: HTMLElement[], isLock: boolean) {
-  for (const [index, action] of Object.entries(actionDoms)) {
+function processActionStatus (target, actionDomList: HTMLElement[], isLock: boolean) {
+  for (const [index, action] of Object.entries(actionDomList)) {
     if (index === '0') continue // 锁定/解锁操作不需要被锁定
     if (isLock) {
       action.className += LockItemClassName
@@ -29,10 +29,12 @@ function processActionStatus (target, actionDoms: HTMLElement[], isLock: boolean
   }
 }
 
+type actionKey = 'lock' | 'blowUp' | 'reduce' | 'copy' | 'delete'
+
 export default class ContextMenu implements Plugin {
-  name: 'newContextMenu'
+  name: 'ContextMenu'
   private actions
-  constructor() {
+  constructor(private actionList: actionKey[] = Object.keys(actionMap) as actionKey[]) {
     this.getMenuBox()
     this.bindHidden = this.hiddenMenu.bind(this)
     this.bindContextCallback = this.contextCallback.bind(this)
@@ -40,14 +42,25 @@ export default class ContextMenu implements Plugin {
   init(elementParameter, stateParameter, globalDataParameter, options) {
     const { privateTarget } = elementParameter
     privateTarget.addEventListener('contextmenu', this.bindContextCallback)
-    this.actions = new Actions(actionMap)
+    this.actions = new Actions(this.getActionMapByKey(this.actionList))
   }
-  unbind(elementParameter, stateParameter, globalDataParameter, options) {}
+  unbind(elementParameter, stateParameter, globalDataParameter, options) {
+    const { privateTarget } = elementParameter
+    privateTarget.removeEventListener('contextmenu', this.bindContextCallback)
+    this.destroyMenu()
+  }
+  getActionMapByKey (keyList) {
+    const actions = {}
+    for (const key of keyList) {
+      actions[key] = actionMap[key]
+    }
+    return actions
+  }
   contextCallback (event) {
     event.preventDefault()
     const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
     const lockDom = this.actions.findActionDom('lock')
-    lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定'
+    lockDom?.innerText = initialTarget.isLock ? '解锁' : '锁定'
 
     processActionStatus(privateTarget, menuState.actionElementList, initialTarget.isLock)
     this.showMenu(true, { left: event.pageX, top: event.pageY })
@@ -108,6 +121,6 @@ class Actions {
     return actionElement
   }
   findActionDom (actionName) {
-    return this.actionMap[actionName].actionDom
+    return this.actionMap[actionName]?.actionDom
   }
 }

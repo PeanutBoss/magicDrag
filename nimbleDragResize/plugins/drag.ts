@@ -40,7 +40,7 @@ class Drag implements Plugin {
 		const { movementX, movementY, isPress } = useMovePoint(
 			target.value,
 			moveTargetCallback(dragCallback, {
-				downPointPosition, pointElements, targetState, initialTarget, containerInfo
+				downPointPosition, pointElements, targetState, containerInfo
 			}),
 			{ direction: limitDragDirection })
 

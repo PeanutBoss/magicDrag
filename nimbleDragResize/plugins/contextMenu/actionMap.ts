@@ -1,4 +1,3 @@
-import { Ref } from 'vue'
 import { updatePointPosition, showOrHideContourPoint } from '../../utils/dragResize.ts'
 import useDragResize from '../../useDragResize.ts'
 import ContextMenu, { menuState } from '../contextMenu/index.ts'
@@ -22,18 +21,6 @@ function lockActionCallback (target, isLock: boolean) {
 		}
 }
 
-interface ActionState {
-	state: {
-		targetState: any
-		initialTarget: any
-		pointState: any
-	},
-	domInfo: {
-		target: Ref<HTMLElement>
-		pointElements: { [key: string]: HTMLElement }
-		container: Ref<HTMLElement>
-	}
-}
 export interface ActionDescribe {
 	name: string
 	actionDom: HTMLElement | null
@@ -107,8 +94,6 @@ export const actionMap: ActionMap = {
 
 			targetState.width += scaleSize.x
 			targetState.height += scaleSize.y
-			privateTarget.style.width = targetState.width + 'px'
-			privateTarget.style.height = targetState.height + 'px'
 			updatePointPosition(
 				privateTarget,
 				{ direction: 'rb', movementX: { value: scaleSize.x }, movementY: { value: scaleSize.y } },
@@ -117,6 +102,8 @@ export const actionMap: ActionMap = {
 			)
 			initialTarget.width += scaleSize.x
 			initialTarget.height += scaleSize.y
+			privateTarget.style.width = initialTarget.width + 'px'
+			privateTarget.style.height = initialTarget.height + 'px'
 		}
 	},
 	reduce: {
@@ -135,8 +122,6 @@ export const actionMap: ActionMap = {
 
 			targetState.width -= scaleSize.x
 			targetState.height -= scaleSize.y
-			privateTarget.style.width = targetState.width + 'px'
-			privateTarget.style.height = targetState.height + 'px'
 			updatePointPosition(
 				privateTarget,
 				{ direction: 'rb', movementX: { value: -scaleSize.x }, movementY: { value: -scaleSize.y } },
@@ -145,6 +130,8 @@ export const actionMap: ActionMap = {
 			)
 			initialTarget.width -= scaleSize.x
 			initialTarget.height -= scaleSize.y
+			privateTarget.style.width = initialTarget.width + 'px'
+			privateTarget.style.height = initialTarget.height + 'px'
 		}
 	},
 	copy: {
@@ -171,12 +158,13 @@ export const actionMap: ActionMap = {
 		}
 	},
 	delete: {
-		name: 'delete111',
+		name: 'delete',
 		actionName: '删除',
 		actionDom: null,
 		actionCallback() {
 			const {
-				elementParameter: { privateTarget }
+				elementParameter: { privateTarget },
+				globalDataParameter: { initialTarget }
 			} = getCurrentParameter()
 			if (initialTarget.isLock) return
 
@@ -184,9 +172,9 @@ export const actionMap: ActionMap = {
 		}
 	}
 }
-export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 'mousedownCallbacks'): ActionData[] {
+export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 'mousedownCallbacks') {
 	const actions = []
-	for (const [key, describe]  of Object.entries(actionMap)) {
+	for (const [_, describe]  of Object.entries(actionMap)) {
 		actions.push({
 			name: describe.name,
 			actions: describe[type]
@@ -195,7 +183,7 @@ export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 
 	return actions
 }
 
-export function executeActionCallbacks (actionData: ActionData[], targetState, type: 'beforeCallback' | 'afterCallback') {
+export function executeActionCallbacks (actionData, targetState, type: 'beforeCallback' | 'afterCallback') {
 	let isContinue = true
 	try {
 		for (let i = 0; i < actionData.length; i++) {
