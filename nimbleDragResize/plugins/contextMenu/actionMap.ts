@@ -1,5 +1,5 @@
 import { Ref } from 'vue'
-import { updatePointPosition } from '../../utils/dragResize.ts'
+import { updatePointPosition, showOrHideContourPoint } from '../../utils/dragResize.ts'
 import useDragResize from '../../useDragResize.ts'
 import ContextMenu, { menuState } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
@@ -67,6 +67,7 @@ export const actionMap: ActionMap = {
 			stateParameter.targetState.isLock = !initialTarget.isLock
 			initialTarget.isLock = !initialTarget.isLock
 			lockActionCallback(elementParameter.privateTarget, initialTarget.isLock)
+			showOrHideContourPoint(elementParameter.pointElements, false)
 		},
 		dragCallbacks: {
 			beforeCallback(targetState) {
@@ -85,7 +86,7 @@ export const actionMap: ActionMap = {
 			}
 		},
 		mousedownCallbacks: {
-			afterCallback(targetState) {
+			beforeCallback(targetState) {
 				return !targetState.isLock
 			}
 		}
@@ -100,7 +101,7 @@ export const actionMap: ActionMap = {
 				globalDataParameter: { initialTarget },
 				elementParameter: { pointElements, privateTarget }
 			} = getCurrentParameter()
-			if (targetState.isLock) return
+			if (initialTarget.isLock) return
 
 			const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
 
@@ -128,7 +129,7 @@ export const actionMap: ActionMap = {
 				globalDataParameter: { initialTarget },
 				elementParameter: { pointElements, privateTarget }
 			} = getCurrentParameter()
-			if (targetState.isLock) return
+			if (initialTarget.isLock) return
 
 			const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
 
@@ -152,11 +153,10 @@ export const actionMap: ActionMap = {
 		actionDom: null,
 		actionCallback() {
 			const {
-				stateParameter: { targetState },
 				globalDataParameter: { initialTarget },
 				elementParameter: { privateTarget }
 			} = getCurrentParameter()
-			if (targetState.isLock) return
+			if (initialTarget.isLock) return
 
 			const parent = privateTarget.parentNode
 			const copyTarget = privateTarget.cloneNode() as HTMLElement
@@ -176,10 +176,9 @@ export const actionMap: ActionMap = {
 		actionDom: null,
 		actionCallback() {
 			const {
-				stateParameter: { targetState },
 				elementParameter: { privateTarget }
 			} = getCurrentParameter()
-			if (targetState.isLock) return
+			if (initialTarget.isLock) return
 
 			privateTarget.remove()
 		}

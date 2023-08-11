@@ -56,5 +56,3 @@ export function getCurrentParameter (): Parameter {
 	const target = getCurrentTarget()
 	return getParameter(target.dataIndex)
 }
-
-window.whole = wholeParameter

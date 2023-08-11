@@ -21,10 +21,10 @@ export const menuState: any = {
 function processActionStatus (target, actionDoms: HTMLElement[], isLock: boolean) {
   for (const [index, action] of Object.entries(actionDoms)) {
     if (index === '0') continue // 锁定/解锁操作不需要被锁定
-    if (isLock && action.className.indexOf(LockItemClassName) > -1) {
+    if (isLock) {
       action.className += LockItemClassName
     } else {
-      action.className = action.className.replace(LockItemClassName, '')
+      action.className = action.className.replaceAll(LockItemClassName, '')
     }
   }
 }
@@ -46,7 +46,6 @@ export default class ContextMenu implements Plugin {
   contextCallback (event) {
     event.preventDefault()
     const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
-    console.log(privateTarget, initialTarget.isLock)
     const lockDom = this.actions.findActionDom('lock')
     lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定'
 

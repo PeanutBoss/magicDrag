@@ -208,7 +208,7 @@ export function updateState (state, newState) {
 /* moveTarget */
 // controls how elements are displayed and hidden
 // 控制元素的显示和隐藏
-function showOrHideContourPoint (pointElements, isShow) {
+export function showOrHideContourPoint (pointElements, isShow) {
   for (const key in pointElements) {
     setStyle(pointElements[key], 'display', isShow ? 'block' : 'none')
   }
@@ -223,6 +223,8 @@ function checkIsContains (target, pointElements, targetState, event) {
     // 失焦时隐藏轮廓点
     showOrHideContourPoint(pointElements, false)
   } else {
+		// 设置当前选中的target
+		setCurrentTarget(target)
 		// 按下鼠标时更新轮廓点位置信息
 		const {
 			globalDataParameter: { initialTarget, downPointPosition },
@@ -232,8 +234,6 @@ function checkIsContains (target, pointElements, targetState, event) {
     const isContinue = executeActionCallbacks(mousedownActions, initialTarget, 'beforeCallback')
     if (isContinue === false) return
 
-    // 设置当前选中的target
-    setCurrentTarget(target)
 		const pointPosition = updatePointPosition(
 			target,
 			{ direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
@@ -248,7 +248,8 @@ function checkIsContains (target, pointElements, targetState, event) {
     // outline points are displayed when in focus
     // 聚焦时将显示轮廓点
     showOrHideContourPoint(pointElements, true)
-  }
+		executeActionCallbacks(mousedownActions, initialTarget, 'afterCallback')
+	}
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
