@@ -20,8 +20,8 @@ export const menuState: any = {
 
 function processActionStatus (target, actionDoms: HTMLElement[], isLock: boolean) {
   for (const [index, action] of Object.entries(actionDoms)) {
-    if (index === '0') continue
-    if (isLock) {
+    if (index === '0') continue // 锁定/解锁操作不需要被锁定
+    if (isLock && action.className.indexOf(LockItemClassName) > -1) {
       action.className += LockItemClassName
     } else {
       action.className = action.className.replace(LockItemClassName, '')

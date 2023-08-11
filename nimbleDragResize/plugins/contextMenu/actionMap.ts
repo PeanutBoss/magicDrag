@@ -64,8 +64,8 @@ export const actionMap: ActionMap = {
 		actionDom: null,
 		actionCallback () {
 			const { stateParameter, elementParameter, globalDataParameter: { initialTarget } } = getCurrentParameter()
-			stateParameter.targetState.isLock = !stateParameter.targetState.isLock
-			initialTarget.isLock = stateParameter.targetState.isLock
+			stateParameter.targetState.isLock = !initialTarget.isLock
+			initialTarget.isLock = !initialTarget.isLock
 			lockActionCallback(elementParameter.privateTarget, initialTarget.isLock)
 		},
 		dragCallbacks: {
