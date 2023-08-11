@@ -38,7 +38,7 @@ export default class ContextMenu implements Plugin {
   private actions
   constructor(
     private actionList: actionKey[] = Object.keys(actionMap) as actionKey[],
-    options = {}
+    private options = { offsetX: 20, offsetY: 20 }
   ) {
     this.getMenuBox()
     this.bindHidden = this.hiddenMenu.bind(this)
@@ -47,7 +47,7 @@ export default class ContextMenu implements Plugin {
   init(elementParameter, stateParameter, globalDataParameter, options) {
     const { privateTarget } = elementParameter
     privateTarget.addEventListener('contextmenu', this.bindContextCallback)
-    this.actions = new Actions(this.getActionMapByKey(this.actionList))
+    this.actions = new Actions(this.getActionMapByKey(this.actionList), { actionList: this.actionList, options: this.options })
   }
   unbind(elementParameter, stateParameter, globalDataParameter, options) {
     const { privateTarget } = elementParameter
@@ -99,10 +99,10 @@ export default class ContextMenu implements Plugin {
 }
 
 class Actions {
-  constructor(private actionMap: ActionMap) {
-    this.insertAction(menuState.menuBox)
+  constructor(private actionMap: ActionMap, options?) {
+    this.insertAction(menuState.menuBox, options)
   }
-  insertAction (menuBox: HTMLElement) {
+  insertAction (menuBox: HTMLElement, options) {
     if (menuState.isInsertAction) return
     menuState.isInsertAction = true
     for (const actionKey in this.actionMap) {
@@ -110,8 +110,10 @@ class Actions {
       menuState.actionElementList.push(
         actionData.actionDom = this.getActionDom(this.actionMap[actionKey].actionName, actionData)
       )
+      // TODO 直接添加方法就行
+      actionData.getMenuContextOptions = actionData?.getMenuContextOptions?.bind(null, options)
     }
-    menuBox.append(...menuState.actionElementList)
+      menuBox.append(...menuState.actionElementList)
   }
   getActionDom (ele: HTMLElement | string, action: ActionDescribe): HTMLElement {
     if (ele instanceof HTMLElement) {
