@@ -7,7 +7,11 @@ import { executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
-import {ElementParameter, setParameter} from './utils/parameter.ts'
+import {ElementParameter, getParameter, setParameter} from './utils/parameter.ts'
+
+/*
+* TODO window触发resize的时候需要更新containerInfo
+* */
 
 export interface DragResizeOptions {
   containerSelector: string
@@ -122,9 +126,23 @@ function useDragResizeAPI (
   const { containerSelector } = options
 
   initGlobalData()
-  let stateParameter = { pointState, targetState }
-  let elementParameter: ElementParameter = { target: $target, container: $container, pointElements, allTarget, privateContainer: null, privateTarget: null }
-  let globalDataParameter = { initialTarget, containerInfo, downPointPosition }
+  let stateParameter = {
+    pointState,
+    targetState
+  }
+  let elementParameter: ElementParameter = {
+    target: $target,
+    container: $container,
+    pointElements,
+    allTarget,
+    privateContainer: null,
+    privateTarget: null
+  }
+  let globalDataParameter = {
+    initialTarget: { ...initialTarget },
+    containerInfo:{ ...containerInfo },
+    downPointPosition: { ...downPointPosition }
+  }
 
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState)

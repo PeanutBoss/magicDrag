@@ -18,6 +18,17 @@ export const menuState: any = {
   copyIndex: 0
 }
 
+function processActionStatus (target, actionDoms: HTMLElement[], isLock: boolean) {
+  for (const [index, action] of Object.entries(actionDoms)) {
+    if (index === '0') continue
+    if (isLock) {
+      action.className += LockItemClassName
+    } else {
+      action.className = action.className.replace(LockItemClassName, '')
+    }
+  }
+}
+
 export default class ContextMenu implements Plugin {
   name: 'newContextMenu'
   private actions
@@ -34,9 +45,12 @@ export default class ContextMenu implements Plugin {
   unbind(elementParameter, stateParameter, globalDataParameter, options) {}
   contextCallback (event) {
     event.preventDefault()
-    const { stateParameter } = getCurrentParameter()
+    const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
+    console.log(privateTarget, initialTarget.isLock)
     const lockDom = this.actions.findActionDom('lock')
-    lockDom.innerText = stateParameter.targetState.isLock ? '解锁' : '锁定'
+    lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定'
+
+    processActionStatus(privateTarget, menuState.actionElementList, initialTarget.isLock)
     this.showMenu(true, { left: event.pageX, top: event.pageY })
   }
   getMenuBox () {
@@ -55,7 +69,7 @@ export default class ContextMenu implements Plugin {
 
     isShow && window.addEventListener('click', this.bindHidden)
   }
-  hiddenMenu (actions, event) {
+  hiddenMenu () {
     window.removeEventListener('click', this.bindHidden)
     this.showMenu(false)
   }
@@ -63,7 +77,6 @@ export default class ContextMenu implements Plugin {
     menuState.menuBox.remove()
     menuState.menuBox = null
   }
-  insertAction () {}
   bindHidden: null
   bindContextCallback: null
 }

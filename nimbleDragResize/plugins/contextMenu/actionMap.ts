@@ -4,9 +4,6 @@ import useDragResize from '../../useDragResize.ts'
 import ContextMenu, { menuState } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
 
-const lockMap: Map<HTMLElement, boolean> = new Map()
-const lockActionMap: Map<HTMLElement, HTMLElement[]> = new Map()
-
 const LockItemClassName = ' drag_resize-menu-item-lock' // 锁定选项的类名
 const LockTargetClassName = ' drag_resize-target-lock' // 锁定目标元素的类名
 
@@ -17,17 +14,12 @@ function getScaleSize (originSize, ratio) {
 	}
 }
 
-function lockCallback (target, actionDoms: HTMLElement[], isLock: boolean) {
-	for (const [index, action] of Object.entries(actionDoms)) {
-		if (index === '0') continue
+function lockActionCallback (target, isLock: boolean) {
 		if (isLock) {
-			action.className += LockItemClassName
 			target.className += LockTargetClassName
 		} else {
-			action.className = action.className.replace(LockItemClassName, '')
 			target.className = target.className.replace(LockTargetClassName, '')
 		}
-	}
 }
 
 interface ActionState {
@@ -71,21 +63,29 @@ export const actionMap: ActionMap = {
 		actionName: '锁定',
 		actionDom: null,
 		actionCallback () {
-			const { stateParameter, elementParameter } = getCurrentParameter()
+			const { stateParameter, elementParameter, globalDataParameter: { initialTarget } } = getCurrentParameter()
 			stateParameter.targetState.isLock = !stateParameter.targetState.isLock
-			lockCallback(elementParameter.privateTarget, menuState.actionElementList, stateParameter.targetState.isLock)
+			initialTarget.isLock = stateParameter.targetState.isLock
+			lockActionCallback(elementParameter.privateTarget, initialTarget.isLock)
 		},
 		dragCallbacks: {
 			beforeCallback(targetState) {
 				return !targetState.isLock
 			},
 			afterCallback(targetState): boolean {
-				return true
+				return !targetState.isLock
 			}
 		},
-		resizeCallbacks: {},
-		mousedownCallbacks: {
+		resizeCallbacks: {
 			beforeCallback(targetState) {
+				return !targetState.isLock
+			},
+			afterCallback(targetState) {
+				return !targetState.isLock
+			}
+		},
+		mousedownCallbacks: {
+			afterCallback(targetState) {
 				return !targetState.isLock
 			}
 		}
@@ -112,7 +112,7 @@ export const actionMap: ActionMap = {
 				privateTarget,
 				{ direction: 'rb', movementX: { value: scaleSize.x }, movementY: { value: scaleSize.y } },
 				{ initialTarget, pointElements, pointSize: 10, pointState },
-				false
+				{ excludeCurPoint: false }
 			)
 			initialTarget.width += scaleSize.x
 			initialTarget.height += scaleSize.y
@@ -140,7 +140,7 @@ export const actionMap: ActionMap = {
 				privateTarget,
 				{ direction: 'rb', movementX: { value: -scaleSize.x }, movementY: { value: -scaleSize.y } },
 				{ initialTarget, pointElements, pointSize: 10, pointState },
-				false
+				{ excludeCurPoint: false }
 			)
 			initialTarget.width -= scaleSize.x
 			initialTarget.height -= scaleSize.y
@@ -160,7 +160,6 @@ export const actionMap: ActionMap = {
 
 			const parent = privateTarget.parentNode
 			const copyTarget = privateTarget.cloneNode() as HTMLElement
-			// console.log(copyTarget)
 			const newClassName = menuState.classCopyPrefix + menuState.copyIndex++
 			copyTarget.className = newClassName
 			copyTarget.style.width = privateTarget.offsetWidth + 'px'
@@ -172,7 +171,7 @@ export const actionMap: ActionMap = {
 		}
 	},
 	delete: {
-		name: 'delete',
+		name: 'delete111',
 		actionName: '删除',
 		actionDom: null,
 		actionCallback() {
@@ -186,3 +185,31 @@ export const actionMap: ActionMap = {
 		}
 	}
 }
+export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 'mousedownCallbacks'): ActionData[] {
+	const actions = []
+	for (const [key, describe]  of Object.entries(actionMap)) {
+		actions.push({
+			name: describe.name,
+			actions: describe[type]
+		})
+	}
+	return actions
+}
+
+export function executeActionCallbacks (actionData: ActionData[], targetState, type: 'beforeCallback' | 'afterCallback') {
+	let isContinue = true
+	try {
+		for (let i = 0; i < actionData.length; i++) {
+			const data = actionData[i]
+			// 获取回调执行结果，如果没有返回值则默认为true
+			isContinue = data?.actions?.[type]?.(targetState) ?? true
+			// 如果某个回调返回false，则终止执行其他回调
+			if (isContinue === false) break
+		}
+	} catch (e) {
+		console.log(e, '----错误---')
+		return false
+	}
+	return isContinue
+}
+

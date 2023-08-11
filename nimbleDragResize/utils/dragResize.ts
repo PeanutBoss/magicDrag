@@ -1,8 +1,8 @@
 import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
 	getObjectIntValue } from './tools.ts'
 import { reactive } from 'vue'
-import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu.ts'
-import { getParameter, setCurrentTarget, getCurrentTarget } from './parameter.ts'
+import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu/actionMap.ts'
+import {getParameter, setCurrentTarget, getCurrentTarget, getCurrentParameter} from './parameter.ts'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -223,17 +223,17 @@ function checkIsContains (target, pointElements, targetState, event) {
     // 失焦时隐藏轮廓点
     showOrHideContourPoint(pointElements, false)
   } else {
-    const isContinue = executeActionCallbacks(mousedownActions, targetState, 'beforeCallback')
-    if (isContinue === false) return
-
-    // 设置当前选中的target
-    setCurrentTarget(target)
 		// 按下鼠标时更新轮廓点位置信息
 		const {
 			globalDataParameter: { initialTarget, downPointPosition },
 			stateParameter: { pointState },
 			optionParameter: { pointSize }
 		} = getParameter(target.dataIndex)
+    const isContinue = executeActionCallbacks(mousedownActions, initialTarget, 'beforeCallback')
+    if (isContinue === false) return
+
+    // 设置当前选中的target
+    setCurrentTarget(target)
 		const pointPosition = updatePointPosition(
 			target,
 			{ direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
@@ -273,8 +273,9 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 }
 export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, initialTarget, containerInfo }) {
   return (moveAction, movement) => {
+		const { globalDataParameter: { initialTarget } } = getCurrentParameter()
     // 如果目标元素处于锁定状态则不允许拖拽
-    const isContinue = executeActionCallbacks(dragActions, targetState, 'beforeCallback')
+    const isContinue = executeActionCallbacks(dragActions, initialTarget, 'beforeCallback')
     if (isContinue === false) return
 
     // Wrap the action to move the target element as a separate new function, and if the user defines a callback
@@ -296,7 +297,7 @@ export function moveTargetCallback (dragCallback, { downPointPosition, pointElem
 		// update the state of the target element - 更新目标元素状态
 		updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
 
-    executeActionCallbacks(dragActions, targetState, 'afterCallback')
+    executeActionCallbacks(dragActions, initialTarget, 'afterCallback')
   }
 }
 
@@ -411,7 +412,7 @@ export function movePointCallback (stateParameter, elementParameter, globalParam
     elementParameter: { pointElements }
   } = getParameter(target.dataIndex)
 
-	const isContinue = executeActionCallbacks(resizeActions, targetState, 'beforeCallback')
+	const isContinue = executeActionCallbacks(resizeActions, initialTarget, 'beforeCallback')
 	if (isContinue === false) return
 
 	moveAction()
@@ -462,7 +463,8 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
     width: 0,
     height: 0,
     originWidth: 0,
-    originHeight: 0
+    originHeight: 0,
+		isLock: false
   })
 }
 export function initTargetStyle (target) {
@@ -482,7 +484,7 @@ export function initTargetCoordinate (target, initialTarget) {
 		height: target.offsetHeight
 	}
 	for (const rectKey in initialTarget) {
-		initialTarget[rectKey] = rect[rectKey]
+		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]
 	}
 	// 放大缩小是需要用到原始尺寸
 	initialTarget.originWidth = target.offsetWidth

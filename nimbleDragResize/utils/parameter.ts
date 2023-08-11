@@ -13,7 +13,8 @@ export interface ElementParameter {
 	allTarget: any
 }
 export interface StateParameter {
-  pointState, targetState
+  pointState,
+	targetState,
 }
 export interface GlobalDataParameter {
   initialTarget, containerInfo, downPointPosition
@@ -55,3 +56,5 @@ export function getCurrentParameter (): Parameter {
 	const target = getCurrentTarget()
 	return getParameter(target.dataIndex)
 }
+
+window.whole = wholeParameter
