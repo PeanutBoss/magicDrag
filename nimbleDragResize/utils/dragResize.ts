@@ -214,22 +214,30 @@ export function showOrHideContourPoint (pointElements, isShow) {
   }
 }
 function checkIsContains (target, pointElements, targetState, event) {
-  console.log(target, event.target)
 
   const {
     globalDataParameter: { initialTarget, downPointPosition },
     stateParameter: { pointState },
-    optionParameter: { pointSize }
+    optionParameter: { pointSize },
+		elementParameter: { allContainer }
   } = getParameter(target.dataIndex)
-  // 如果当前元素是锁定状态，则隐藏轮廓点
-  // if (initialTarget.isLock) {
-  //   showOrHideContourPoint(pointElements, false)
-  // }
+
+	// 如果点击目标元素则隐藏轮廓点
+	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
+		showOrHideContourPoint(pointElements, false)
+	}
 
 	// 每注册一个元素，window就多绑定一个事件，点击时也会触发window绑定的其他元素对应的mousedown事件，
 	// 判断事件目标与绑定的元素是否相同，如果不同不响应操作
 	if (event.target !== target) return
+
+	// 如果当前元素是锁定状态，则隐藏轮廓点
+	if (initialTarget.isLock) {
+		showOrHideContourPoint(pointElements, false)
+	}
+
   const blurElements = [target, ...Object.values(pointElements)]
+	// 如果目标元素不是轮廓点或目标元素，则隐藏轮廓点 TODO 因为前面做了对轮廓点做了处理，不需要这个条件分支了，这里页永远不会执行
   if (!blurElements.includes(event.target)) {
     // losing focus hides outline points
     // 失焦时隐藏轮廓点

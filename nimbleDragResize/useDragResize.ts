@@ -60,6 +60,7 @@ const defaultOptions: DragResizeOptions = {
 }
 
 const allTarget: HTMLElement[] = []
+const allContainer: HTMLElement[] = []
 
 interface DragResizeState {
   targetLeft: Ref<number>
@@ -135,6 +136,7 @@ function useDragResizeAPI (
     container: $container,
     pointElements,
     allTarget,
+    allContainer,
     privateContainer: null,
     privateTarget: null
   }
@@ -171,6 +173,7 @@ function useDragResizeAPI (
   // initializes the container element - 初始化容器元素
   function initContainer () {
     elementParameter.privateContainer = $container.value = getElement(containerSelector)
+    allContainer.push(elementParameter.privateContainer)
     const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle(elementParameter.container.value)
     const containerWidth = parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight)
     const containerHeight = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)

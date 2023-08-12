@@ -10,7 +10,8 @@ export interface ElementParameter {
 	privateTarget: HTMLElement | null
 	privateContainer: HTMLElement | null
 	pointElements: any
-	allTarget: any
+	allTarget: HTMLElement[]
+	allContainer: HTMLElement[]
 }
 export interface StateParameter {
   pointState,
