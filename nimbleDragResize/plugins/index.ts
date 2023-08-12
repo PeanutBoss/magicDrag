@@ -28,4 +28,12 @@ export function executePluginUnbind (plugins: Plugin[], elementParameter, stateP
 	})
 }
 
+export function duplicateRemovalPlugin (plugins: Plugin[]) {
+	const pluginNameList = new Set()
+	plugins.filter(plugin => {
+		pluginNameList.add(plugin.name)
+		return !pluginNameList.has(plugin.name)
+	})
+}
+
 // TODO 防止手动篡改element

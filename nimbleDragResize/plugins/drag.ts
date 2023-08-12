@@ -1,6 +1,6 @@
 import { Plugin } from './index.ts'
 import useMovePoint from '../useMovePoint.ts'
-import { blurOrFocus, moveTargetCallback, updateInitialTarget } from '../utils/dragResize.ts'
+import { moveTargetCallback, updateInitialTarget } from '../utils/dragResize.ts'
 import { watch } from 'vue'
 import {setStyle} from '../utils/tools.ts'
 

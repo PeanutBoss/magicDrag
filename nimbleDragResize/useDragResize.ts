@@ -3,7 +3,7 @@ import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterT
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
 } from './utils/dragResize.ts'
-import { executePluginInit, Plugin } from './plugins/index.ts'
+import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins/index.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
@@ -236,11 +236,13 @@ export default function useDragResize (
 
   options = mergeObject(defaultOptions, options)
   const { drag, resize } = options.skill
-
+  // console.log(Drag.name)
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)
 
-  // TODO 注意插件去重
+  // duplicateRemovalPlugin(plugins)
+  //
+  console.log(plugins, 'plugins')
   return useDragResizeAPI(
     targetSelector,
     options,
