@@ -236,13 +236,12 @@ export default function useDragResize (
 
   options = mergeObject(defaultOptions, options)
   const { drag, resize } = options.skill
-  // console.log(Drag.name)
+
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)
 
-  // duplicateRemovalPlugin(plugins)
-  //
-  console.log(plugins, 'plugins')
+  plugins = duplicateRemovalPlugin(plugins)
+
   return useDragResizeAPI(
     targetSelector,
     options,

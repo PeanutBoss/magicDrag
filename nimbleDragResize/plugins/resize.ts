@@ -67,7 +67,10 @@ function createContourPoint (pointElements, { direction }) {
 }
 
 class Resize implements Plugin {
-  name: 'Resize'
+  name
+  constructor() {
+    this.name = 'Resize'
+  }
   init (elementParameter, stateParameter, globalDataParameter, options) {
     // const { skill = {} } = options
     // const { resize } = skill

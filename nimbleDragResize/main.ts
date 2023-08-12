@@ -1,6 +1,5 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
-import Drag from "./plugins/drag.ts";
 import NewContextMenu from './plugins/contextMenu/index.ts'
 import "./style/index.css"
 

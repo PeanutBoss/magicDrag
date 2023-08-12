@@ -34,12 +34,13 @@ function processActionStatus (target, actionDomList: HTMLElement[], isLock: bool
 type actionKey = 'lock' | 'blowUp' | 'reduce' | 'copy' | 'delete'
 
 export default class ContextMenu implements Plugin {
-  name: 'ContextMenu'
+  name
   private actions
   constructor(
     private actionList: actionKey[] = Object.keys(actionMap) as actionKey[],
     private options = { offsetX: 20, offsetY: 20 }
   ) {
+    this.name = 'ContextMenu'
     this.getMenuBox()
     this.bindHidden = this.hiddenMenu.bind(this)
     this.bindContextCallback = this.contextCallback.bind(this)

@@ -22,7 +22,10 @@ function isPressChangeCallback ({ pointElements }, { targetState }, { downPointP
 }
 
 class Drag implements Plugin {
-	name: 'Drag'
+  public name
+  constructor () {
+    this.name = 'Drag'
+  }
 	init (elementParameter, stateParameter, globalDataParameter, options) {
 		// console.log(elementParameter, stateParameter, globalDataParameter, options)
     const { pointElements, target } = elementParameter

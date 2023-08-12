@@ -1,4 +1,5 @@
 import { ElementParameter, StateParameter, GlobalDataParameter, OptionParameter } from '../utils/parameter.ts'
+import {baseErrorTips, isNullOrUndefined} from "../utils/tools.ts";
 
 export interface Plugin {
 	name: string
@@ -30,9 +31,13 @@ export function executePluginUnbind (plugins: Plugin[], elementParameter, stateP
 
 export function duplicateRemovalPlugin (plugins: Plugin[]) {
 	const pluginNameList = new Set()
-	plugins.filter(plugin => {
+	return plugins.filter(plugin => {
+
+    baseErrorTips(isNullOrUndefined(plugin.name), 'please check if your plugin contains the name attribute')
+
+    const hasPlugin = !pluginNameList.has(plugin.name)
 		pluginNameList.add(plugin.name)
-		return !pluginNameList.has(plugin.name)
+		return hasPlugin
 	})
 }
 
