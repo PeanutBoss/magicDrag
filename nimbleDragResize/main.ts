@@ -52,7 +52,7 @@ const App = {
       [new NewContextMenu()]
     )
 
-    // const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [new NewContextMenu()])
+    const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [new NewContextMenu()])
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {

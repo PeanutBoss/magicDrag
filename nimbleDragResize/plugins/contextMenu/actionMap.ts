@@ -175,6 +175,15 @@ export const actionMap: ActionMap = {
 			showOrHideContourPoint(pointElements, false)
 			privateTarget.remove()
 		}
+	},
+	rotate: {
+		name: 'rotate',
+		actionName: '旋转',
+		actionDom: null,
+		actionCallback(event) {
+			const { elementParameter: { privateTarget } } = getCurrentParameter()
+			privateTarget.style.transform = 'rotate(45deg)'
+		}
 	}
 }
 export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 'mousedownCallbacks') {
