@@ -216,7 +216,7 @@ export function showOrHideContourPoint (pointElements, isShow) {
 function checkIsContains (target, pointElements, targetState, event) {
 
   const {
-    globalDataParameter: { initialTarget, downPointPosition },
+    globalDataParameter: { initialTarget, downPointPosition, containerInfo },
     stateParameter: { pointState },
     optionParameter: { pointSize },
 		elementParameter: { allContainer }

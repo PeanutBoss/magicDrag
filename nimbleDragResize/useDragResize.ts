@@ -174,9 +174,10 @@ function useDragResizeAPI (
   function initContainer () {
     elementParameter.privateContainer = $container.value = getElement(containerSelector)
     allContainer.push(elementParameter.privateContainer)
-    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height } = getComputedStyle(elementParameter.container.value)
-    const containerWidth = parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight)
-    const containerHeight = parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom)
+    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing } = getComputedStyle(elementParameter.container.value)
+    const isBorderBox = boxSizing === 'border-box'
+    const containerWidth = isBorderBox ? parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight) : parseInt(width)
+    const containerHeight = isBorderBox ? parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom) : parseInt(height)
     globalDataParameter.containerInfo.width = containerWidth
     globalDataParameter.containerInfo.height = containerHeight
   }
