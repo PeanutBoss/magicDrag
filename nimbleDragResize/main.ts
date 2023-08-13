@@ -47,9 +47,15 @@ const App = {
           // dragCallback (moveAction) {
           //   pressShift && moveAction()
           // }
-        }
+        },
+        customClass: {}
       },
-      [new NewContextMenu()]
+      [
+        new NewContextMenu(
+        ['lock', 'copy', 'delete', 'blowUp', 'reduce'],
+        {}
+        )
+      ]
     )
 
     const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [new NewContextMenu()])

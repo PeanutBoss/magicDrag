@@ -2,8 +2,8 @@ import { updatePointPosition, showOrHideContourPoint } from '../../utils/dragRes
 import useDragResize from '../../useDragResize.ts'
 import ContextMenu, { menuState } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
-import {ClassName, getTargetZIndex, TargetStatus} from "../../style/className.ts";
-import {setStyle} from "../../utils/tools.ts";
+import {getTargetZIndex, TargetStatus} from "../../style/className.ts";
+import {setStyle, addClassName, removeClassName} from "../../utils/tools.ts";
 
 function getScaleSize (originSize, ratio) {
 	return {
@@ -12,12 +12,14 @@ function getScaleSize (originSize, ratio) {
 	}
 }
 
-function lockActionCallback (target, isLock: boolean) {
+function lockActionCallback (target, isLock: boolean, lockTargetClassName) {
 		if (isLock) {
-			target.className += ClassName.LockTargetClassName
+      addClassName(target, lockTargetClassName)
+			// target.className += lockTargetClassName
       setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Locked, target))
 		} else {
-			target.className = target.className.replace(ClassName.LockTargetClassName, '')
+			// target.className = target.className.replace(lockTargetClassName, '')
+      removeClassName(target, lockTargetClassName)
       setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
 		}
 }
@@ -27,7 +29,7 @@ export interface ActionDescribe {
 	actionDom: HTMLElement | null
 	actionName: string
 	actionCallback (event): void
-	getMenuContextOptions? (...rest: any[]): void
+  getMenuContextParameter? (...rest: any[]): any
 	// 最好显式的返回一个布尔值
 	dragCallbacks?: {
 		beforeCallback? (targetState): boolean
@@ -53,9 +55,10 @@ export const actionMap: ActionMap = {
 		actionDom: null,
 		actionCallback () {
 			const { stateParameter, elementParameter, globalDataParameter: { initialTarget } } = getCurrentParameter()
+      const { options: { lockTargetClassName } } = this.getMenuContextParameter()
 			stateParameter.targetState.isLock = !initialTarget.isLock
 			initialTarget.isLock = !initialTarget.isLock
-			lockActionCallback(elementParameter.privateTarget, initialTarget.isLock)
+			lockActionCallback(elementParameter.privateTarget, initialTarget.isLock, lockTargetClassName)
 			showOrHideContourPoint(elementParameter.pointElements, false)
 		},
 		dragCallbacks: {
@@ -141,9 +144,6 @@ export const actionMap: ActionMap = {
 		name: 'copy',
 		actionName: '复制',
 		actionDom: null,
-		getMenuContextOptions (options) {
-			return options
-		},
 		actionCallback() {
 			const {
 				globalDataParameter: { initialTarget },
@@ -151,18 +151,17 @@ export const actionMap: ActionMap = {
 			} = getCurrentParameter()
 			if (initialTarget.isLock) return
 
-			const { options: { offsetX, offsetY } } = this.getMenuContextOptions()
-
+			const { actionList, options } = this.getMenuContextParameter()
 			const parent = privateTarget.parentNode
 			const copyTarget = privateTarget.cloneNode() as HTMLElement
 			const newClassName = menuState.classCopyPrefix + menuState.copyIndex++
 			copyTarget.className = newClassName
 			copyTarget.style.width = privateTarget.offsetWidth + 'px'
 			copyTarget.style.height = privateTarget.offsetHeight + 'px'
-			copyTarget.style.left = initialTarget.left + offsetX + 'px'
-			copyTarget.style.top = initialTarget.top + offsetY + 'px'
+			copyTarget.style.left = initialTarget.left + options.offsetX + 'px'
+			copyTarget.style.top = initialTarget.top + options.offsetY + 'px'
 			parent.appendChild(copyTarget)
-			useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu()])
+			useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(actionList, options)])
 		}
 	},
 	delete: {

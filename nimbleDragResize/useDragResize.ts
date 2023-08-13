@@ -8,6 +8,7 @@ import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
 import {ElementParameter, setParameter} from './utils/parameter.ts'
+import { ClassName, MAGIC_DRAG } from './style/className.ts'
 
 /*
 * TODO window触发resize的时候需要更新containerInfo
@@ -34,11 +35,14 @@ export interface DragResizeOptions {
     drag?: boolean
     limitRatio?: [number, number]
     limitDragDirection?: 'X' | 'Y' | null
-  },
+  }
   callbacks?: {
     dragCallback?: (moveTargetAction: (moveAction) => void, movement: { movementX: number, movementY: number }) => void
     resizeCallback?: (moveResizeAction: (moveAction) => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
-  },
+  }
+  customClass?: {
+    customPointClass?: string
+  }
   plugins?: Plugin[]
 }
 // default configuration
@@ -55,6 +59,9 @@ const defaultOptions: DragResizeOptions = {
     resize: true, // whether the size adjustment is supported - 是否支持大小调整
     drag: true, // whether to support dragging - 是否支持拖动
     limitDragDirection: null // restricted direction of movement - 限制移动方向
+  },
+  customClass: {
+    customPointClass: ClassName.OutlinePoint,
   },
   callbacks: {}
 }
@@ -235,7 +242,10 @@ export default function useDragResize (
   checkParameterType(defaultOptions, options)
 
   options = mergeObject(defaultOptions, options)
+
   const { drag, resize } = options.skill
+  const { customPointClass } = options.customClass
+  baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)

@@ -2,6 +2,7 @@ import { Plugin } from '../index.ts'
 import { actionMap, ActionDescribe, ActionMap } from './actionMap.ts'
 import {getCurrentParameter} from '../../utils/parameter.ts'
 import { ClassName } from "../../style/className.ts";
+import {mergeObject} from "../../utils/tools.ts";
 
 export const menuState: any = {
   isInsertAction: false,
@@ -14,27 +15,46 @@ export const menuState: any = {
   copyIndex: 0
 }
 
-function processActionStatus (target, actionDomList: HTMLElement[], isLock: boolean) {
+function processActionStatus (target, actionDomList: HTMLElement[], isLock: boolean, lockItemClassName) {
   for (const [index, action] of Object.entries(actionDomList)) {
     if (index === '0') continue // 锁定/解锁操作不需要被锁定
     if (isLock) {
-      action.className += ClassName.LockItemClassName
+      action.className += lockItemClassName
     } else {
-      action.className = action.className.replaceAll(ClassName.LockItemClassName, '')
+      action.className = action.className.replaceAll(lockItemClassName, '')
     }
   }
 }
 
 type actionKey = 'lock' | 'blowUp' | 'reduce' | 'copy' | 'delete'
+type DefaultContextMenuOptions = {
+  offsetX?: number
+  offsetY?: number
+  lockTargetClassName?: string
+  containerClassName?: string
+  itemClassName?: string
+  lockItemClassName?: string
+}
+
+const defaultContextMenuOptions: DefaultContextMenuOptions = {
+  offsetX: 20,
+  offsetY: 20,
+  lockTargetClassName: ClassName.LockTargetClassName,
+  containerClassName: ClassName.ContainerClassName,
+  itemClassName: ClassName.ItemClassName,
+  lockItemClassName: ClassName.LockItemClassName,
+}
 
 export default class ContextMenu implements Plugin {
   name
   private actions
+  private options
   constructor(
     private actionList: actionKey[] = Object.keys(actionMap) as actionKey[],
-    private options = { offsetX: 20, offsetY: 20 }
+    options = defaultContextMenuOptions
   ) {
     this.name = 'ContextMenu'
+    this.options = mergeObject(defaultContextMenuOptions, options)
     this.getMenuBox()
     this.bindHidden = this.hiddenMenu.bind(this)
     this.bindContextCallback = this.contextCallback.bind(this)
@@ -60,15 +80,15 @@ export default class ContextMenu implements Plugin {
     event.preventDefault()
     const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
     const lockDom = this.actions.findActionDom('lock')
-    lockDom?.innerText = initialTarget.isLock ? '解锁' : '锁定'
+    lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定'
 
-    processActionStatus(privateTarget, menuState.actionElementList, initialTarget.isLock)
+    processActionStatus(privateTarget, menuState.actionElementList, initialTarget.isLock, this.options.lockItemClassName)
     this.showMenu(true, { left: event.pageX, top: event.pageY })
   }
   getMenuBox () {
     if (!menuState.menuBox) {
       menuState.menuBox = document.createElement('div')
-      menuState.menuBox.className = ClassName.ContainerClassName
+      menuState.menuBox.className = this.options.containerClassName
       document.body.append(menuState.menuBox)
     }
     return menuState.menuBox
@@ -102,11 +122,10 @@ class Actions {
     menuState.isInsertAction = true
     for (const actionKey in this.actionMap) {
       const actionData = this.actionMap[actionKey]
+      actionData.getMenuContextParameter = todoBindFunc.bind(null, options)
       menuState.actionElementList.push(
         actionData.actionDom = this.getActionDom(this.actionMap[actionKey].actionName, actionData)
       )
-      // TODO 直接添加方法就行
-      actionData.getMenuContextOptions = actionData?.getMenuContextOptions?.bind(null, options)
     }
       menuBox.append(...menuState.actionElementList)
   }
@@ -117,7 +136,8 @@ class Actions {
     }
 
     let actionElement = document.createElement('div')
-    actionElement.className = ClassName.ItemClassName
+    const { options: { itemClassName } } = action.getMenuContextParameter()
+    actionElement.className = itemClassName
     actionElement.textContent = action.actionName
     actionElement.onclick = action.actionCallback.bind(action)
     return actionElement
@@ -125,4 +145,8 @@ class Actions {
   findActionDom (actionName) {
     return this.actionMap[actionName]?.actionDom
   }
+}
+
+function todoBindFunc (data) {
+  return data
 }

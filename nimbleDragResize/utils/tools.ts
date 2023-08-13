@@ -123,7 +123,10 @@ export function appendChild (parent: HTMLElement, ...child: HTMLElement[]) {
 }
 
 export function addClassName (element: HTMLElement, className: string) {
-  element.className += className
+  const isIncludeClassName = element.className.indexOf(` ${className} `) > -1
+  if (!isIncludeClassName) {
+    element.className += ` ${className} `
+  }
 }
 
 export function removeClassName (element: HTMLElement, className: string) {

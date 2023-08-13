@@ -1,7 +1,6 @@
 import { Plugin } from './index.ts'
 import useMovePoint from '../useMovePoint.ts'
 import {addClassName, appendChild, transferControl} from '../utils/tools.ts'
-import { ClassName } from '../style/className.ts'
 import {
   createParentPosition,
   pointIsPressChangeCallback,
@@ -26,13 +25,14 @@ function initContourPoints (elementParameter, stateParameter, globalDataParamete
   const { target, pointElements } = elementParameter
   const { pointState } = stateParameter
   const { pointPosition } = runtimeParameter
-  const { pointSize } = options
+  const { pointSize, customClass: { customPointClass } } = options
   const { initialTarget } = globalDataParameter
 
   for (const direction in pointPosition) {
     const point = createContourPoint(pointElements, { direction })
     initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize })
-    addClassName(point, ClassName.OutlinePoint)
+    // addClassName(point, ClassName.OutlinePoint)
+    addClassName(point, customPointClass)
     appendChild(target.value.parentNode, point)
 
     const isPress = addDragFunctionToPoint(elementParameter, stateParameter, globalDataParameter, options, { point, pointPosition, direction })
