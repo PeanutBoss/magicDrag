@@ -13,7 +13,9 @@ import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/con
 import {actionMap} from "./plugins/contextMenu/actionMap.ts";
 
 /*
-* TODO window触发resize的时候需要更新containerInfo
+* TODO
+*  1.window触发resize的时候需要更新containerInfo
+*  2.useDragResize使用时需要创建，否则会有参数冲突问题
 * */
 
 export interface DragResizeOptions {
