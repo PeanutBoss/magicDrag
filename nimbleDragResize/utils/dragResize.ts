@@ -225,12 +225,14 @@ function checkIsContains (target, pointElements, targetState, event) {
     globalDataParameter: { initialTarget, downPointPosition, containerInfo },
     stateParameter: { pointState },
     optionParameter: { pointSize },
-		elementParameter: { allContainer }
+		elementParameter: { allContainer, target: $target }
   } = getParameter(target.dataset.index)
 
 	// 如果点击目标元素是容器则隐藏轮廓点
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
 		showOrHideContourPoint(pointElements, false)
+    // 隐藏轮廓点时让对应的元素的层级回复到正常状态（因为锁定状态不能被选中，所以不需要判断锁定的状态）
+    setStyle($target.value, 'zIndex', getTargetZIndex(TargetStatus.Normal, $target.value))
 	}
 
 	// 每注册一个元素，window就多绑定一个事件，点击时也会触发window绑定的其他元素对应的mousedown事件，
