@@ -191,7 +191,7 @@ function useDragResizeAPI (
 
     $target.value.addEventListener('click', updateTargetValue)
 
-    $target.value.dataIndex = allTarget.length
+    $target.value.dataset.index = allTarget.length
     setParameter(allTarget.length, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     allTarget.push($target.value)
 

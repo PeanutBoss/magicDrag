@@ -25,6 +25,10 @@ module.exports = {
         use: ['style-loader', 'css-loader']
       },
       {
+        test: /\.s(a|c)ss$/,
+        use: ['style-loader', 'css-loader', 'sass-loader']
+      },
+      {
         test: /\.(jpe?g|png)$/,
         type: "asset", // 小于80kb的图片会转为base64
         // parser: {

@@ -1,13 +1,7 @@
 import { Plugin } from '../index.ts'
 import { actionMap, ActionDescribe, ActionMap } from './actionMap.ts'
 import {getCurrentParameter} from '../../utils/parameter.ts'
-
-export const classNames = {
-  ContainerClassName: 'drag_resize-menu-container', // 菜单的类名
-  ItemClassName: 'drag_resize-menu-item', // 选项的类名
-  LockItemClassName: ' drag_resize-menu-item-lock', // 锁定选项的类名
-  LockTargetClassName: ' drag_resize-target-lock' // 锁定目标元素的类名
-}
+import { ClassName } from "../../style/className.ts";
 
 export const menuState: any = {
   isInsertAction: false,
@@ -24,9 +18,9 @@ function processActionStatus (target, actionDomList: HTMLElement[], isLock: bool
   for (const [index, action] of Object.entries(actionDomList)) {
     if (index === '0') continue // 锁定/解锁操作不需要被锁定
     if (isLock) {
-      action.className += classNames.LockItemClassName
+      action.className += ClassName.LockItemClassName
     } else {
-      action.className = action.className.replaceAll(classNames.LockItemClassName, '')
+      action.className = action.className.replaceAll(ClassName.LockItemClassName, '')
     }
   }
 }
@@ -74,7 +68,7 @@ export default class ContextMenu implements Plugin {
   getMenuBox () {
     if (!menuState.menuBox) {
       menuState.menuBox = document.createElement('div')
-      menuState.menuBox.className = classNames.ContainerClassName
+      menuState.menuBox.className = ClassName.ContainerClassName
       document.body.append(menuState.menuBox)
     }
     return menuState.menuBox
@@ -123,7 +117,7 @@ class Actions {
     }
 
     let actionElement = document.createElement('div')
-    actionElement.className = classNames.ItemClassName
+    actionElement.className = ClassName.ItemClassName
     actionElement.textContent = action.actionName
     actionElement.onclick = action.actionCallback.bind(action)
     return actionElement

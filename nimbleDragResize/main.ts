@@ -1,7 +1,7 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
 import NewContextMenu from './plugins/contextMenu/index.ts'
-import "./style/index.css"
+import "./style/index.scss"
 
 const imgSource = ref(null)
 // @ts-ignore

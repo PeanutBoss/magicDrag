@@ -76,7 +76,7 @@ export function insertAfter () {
 
 type SetStyle = {
   (target: HTMLElement, styleData: { [key: string]: string }): void
-  (target: HTMLElement, styleKey: string, styleValue: string): void
+  (target: HTMLElement, styleKey: string, styleValue: string | number): void
 }
 export const setStyle: SetStyle = (target: HTMLElement, styleKey: string | object, styleValue?: string) => {
   if (typeof styleKey === 'object') {
@@ -120,4 +120,12 @@ export function getObjectIntValue (object): any {
 
 export function appendChild (parent: HTMLElement, ...child: HTMLElement[]) {
 	parent.append(...child)
+}
+
+export function addClassName (element: HTMLElement, className: string) {
+  element.className += className
+}
+
+export function removeClassName (element: HTMLElement, className: string) {
+  element.className = element.className.replaceAll(className, '')
 }

@@ -1,6 +1,7 @@
-// 以目标元素的 dataIndex 作为key保存所有参数信息
+// 以目标元素的 dataset.index 作为key保存所有参数信息
 import { DragResizeOptions } from '../useDragResize.ts'
 import { Ref, watch } from 'vue'
+import {isNullOrUndefined} from "./tools.ts";
 
 let currentTarget = null
 
@@ -55,5 +56,16 @@ export function getCurrentTarget () {
 
 export function getCurrentParameter (): Parameter {
 	const target = getCurrentTarget()
-	return getParameter(target.dataIndex)
+	return getParameter(target.dataset.index)
+}
+
+export function getNotLockParameter (excludeIndex?):HTMLElement[] {
+  const notLockParameterList = []
+  for (const [index, parameter] of Object.entries(wholeParameter)) {
+    if (!isNullOrUndefined(excludeIndex) && excludeIndex == index) continue
+    if (!parameter.globalDataParameter.initialTarget.isLock) {
+      notLockParameterList.push(parameter)
+    }
+  }
+  return notLockParameterList.map((m: Parameter) => m.elementParameter.privateTarget)
 }

@@ -1,7 +1,9 @@
 import { updatePointPosition, showOrHideContourPoint } from '../../utils/dragResize.ts'
 import useDragResize from '../../useDragResize.ts'
-import ContextMenu, { menuState, classNames } from '../contextMenu/index.ts'
+import ContextMenu, { menuState } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
+import {ClassName, getTargetZIndex, TargetStatus} from "../../style/className.ts";
+import {setStyle} from "../../utils/tools.ts";
 
 function getScaleSize (originSize, ratio) {
 	return {
@@ -12,9 +14,11 @@ function getScaleSize (originSize, ratio) {
 
 function lockActionCallback (target, isLock: boolean) {
 		if (isLock) {
-			target.className += classNames.LockTargetClassName
+			target.className += ClassName.LockTargetClassName
+      setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Locked, target))
 		} else {
-			target.className = target.className.replace(classNames.LockTargetClassName, '')
+			target.className = target.className.replace(ClassName.LockTargetClassName, '')
+      setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
 		}
 }
 

@@ -1,8 +1,14 @@
-import { conditionExecute, EXECUTE_NEXT_TASK, setStyle, transferControl,
-	getObjectIntValue } from './tools.ts'
-import { reactive } from 'vue'
-import { getActionCallbacks, executeActionCallbacks } from '../plugins/contextMenu/actionMap.ts'
-import {getParameter, setCurrentTarget, getCurrentTarget, getCurrentParameter} from './parameter.ts'
+import {conditionExecute, EXECUTE_NEXT_TASK, getObjectIntValue, setStyle, transferControl} from './tools.ts'
+import {reactive} from 'vue'
+import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap.ts'
+import {
+  getCurrentParameter,
+  getCurrentTarget,
+  getNotLockParameter,
+  getParameter,
+  setCurrentTarget
+} from './parameter.ts'
+import {getTargetZIndex, TargetStatus} from "../style/className.ts";
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -188,8 +194,8 @@ interface InitPointOption {
 }
 // initializes the style of the contour points
 // 初始化轮廓点的样式
-export function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }: InitPointOption, pointDefaultStyle) {
-  setStyle(point, pointDefaultStyle)
+export function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }: InitPointOption, pointDefaultStyle?) {
+  pointDefaultStyle && setStyle(point, pointDefaultStyle)
   setStyle(point, 'width', pointSize + 'px')
   setStyle(point, 'height', pointSize + 'px')
   setStyle(point, 'cursor', pointPosition[direction][2])
@@ -220,9 +226,9 @@ function checkIsContains (target, pointElements, targetState, event) {
     stateParameter: { pointState },
     optionParameter: { pointSize },
 		elementParameter: { allContainer }
-  } = getParameter(target.dataIndex)
+  } = getParameter(target.dataset.index)
 
-	// 如果点击目标元素则隐藏轮廓点
+	// 如果点击目标元素是容器则隐藏轮廓点
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
 		showOrHideContourPoint(pointElements, false)
 	}
@@ -236,35 +242,36 @@ function checkIsContains (target, pointElements, targetState, event) {
 		showOrHideContourPoint(pointElements, false)
 	}
 
-  const blurElements = [target, ...Object.values(pointElements)]
-	// 如果目标元素不是轮廓点或目标元素，则隐藏轮廓点 TODO 因为前面做了对轮廓点做了处理，不需要这个条件分支了，这里页永远不会执行
-  if (!blurElements.includes(event.target)) {
-    // losing focus hides outline points
-    // 失焦时隐藏轮廓点
-    showOrHideContourPoint(pointElements, false)
-  } else {
-		// 设置当前选中的target
-		setCurrentTarget(target)
-		// 按下鼠标时更新轮廓点位置信息
-    const isContinue = executeActionCallbacks(mousedownActions, initialTarget, 'beforeCallback')
-    if (isContinue === false) return
+  // 设置当前选中的target
+  setCurrentTarget(target)
+  // 按下鼠标时更新轮廓点位置信息
+  const isContinue = executeActionCallbacks(mousedownActions, initialTarget, 'beforeCallback')
+  if (isContinue === false) return
 
-		const pointPosition = updatePointPosition(
-			target,
-			{ direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
-			{ initialTarget, pointElements, pointSize, pointState },
-			{ excludeCurPoint: false, updateDirection: false }
-		)
-		// 更新downPointPosition
-    for (const pointKey in pointPosition) {
-      downPointPosition[pointKey] = [pointPosition[pointKey][0], pointPosition[pointKey][1]]
-    }
+  const pointPosition = updatePointPosition(
+    target,
+    { direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
+    { initialTarget, pointElements, pointSize, pointState },
+    { excludeCurPoint: false, updateDirection: false }
+  )
+  // 更新downPointPosition
+  for (const pointKey in pointPosition) {
+    downPointPosition[pointKey] = [pointPosition[pointKey][0], pointPosition[pointKey][1]]
+  }
 
-    // outline points are displayed when in focus
-    // 聚焦时将显示轮廓点
-    showOrHideContourPoint(pointElements, true)
-		executeActionCallbacks(mousedownActions, initialTarget, 'afterCallback')
-	}
+  // outline points are displayed when in focus
+  // 聚焦时将显示轮廓点
+  showOrHideContourPoint(pointElements, true)
+  // 设置选中元素的层级
+  setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
+  // 获取没有锁定的元素
+  const notLockTargetList = getNotLockParameter(target.dataset.index)
+  // 设置为正常状态
+  for (const notLockTarget of notLockTargetList) {
+    setStyle(notLockTarget, 'zIndex', getTargetZIndex(TargetStatus.Normal, notLockTarget))
+  }
+
+  executeActionCallbacks(mousedownActions, initialTarget, 'afterCallback')
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
@@ -426,7 +433,7 @@ export function movePointCallback (stateParameter, elementParameter, globalParam
     stateParameter: { targetState, pointState },
     optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
     elementParameter: { pointElements }
-  } = getParameter(target.dataIndex)
+  } = getParameter(target.dataset.index)
 
 	const isContinue = executeActionCallbacks(resizeActions, initialTarget, 'beforeCallback')
 	if (isContinue === false) return
