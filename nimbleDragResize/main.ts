@@ -1,6 +1,6 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useDragResize from './useDragResize.ts'
-import NewContextMenu from './plugins/contextMenu/index.ts'
+import ContextMenu from './plugins/contextMenu/index.ts'
 import "./style/index.scss"
 
 const imgSource = ref(null)
@@ -48,17 +48,13 @@ const App = {
           //   pressShift && moveAction()
           // }
         },
-        customClass: {}
+        customClass: {},
+        contextMenuOption: {}
       },
-      [
-        new NewContextMenu(
-        ['lock', 'copy', 'delete', 'blowUp', 'reduce'],
-        {}
-        )
-      ]
+      []
     )
 
-    const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [new NewContextMenu()])
+    const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [])
 
     // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {

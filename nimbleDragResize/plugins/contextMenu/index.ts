@@ -26,8 +26,9 @@ function processActionStatus (target, actionDomList: HTMLElement[], isLock: bool
   }
 }
 
-type actionKey = 'lock' | 'blowUp' | 'reduce' | 'copy' | 'delete'
-type DefaultContextMenuOptions = {
+export type ActionKey = 'lock' | 'blowUp' | 'reduce' | 'copy' | 'delete' | 'rotate'
+
+export type DefaultContextMenuOptions = {
   offsetX?: number
   offsetY?: number
   lockTargetClassName?: string
@@ -48,13 +49,8 @@ const defaultContextMenuOptions: DefaultContextMenuOptions = {
 export default class ContextMenu implements Plugin {
   name
   private actions
-  private options
-  constructor(
-    private actionList: actionKey[] = Object.keys(actionMap) as actionKey[],
-    options = defaultContextMenuOptions
-  ) {
+  constructor(private actionList, private options) {
     this.name = 'ContextMenu'
-    this.options = mergeObject(defaultContextMenuOptions, options)
     this.getMenuBox()
     this.bindHidden = this.hiddenMenu.bind(this)
     this.bindContextCallback = this.contextCallback.bind(this)

@@ -4,11 +4,13 @@ import {
   blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
 } from './utils/dragResize.ts'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins/index.ts'
+import {ElementParameter, setParameter} from './utils/parameter.ts'
+import { ClassName, MAGIC_DRAG } from './style/className.ts'
 import type { Direction } from './utils/dragResize.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
-import {ElementParameter, setParameter} from './utils/parameter.ts'
-import { ClassName, MAGIC_DRAG } from './style/className.ts'
+import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index.ts'
+import {actionMap} from "./plugins/contextMenu/actionMap.ts";
 
 /*
 * TODO window触发resize的时候需要更新containerInfo
@@ -33,6 +35,7 @@ export interface DragResizeOptions {
   skill?: {
     resize?: boolean
     drag?: boolean
+    contextMenu?: boolean
     limitRatio?: [number, number]
     limitDragDirection?: 'X' | 'Y' | null
   }
@@ -43,6 +46,8 @@ export interface DragResizeOptions {
   customClass?: {
     customPointClass?: string
   }
+  contextMenuOption?: DefaultContextMenuOptions
+  actionList?: ActionKey[]
   plugins?: Plugin[]
 }
 // default configuration
@@ -58,8 +63,18 @@ const defaultOptions: DragResizeOptions = {
   skill: {
     resize: true, // whether the size adjustment is supported - 是否支持大小调整
     drag: true, // whether to support dragging - 是否支持拖动
+    contextMenu: true,
     limitDragDirection: null // restricted direction of movement - 限制移动方向
   },
+  contextMenuOption: {
+    offsetX: 20,
+    offsetY: 20,
+    lockTargetClassName: ClassName.LockTargetClassName,
+    containerClassName: ClassName.ContainerClassName,
+    itemClassName: ClassName.ItemClassName,
+    lockItemClassName: ClassName.LockItemClassName
+  },
+  actionList: Object.keys(actionMap) as ActionKey[],
   customClass: {
     customPointClass: ClassName.OutlinePoint,
   },
@@ -243,12 +258,14 @@ export default function useDragResize (
 
   options = mergeObject(defaultOptions, options)
 
-  const { drag, resize } = options.skill
+  const { contextMenuOption, actionList } = options
+  const { drag, resize, contextMenu } = options.skill
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)
+  contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
 
   plugins = duplicateRemovalPlugin(plugins)
 
