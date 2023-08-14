@@ -382,8 +382,21 @@ function whetherUpdateState (direction, targetState, newState) {
 	}
 }
 
-// update the coordinate information of contour points
-// 更新轮廓点坐标信息
+/**
+ * @description drag an outline point to resize it, update coordinate information of outline points synchronously
+ * @desc 拖拽某个轮廓点调整大小时，同步更新轮廓点的坐标信息
+ * @param target 参考元素
+ * @param direction 调整大小时按下的轮廓点
+ * @param movementX 按下的轮廓点水平方向移动的距离
+ * @param movementY 按下的轮廓点竖直方向移动的距离
+ * @param initialTarget 参考元素在调整大小前的尺寸和坐标信息
+ * @param pointElements 所有的轮廓点
+ * @param pointSize 轮廓点的大小
+ * @param pointState 轮廓点的状态
+ * @param updateOption { excludeCurPoint: boolean, updateDirection: boolean } 更新的配置项
+ * excludeCurPoint: 是否排除当前轮廓点（例如按下左下角轮廓点调整大小时，其他轮廓点的坐标是根据这个轮廓点的移动信息更新的，因此不需要更新这个轮廓点的坐标）
+ * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
+ */
 export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = createParamStrategies()

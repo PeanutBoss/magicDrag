@@ -1,4 +1,4 @@
-import { updatePointPosition, showOrHideContourPoint } from '../../utils/magicDrag.ts'
+import {updatePointPosition, showOrHideContourPoint, setPosition} from '../../utils/magicDrag.ts'
 import useMagicDrag from '../../useMagicDrag.ts'
 import ContextMenu, { menuState } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
@@ -184,8 +184,18 @@ export const actionMap: ActionMap = {
 		actionName: '旋转',
 		actionDom: null,
 		actionCallback(event) {
-			const { elementParameter: { privateTarget } } = getCurrentParameter()
-			privateTarget.style.transform = 'rotate(45deg)'
+			const { elementParameter: { privateTarget, pointElements }, globalDataParameter: { initialTarget, downPointPosition } } = getCurrentParameter()
+			const rotate = 90
+			privateTarget.style.transform = `rotate(${rotate}deg)`
+
+			const newPosition = getRelativeToTheCenterPoint(initialTarget, downPointPosition)
+
+			// 旋转的角度，以弧度为单位
+			const angleInRadians = (rotate * Math.PI) / 180
+			for (const direction in newPosition) {
+				newPosition[direction] = rotatePoint(newPosition[direction], angleInRadians, initialTarget)
+				setStyle(pointElements[direction], { left: newPosition[direction][0], top: newPosition[direction][1] })
+			}
 		}
 	}
 }
@@ -217,3 +227,47 @@ export function executeActionCallbacks (actionData, targetState, type: 'beforeCa
 	return isContinue
 }
 
+
+function rotatePoint(point, angle, { width, height, left, top }) {
+	const centerX = width / 2 + left
+	const centerY = height / 2 + top
+	const x = point[0] - centerX;
+	const y = point[1] - centerY;
+	const rotatedX = x * Math.cos(angle) - y * Math.sin(angle);
+	const rotatedY = x * Math.sin(angle) + y * Math.cos(angle);
+	return [rotatedX + centerX, rotatedY + centerY];
+}
+function getRelativeToTheCenterPoint ({ width, height, left, top }, position) {
+	const newPosition = {}
+	for (const direction in position) {
+		newPosition[direction] = relativeCenterPosition[direction](position['lt'], { width, height })
+	}
+	return newPosition
+}
+
+const relativeCenterPosition = {
+	lt ([x, y], { width, height }) {
+		return [x, y]
+	},
+	rt ([x, y], { width, height }) {
+		return [x + width, y]
+	},
+	lb ([x, y], { width, height }) {
+		return [x, y + height]
+	},
+	rb ([x, y], { width, height }) {
+		return [x + width, y + height]
+	},
+	l ([x, y], { width, height }) {
+		return [x, y + height / 2]
+	},
+	t ([x, y], { width, height }) {
+		return [x + width / 2, y]
+	},
+	r ([x, y], { width, height }) {
+		return [x + width, y + height / 2]
+	},
+	b ([x, y], { width, height }) {
+		return [x + width / 2, y + height]
+	}
+}
