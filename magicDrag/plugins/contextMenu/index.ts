@@ -76,7 +76,7 @@ export default class ContextMenu implements Plugin {
     event.preventDefault()
     const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
     const lockDom = this.actions.findActionDom('lock')
-    lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定'
+    lockDom && (lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定')
 
     processActionStatus(privateTarget, menuState.actionElementList, initialTarget.isLock, this.options.lockItemClassName)
     this.showMenu(true, { left: event.pageX, top: event.pageY })

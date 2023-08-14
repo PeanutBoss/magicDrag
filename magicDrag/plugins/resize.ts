@@ -7,7 +7,7 @@ import {
   initPointStyle,
   Direction,
   movePointCallback
-} from '../utils/dragResize.ts'
+} from '../utils/magicDrag.ts'
 import { watch } from 'vue'
 
 const pointDefaultStyle: { [key: string]: string } = {

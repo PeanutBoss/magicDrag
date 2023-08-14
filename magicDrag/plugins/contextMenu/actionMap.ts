@@ -1,5 +1,5 @@
-import { updatePointPosition, showOrHideContourPoint } from '../../utils/dragResize.ts'
-import useDragResize from '../../useDragResize.ts'
+import { updatePointPosition, showOrHideContourPoint } from '../../utils/magicDrag.ts'
+import useMagicDrag from '../../useMagicDrag.ts'
 import ContextMenu, { menuState } from '../contextMenu/index.ts'
 import { getCurrentParameter } from '../../utils/parameter.ts'
 import {getTargetZIndex, TargetStatus} from "../../style/className.ts";
@@ -161,7 +161,7 @@ export const actionMap: ActionMap = {
 			copyTarget.style.left = initialTarget.left + options.offsetX + 'px'
 			copyTarget.style.top = initialTarget.top + options.offsetY + 'px'
 			parent.appendChild(copyTarget)
-			useDragResize(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(actionList, options)])
+			useMagicDrag(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(actionList, options)])
 		}
 	},
 	delete: {

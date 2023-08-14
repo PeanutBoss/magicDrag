@@ -1,6 +1,6 @@
 import { Plugin } from './index.ts'
 import useMovePoint from '../useMovePoint.ts'
-import { moveTargetCallback, updateInitialTarget } from '../utils/dragResize.ts'
+import { moveTargetCallback, updateInitialTarget } from '../utils/magicDrag.ts'
 import { watch } from 'vue'
 import {setStyle} from '../utils/tools.ts'
 

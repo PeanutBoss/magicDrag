@@ -1,12 +1,19 @@
 import { onBeforeUnmount, Ref, reactive, toRef, nextTick, ref } from 'vue'
-import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools.ts'
+import {
+  getElement,
+  mergeObject,
+  removeElements,
+  baseErrorTips,
+  checkParameterType,
+  baseWarnTips
+} from './utils/tools.ts'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
-} from './utils/dragResize.ts'
+} from './utils/magicDrag.ts'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins/index.ts'
 import {ElementParameter, setParameter} from './utils/parameter.ts'
 import { ClassName, MAGIC_DRAG } from './style/className.ts'
-import type { Direction } from './utils/dragResize.ts'
+import type { Direction } from './utils/magicDrag.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
 import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index.ts'
@@ -15,10 +22,10 @@ import {actionMap} from "./plugins/contextMenu/actionMap.ts";
 /*
 * TODO
 *  1.window触发resize的时候需要更新containerInfo
-*  2.useDragResize使用时需要创建，否则会有参数冲突问题
+*  2.useMagicDrag使用时需要创建，否则会有参数冲突问题
 * */
 
-export interface DragResizeOptions {
+export interface MagicDragOptions {
   containerSelector: string
   minWidth?: number
   minHeight?: number
@@ -54,7 +61,7 @@ export interface DragResizeOptions {
 }
 // default configuration
 // 默认配置
-const defaultOptions: DragResizeOptions = {
+const defaultOptions: MagicDragOptions = {
   containerSelector: 'body',
   minWidth: 100, // minimum width - 最小宽度
   minHeight: 100, // minimum height - 最小高度
@@ -86,7 +93,7 @@ const defaultOptions: DragResizeOptions = {
 const allTarget: HTMLElement[] = []
 const allContainer: HTMLElement[] = []
 
-interface DragResizeState {
+interface MagicDragState {
   targetLeft: Ref<number>
   targetTop: Ref<number>
   targetWidth: Ref<number>
@@ -143,11 +150,11 @@ function initGlobalData () {
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
 }
 
-function useDragResizeAPI (
+function useMagicDragAPI (
   targetSelector: string | HTMLElement,
-  options?: DragResizeOptions,
+  options?: MagicDragOptions,
   plugins?: Plugin[]
-): DragResizeState {
+): MagicDragState {
   const { containerSelector } = options
 
   initGlobalData()
@@ -246,10 +253,10 @@ function useDragResizeAPI (
   }
 }
 
-export default function useDragResize (
+export default function useMagicDrag (
   targetSelector: string | HTMLElement,
-  options?: DragResizeOptions,
-  plugins?: Plugin[]
+  options?: MagicDragOptions,
+  plugins: Plugin[] = []
 ) {
   // check whether targetSelector is a selector or an HTMLElement
   // 检查 targetSelector 是否为选择器或 HTMLElement
@@ -257,9 +264,7 @@ export default function useDragResize (
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
   checkParameterType(defaultOptions, options)
-
   options = mergeObject(defaultOptions, options)
-
   const { contextMenuOption, actionList } = options
   const { drag, resize, contextMenu } = options.skill
   const { customPointClass } = options.customClass
@@ -267,13 +272,25 @@ export default function useDragResize (
 
   drag && plugins.push(Drag)
   resize && plugins.push(Resize)
-  contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
+  baseWarnTips(actionList.length === 0, 'check that the actionList is empty and the use of ContextMenu is cancelled')
+  actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
 
   plugins = duplicateRemovalPlugin(plugins)
 
-  return useDragResizeAPI(
+  return useMagicDragAPI(
     targetSelector,
     options,
     plugins
   )
+}
+
+export function getUseMagicDrag (options: MagicDragOptions, plugins: Plugin[] = []) {
+  /*
+  targetSelector: string | HTMLElement,
+  options?: MagicDragOptions,
+  plugins?: Plugin[]
+  */
+  return (targetSelector) => {
+    return useMagicDrag(targetSelector, options, plugins)
+  }
 }

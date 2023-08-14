@@ -2,7 +2,7 @@ const htmlPlugin = require('html-webpack-plugin')
 const path = require('path')
 
 module.exports = {
-  entry: path.resolve(__dirname, '../nimbleDragResize/main.ts'),
+  entry: path.resolve(__dirname, '../magicDrag/main.ts'),
   output: {
     path: path.resolve(__dirname, '../nimbleDist'),
     clean: true
@@ -39,8 +39,8 @@ module.exports = {
   },
   plugins: [
     new htmlPlugin({
-      template: path.resolve(__dirname, '../nimbleDragResize/template.html'),
-      favicon: path.resolve(__dirname, '../nimbleDragResize/assets/favicon.ico'),
+      template: path.resolve(__dirname, '../magicDrag/template.html'),
+      favicon: path.resolve(__dirname, '../magicDrag/assets/favicon.ico'),
       inject: 'head' // 将css插入head标签
     })
   ],

@@ -1,5 +1,5 @@
 // 以目标元素的 dataset.index 作为key保存所有参数信息
-import { DragResizeOptions } from '../useDragResize.ts'
+import {MagicDragOptions} from '../useMagicDrag.ts'
 import { Ref, watch } from 'vue'
 import {isNullOrUndefined} from "./tools.ts";
 
@@ -29,7 +29,7 @@ export type Parameter = {
 	elementParameter: ElementParameter
 	stateParameter: StateParameter
 	globalDataParameter: GlobalDataParameter
-	optionParameter: DragResizeOptions
+	optionParameter: MagicDragOptions
 }
 
 type WholeParameter = {

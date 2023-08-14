@@ -1,4 +1,4 @@
-## DragResize
+## MagicResize
 
 ### useMovePoint
 
@@ -33,7 +33,7 @@ _接受一个dom元素或一个选择器（selector）使其可拖拽，接受�
  - left/top：鼠标在selector元素上按下时元素的坐标
  - preStartX/Y：鼠标在selector元素上按下时元素的坐标
 
-### useDragResize
+### useMagicDrag
 
 _接受一个元素/选择器作为参数，使其可以被拖拽放大缩小_
 

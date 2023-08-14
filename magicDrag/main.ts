@@ -1,6 +1,5 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
-import useDragResize from './useDragResize.ts'
-import ContextMenu from './plugins/contextMenu/index.ts'
+import useMagicDrag from './useMagicDrag.ts'
 import "./style/index.scss"
 
 const imgSource = ref(null)
@@ -34,7 +33,7 @@ const App = {
     window.addEventListener('keyup', () => {
       pressShift = false
     })
-    const state = useDragResize(
+    const state = useMagicDrag(
       '.box',
       {
         minHeight: 200,
@@ -50,13 +49,12 @@ const App = {
         },
         customClass: {},
         contextMenuOption: {}
-      },
-      []
+      }
     )
 
-    const targetCoordinate: any = useDragResize('.box1', { containerSelector: '.wrap' }, [])
+    useMagicDrag('.box1', { containerSelector: '.wrap' })
 
-    // useDragResize('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
+    // useMagicDrag('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
       state,
       imgSource

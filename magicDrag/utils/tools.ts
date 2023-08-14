@@ -34,7 +34,7 @@ export function mergeObject (target, source) {
 			mergedObject[key] = originVal :
 			mergedObject[key] = curVal
 
-		if (typeof curVal === 'object' && !(curVal instanceof HTMLElement)) {
+		if (typeof curVal === 'object' && !(curVal instanceof HTMLElement) && !Array.isArray(curVal)) {
 			mergedObject[key] = mergeObject(originVal, curVal)
 		}
 	}
@@ -58,6 +58,12 @@ export function removeElements (elements: HTMLElement[]) {
 export function baseErrorTips (condition, msg) {
 	if (condition) {
 		throw Error(msg)
+	}
+}
+
+export function baseWarnTips (condition, msg) {
+	if (condition) {
+		console.warn(msg)
 	}
 }
 
