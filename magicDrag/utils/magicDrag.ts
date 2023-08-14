@@ -48,6 +48,7 @@ export function createCoordinateStrategies () {
 	All_DIRECTION.forEach(direction => {
 		const { hasT, hasR, hasB, hasL } = getDirectionDescription(direction)
 		strategies[direction] = ({ left, top, height, width, offsetX, offsetY }) => {
+      // TODO 如果目标元素旋转了，在这里要对 offsetX/offsetY进行处理
 			return {
 				left: conditionExecute(hasL, left + offsetX + 'px', left + 'px'),
 				top: conditionExecute(hasT, top + offsetY + 'px', top + 'px'),
@@ -110,6 +111,7 @@ const limitBoundaryTasks = {
 export function createResizeLimitStrategies ({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo }) {
 	const strategies = {}
 	const leftTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
+    // TODO 如果目标元素旋转了，需要对 movementX movementY 进行处理
 		limitSizeTasks.left({ movementX, limitMinDistanceX, limitMaxDistanceX })
 		limitBoundaryTasks.left({ movementX, initialTarget })
 	}
@@ -407,6 +409,10 @@ export function updatePointPosition (target, { direction, movementX, movementY }
   // set the position of the contour points based on the new coordinates and dimension information
   // 根据新的坐标和尺寸信息设置轮廓点的位置
   const pointPosition = createParentPosition(coordinate, pointSize)
+
+  // TODO 如果目标元素旋转了在这里根据pointPosition获取旋转后的position信息
+  console.log({ ...pointPosition }, 'pointPosition')
+
   for (const innerDirection in pointPosition) {
     // there is no need to update the current drag point
     // 不需要更新当前拖拽的点
@@ -437,7 +443,6 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
   // 调整目标大小时限制最小尺寸的策略
   const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
-	return EXECUTE_NEXT_TASK
 }
 // a callback function that moves contour points - 移动轮廓点的回调函数
 export function movePointCallback (stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
