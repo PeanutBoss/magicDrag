@@ -1,9 +1,9 @@
-import {updatePointPosition, showOrHideContourPoint, setPosition} from '../../utils/magicDrag.ts'
+import {showOrHideContourPoint, updatePointPosition} from '../../utils/magicDrag.ts'
 import useMagicDrag from '../../useMagicDrag.ts'
-import ContextMenu, { menuState } from '../contextMenu/index.ts'
-import { getCurrentParameter } from '../../utils/parameter.ts'
+import ContextMenu, {menuState} from '../contextMenu/index.ts'
+import {getCurrentParameter, getNotLockParameter} from '../../utils/parameter.ts'
 import {getTargetZIndex, TargetStatus} from "../../style/className.ts";
-import {setStyle, addClassName, removeClassName} from "../../utils/tools.ts";
+import {addClassName, removeClassName, setStyle} from "../../utils/tools.ts";
 
 function getScaleSize (originSize, ratio) {
 	return {
@@ -28,20 +28,21 @@ export interface ActionDescribe {
 	name: string
 	actionDom: HTMLElement | null
 	actionName: string
+	customData?: Record<any, any>
 	actionCallback (event): void
   getMenuContextParameter? (...rest: any[]): any
 	// 最好显式的返回一个布尔值
 	dragCallbacks?: {
 		beforeCallback? (targetState): boolean
-		afterCallback? (targetState): boolean
+		afterCallback? (targetState): void
 	}
 	resizeCallbacks?: {
 		beforeCallback? (targetState): boolean
-		afterCallback? (targetState): boolean
+		afterCallback? (targetState): void
 	}
 	mousedownCallbacks?: {
 		beforeCallback? (targetState): boolean
-		afterCallback? (targetState): boolean
+		afterCallback? (targetState): void
 	}
 	[key: string]: any
 }
@@ -161,6 +162,7 @@ export const actionMap: ActionMap = {
 			copyTarget.style.left = initialTarget.left + options.offsetX + 'px'
 			copyTarget.style.top = initialTarget.top + options.offsetY + 'px'
 			parent.appendChild(copyTarget)
+			// TODO 复制目标元素后，需要将target设置为新复制的元素
 			useMagicDrag(`.${newClassName}`, { containerSelector: '.wrap' }, [new ContextMenu(actionList, options)])
 		}
 	},
@@ -185,20 +187,37 @@ export const actionMap: ActionMap = {
 		actionDom: null,
 		actionCallback(event) {
 			const { elementParameter: { privateTarget, pointElements }, globalDataParameter: { initialTarget, downPointPosition } } = getCurrentParameter()
-			const rotate = 90
+			const rotate = 45
+			initialTarget.rotate = 45
 			privateTarget.style.transform = `rotate(${rotate}deg)`
 
-			const newPosition = getRelativeToTheCenterPoint(initialTarget, downPointPosition)
-
-			// 旋转的角度，以弧度为单位
-			const angleInRadians = (rotate * Math.PI) / 180
-			for (const direction in newPosition) {
-				newPosition[direction] = rotatePoint(newPosition[direction], angleInRadians, initialTarget)
-				setStyle(pointElements[direction], { left: newPosition[direction][0], top: newPosition[direction][1] })
+			updatePostRotateOutlinePoint( { initialTarget, downPointPosition }, { pointElements }, { rotate, updateStyle: true })
+		}
+	},
+	uppermost: {
+		name: 'uppermost',
+		actionName: '置顶',
+		actionDom: null,
+		customData: { index: 0 },
+		actionCallback() {
+			const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
+			setStyle(privateTarget, 'zIndex', getTargetZIndex(TargetStatus.Uppermost, privateTarget) + ++this.customData.index)
+			initialTarget.zIndex = TargetStatus.Uppermost + this.customData.index
+		},
+		mousedownCallbacks: {
+			afterCallback(targetState) {
+				const { elementParameter: { privateTarget } } = getCurrentParameter()
+				// 获取没有锁定的元素
+				const notLockTargetList = getNotLockParameter(privateTarget.dataset.index)
+				// 设置为正常状态
+				for (const notLockTarget of notLockTargetList) {
+					setStyle(notLockTarget.target, 'zIndex', notLockTarget.zIndex || getTargetZIndex(TargetStatus.Normal, notLockTarget.target))
+				}
 			}
 		}
 	}
 }
+
 export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 'mousedownCallbacks') {
 	const actions = []
 	for (const [_, describe]  of Object.entries(actionMap)) {
@@ -227,6 +246,17 @@ export function executeActionCallbacks (actionData, targetState, type: 'beforeCa
 	return isContinue
 }
 
+export function updatePostRotateOutlinePoint ({ initialTarget, downPointPosition }, { pointElements }, { rotate, updateStyle = false }) {
+	// 元素是以自身中心点为参考点旋转的，因此轮廓点也是以这个中心点旋转，获取以中心点坐标为参考点的所有点的相对坐标
+	const relativePoint = getRelativeToTheCenterPoint(initialTarget, downPointPosition)
+	// 旋转的角度，以弧度为单位
+	const angleInRadians = (rotate * Math.PI) / 180
+	for (const direction in relativePoint) {
+		relativePoint[direction] = rotatePoint(relativePoint[direction], angleInRadians, initialTarget)
+		updateStyle && setStyle(pointElements[direction], { left: relativePoint[direction][0], top: relativePoint[direction][1] })
+	}
+	return relativePoint
+}
 
 function rotatePoint(point, angle, { width, height, left, top }) {
 	const centerX = width / 2 + left
@@ -238,11 +268,11 @@ function rotatePoint(point, angle, { width, height, left, top }) {
 	return [rotatedX + centerX, rotatedY + centerY];
 }
 function getRelativeToTheCenterPoint ({ width, height, left, top }, position) {
-	const newPosition = {}
+	const relativePoint = {}
 	for (const direction in position) {
-		newPosition[direction] = relativeCenterPosition[direction](position['lt'], { width, height })
+		relativePoint[direction] = relativeCenterPosition[direction](position['lt'], { width, height })
 	}
-	return newPosition
+	return relativePoint
 }
 
 const relativeCenterPosition = {

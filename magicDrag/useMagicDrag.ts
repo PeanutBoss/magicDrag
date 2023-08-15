@@ -32,7 +32,6 @@ export interface MagicDragOptions {
   maxWidth?: number
   maxHeight?: number
   pointSize?: number
-  pageHasScrollBar?: boolean
   containerRange?: {
     left?: number
     top?: number
@@ -68,7 +67,7 @@ const defaultOptions: MagicDragOptions = {
   maxWidth: 100000, // 最大宽度
   maxHeight: 100000, // 最大高度
   pointSize: 10, // the size of the contour point - 轮廓点的大小
-  pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
+  // pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
   skill: {
     resize: true, // whether the size adjustment is supported - 是否支持大小调整
     drag: true, // whether to support dragging - 是否支持拖动
@@ -76,16 +75,16 @@ const defaultOptions: MagicDragOptions = {
     limitDragDirection: null // restricted direction of movement - 限制移动方向
   },
   contextMenuOption: {
-    offsetX: 20,
-    offsetY: 20,
-    lockTargetClassName: ClassName.LockTargetClassName,
-    containerClassName: ClassName.ContainerClassName,
-    itemClassName: ClassName.ItemClassName,
-    lockItemClassName: ClassName.LockItemClassName
+    offsetX: 20, // 复制的新元素的X轴偏移量
+    offsetY: 20, // 复制的新元素的Y轴偏移量
+    lockTargetClassName: ClassName.LockTargetClassName, // 目标元素锁定的类名
+    containerClassName: ClassName.ContainerClassName, // menuContext容器的类名
+    itemClassName: ClassName.ItemClassName, // menuContext选项的类名
+    lockItemClassName: ClassName.LockItemClassName // 锁定目标元素后menuContext选项的类名
   },
   actionList: Object.keys(actionMap) as ActionKey[],
   customClass: {
-    customPointClass: ClassName.OutlinePoint,
+    customPointClass: ClassName.OutlinePoint, // 自定义轮廓点的类名
   },
   callbacks: {}
 }
@@ -286,9 +285,9 @@ export default function useMagicDrag (
 
 export function getUseMagicDrag (options: MagicDragOptions, plugins: Plugin[] = []) {
   /*
-  targetSelector: string | HTMLElement,
-  options?: MagicDragOptions,
-  plugins?: Plugin[]
+    targetSelector: string | HTMLElement,
+    options?: MagicDragOptions,
+    plugins?: Plugin[]
   */
   return (targetSelector) => {
     return useMagicDrag(targetSelector, options, plugins)

@@ -1,6 +1,6 @@
 import {conditionExecute, EXECUTE_NEXT_TASK, getObjectIntValue, setStyle, transferControl} from './tools.ts'
 import {reactive} from 'vue'
-import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap.ts'
+import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap.ts'
 import {
   getCurrentParameter,
   getCurrentTarget,
@@ -224,17 +224,17 @@ export function showOrHideContourPoint (pointElements, isShow) {
 function checkIsContains (target, pointElements, targetState, event) {
 
   const {
-    globalDataParameter: { initialTarget, downPointPosition, containerInfo },
+    globalDataParameter: { initialTarget, downPointPosition },
     stateParameter: { pointState },
     optionParameter: { pointSize },
-		elementParameter: { allContainer, target: $target }
+		elementParameter: { allContainer, target: $target, privateTarget }
   } = getParameter(target.dataset.index)
 
 	// 如果点击目标元素是容器则隐藏轮廓点
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
 		showOrHideContourPoint(pointElements, false)
-    // 隐藏轮廓点时让对应的元素的层级回复到正常状态（因为锁定状态不能被选中，所以不需要判断锁定的状态）
-    setStyle($target.value, 'zIndex', getTargetZIndex(TargetStatus.Normal, $target.value))
+    // 隐藏轮廓点时让当前选中的元素的层级恢复到正常状态（因为锁定状态不能被选中，所以不需要判断锁定的状态）
+		privateTarget === $target.value && setStyle($target.value, 'zIndex', initialTarget.zIndex || getTargetZIndex(TargetStatus.Normal, $target.value))
 	}
 
 	// 每注册一个元素，window就多绑定一个事件，点击时也会触发window绑定的其他元素对应的mousedown事件，
@@ -268,14 +268,9 @@ function checkIsContains (target, pointElements, targetState, event) {
   showOrHideContourPoint(pointElements, true)
   // 设置选中元素的层级
   setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
-  // 获取没有锁定的元素
-  const notLockTargetList = getNotLockParameter(target.dataset.index)
-  // 设置为正常状态
-  for (const notLockTarget of notLockTargetList) {
-    setStyle(notLockTarget, 'zIndex', getTargetZIndex(TargetStatus.Normal, notLockTarget))
-  }
 
   executeActionCallbacks(mousedownActions, initialTarget, 'afterCallback')
+	console.log('checkEnd')
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
@@ -410,8 +405,8 @@ export function updatePointPosition (target, { direction, movementX, movementY }
   // 根据新的坐标和尺寸信息设置轮廓点的位置
   const pointPosition = createParentPosition(coordinate, pointSize)
 
-  // TODO 如果目标元素旋转了在这里根据pointPosition获取旋转后的position信息
-  console.log({ ...pointPosition }, 'pointPosition')
+  // TODO 如果目标元素旋转了
+	// pointPosition = updatePostRotateOutlinePoint({ initialTarget, downPointPosition: pointPosition }, { pointElements }, { rotate: initialTarget.rotate }) as PointPosition
 
   for (const innerDirection in pointPosition) {
     // there is no need to update the current drag point
@@ -507,9 +502,12 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
     height: 0,
     originWidth: 0,
     originHeight: 0,
-		isLock: false
+		isLock: false,
+		rotate: 0,
+		zIndex: null
   })
 }
+
 export function initTargetStyle (target) {
   // ensure element absolute positioning
   // 确保元素绝对定位

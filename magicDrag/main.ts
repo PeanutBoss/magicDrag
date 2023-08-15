@@ -40,7 +40,7 @@ const App = {
         minWidth: 300,
         // maxWidth: 600,
         // maxHeight: 400,
-        pageHasScrollBar: true,
+        // pageHasScrollBar: true,
         containerSelector: 'body',
         callbacks: {
           // dragCallback (moveAction) {

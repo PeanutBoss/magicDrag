@@ -14,9 +14,11 @@ export const ClassName = {
 }
 
 export enum TargetStatus {
-  Normal = 66666,
+  Normal = 55555,
   Checked = 77777,
-  Locked = 55555
+  Locked = 44444,
+  Uppermost = 66666,
+  lowermost = 33333
 }
 type StatusType = TargetStatus.Normal| TargetStatus.Checked | TargetStatus.Locked
 

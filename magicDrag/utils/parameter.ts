@@ -59,7 +59,7 @@ export function getCurrentParameter (): Parameter {
 	return getParameter(target.dataset.index)
 }
 
-export function getNotLockParameter (excludeIndex?):HTMLElement[] {
+export function getNotLockParameter (excludeIndex?):{ target: HTMLElement, zIndex: number }[] {
   const notLockParameterList = []
   for (const [index, parameter] of Object.entries(wholeParameter)) {
     if (!isNullOrUndefined(excludeIndex) && excludeIndex == index) continue
@@ -67,5 +67,5 @@ export function getNotLockParameter (excludeIndex?):HTMLElement[] {
       notLockParameterList.push(parameter)
     }
   }
-  return notLockParameterList.map((m: Parameter) => m.elementParameter.privateTarget)
+  return notLockParameterList.map((m: Parameter) => ({ target: m.elementParameter.privateTarget, zIndex: m.globalDataParameter.initialTarget.zIndex }))
 }
