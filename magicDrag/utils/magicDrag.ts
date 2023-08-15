@@ -270,7 +270,6 @@ function checkIsContains (target, pointElements, targetState, event) {
   setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
 
   executeActionCallbacks(mousedownActions, initialTarget, 'afterCallback')
-	console.log('checkEnd')
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示

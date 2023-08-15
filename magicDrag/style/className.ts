@@ -18,7 +18,7 @@ export enum TargetStatus {
   Checked = 77777,
   Locked = 44444,
   Uppermost = 66666,
-  lowermost = 33333
+  Lowest = 33333
 }
 type StatusType = TargetStatus.Normal| TargetStatus.Checked | TargetStatus.Locked
 

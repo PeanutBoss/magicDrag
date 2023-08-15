@@ -204,8 +204,20 @@ export const actionMap: ActionMap = {
 			setStyle(privateTarget, 'zIndex', getTargetZIndex(TargetStatus.Uppermost, privateTarget) + ++this.customData.index)
 			initialTarget.zIndex = TargetStatus.Uppermost + this.customData.index
 		},
+		mousedownCallbacks: {}
+	},
+	lowest: {
+		name: 'lowest',
+		actionName: '置底',
+		actionDom: null,
+		customData: { index: 0 },
+		actionCallback() {
+			const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
+			setStyle(privateTarget, 'zIndex', getTargetZIndex(TargetStatus.Lowest, privateTarget) - ++this.customData.index)
+			initialTarget.zIndex = TargetStatus.Lowest - this.customData.index
+		},
 		mousedownCallbacks: {
-			afterCallback(targetState) {
+			afterCallback() {
 				const { elementParameter: { privateTarget } } = getCurrentParameter()
 				// 获取没有锁定的元素
 				const notLockTargetList = getNotLockParameter(privateTarget.dataset.index)
