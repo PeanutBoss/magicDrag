@@ -9,6 +9,9 @@ import {
   setCurrentTarget
 } from './parameter.ts'
 import {getTargetZIndex, TargetStatus} from "../style/className.ts";
+import { RefLine } from '../plugins/refline.ts'
+
+const refLine = new RefLine({})
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -294,7 +297,10 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 }
 export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
   return (moveAction, movement) => {
-		const { globalDataParameter: { initialTarget } } = getCurrentParameter()
+		const {
+      globalDataParameter: { initialTarget },
+      elementParameter: { privateTarget, allTarget }
+    } = getCurrentParameter()
     // 如果目标元素处于锁定状态则不允许拖拽
     const isContinue = executeActionCallbacks(dragActions, initialTarget, 'beforeCallback')
     if (isContinue === false) return
@@ -315,6 +321,9 @@ export function moveTargetCallback (dragCallback, { downPointPosition, pointElem
     // Hand over control (moveTargetAction)
     // 将控制权（moveTargetAction）交出
     transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
+
+    // refLine.check(privateTarget, allTarget.filter(item => item !== privateTarget))
+
 		// update the state of the target element - 更新目标元素状态
 		updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
 
