@@ -1,6 +1,6 @@
 ## MagicResize
 
-### useMovePoint
+### useMoveElement
 
 _接受一个dom元素或一个选择器（selector）使其可拖拽，接受可选的两个参数 moveCallback & limitDirection_
 
@@ -10,7 +10,7 @@ _接受一个dom元素或一个选择器（selector）使其可拖拽，接受�
 
  - moveCallback：元素被拖拽移动时执行的回调，参数为moveAction，移动时必须执行
   ```ts
-  useMovePoint(selector, moveCallback)
+  useMoveElement(selector, moveCallback)
 
   function moveCallback (moveAction) {
     // do something
@@ -22,7 +22,7 @@ _接受一个dom元素或一个选择器（selector）使其可拖拽，接受�
  - limitDirection：元素在X / Y轴是否可以移动，可选值'X'/'Y'（会限制更新鼠标移动的距离）
   ```ts
   // 不允许在X轴移动，不传不限制
-  useMovePoint(selector, null, 'X')
+  useMoveElement(selector, null, 'X')
   ```
 
 #### 返回值

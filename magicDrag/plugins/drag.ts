@@ -1,5 +1,5 @@
 import { Plugin } from './index.ts'
-import useMovePoint from '../useMovePoint.ts'
+import useMoveElement from '../useMoveElement.ts'
 import { moveTargetCallback, updateInitialTarget } from '../utils/magicDrag.ts'
 import { watch } from 'vue'
 import {setStyle} from '../utils/tools.ts'
@@ -40,7 +40,7 @@ class Drag implements Plugin {
 		// modify the icon for the hover state - 修改悬停状态的图标
 		drag && setStyle(target.value, 'cursor', 'all-scroll')
 
-		const { movementX, movementY, isPress } = useMovePoint(
+		const { movementX, movementY, isPress } = useMoveElement(
 			target.value,
 			moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, containerInfo

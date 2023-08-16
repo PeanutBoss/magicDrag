@@ -1,5 +1,5 @@
 import { Plugin } from './index.ts'
-import useMovePoint from '../useMovePoint.ts'
+import useMoveElement from '../useMoveElement.ts'
 import {addClassName, appendChild, transferControl} from '../utils/tools.ts'
 import {
   createParentPosition,
@@ -46,7 +46,7 @@ function addDragFunctionToPoint (elementParameter, stateParameter, globalDataPar
   const { target } = elementParameter
   const { point, pointPosition, direction } = runTimeParameter
   const { resizeCallback } = options.callbacks || {}
-  const { isPress, movementX, movementY } = useMovePoint(point, (moveAction) => {
+  const { isPress, movementX, movementY } = useMoveElement(point, (moveAction) => {
     const moveResizeAction = () => {
       // moveAction()
       movePointCallback(
