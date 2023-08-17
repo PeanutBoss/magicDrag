@@ -73,14 +73,14 @@ class Resize implements Plugin {
   constructor() {
     this.name = 'Resize'
   }
-  init (elementParameter, stateParameter, globalDataParameter, options) {
+  init ({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
     // const { skill = {} } = options
     // const { resize } = skill
     // if (!resize) return
-    const pointPosition = createParentPosition(globalDataParameter.initialTarget, options.pointSize)
-    initContourPoints(elementParameter, stateParameter, globalDataParameter, options, { pointPosition })
+    const pointPosition = createParentPosition(globalDataParameter.initialTarget, optionParameter.pointSize)
+    initContourPoints(elementParameter, stateParameter, globalDataParameter, optionParameter, { pointPosition })
   }
-  unbind (elementParameter, stateParameter, globalDataParameter, options) {
+  unbind ({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
   }
 }
 

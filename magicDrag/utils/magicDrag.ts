@@ -4,14 +4,11 @@ import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMe
 import {
   getCurrentParameter,
   getCurrentTarget,
-  getNotLockParameter,
   getParameter,
   setCurrentTarget
 } from './parameter.ts'
 import {getTargetZIndex, TargetStatus} from "../style/className.ts";
-import { RefLine } from '../plugins/refline.ts'
-
-const refLine = new RefLine({})
+import {executePluginDrag, executePluginResize} from "../plugins/index.ts";
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -297,13 +294,18 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 }
 export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
   return (moveAction, movement) => {
-		const {
-      globalDataParameter: { initialTarget },
-      elementParameter: { privateTarget, allTarget }
-    } = getCurrentParameter()
+		const parameter = getCurrentParameter()
+		const initialTarget = parameter.globalDataParameter.initialTarget
     // 如果目标元素处于锁定状态则不允许拖拽
     const isContinue = executeActionCallbacks(dragActions, initialTarget, 'beforeCallback')
     if (isContinue === false) return
+
+		const _updateContourPointPosition = (movement) => {
+			updateContourPointPosition(downPointPosition, movement, pointElements)
+		}
+		const _updateState = (movement) => {
+			updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
+		}
 
     // Wrap the action to move the target element as a separate new function, and if the user defines a callback
     // use moveTargetAction as an argument to that callback
@@ -316,16 +318,16 @@ export function moveTargetCallback (dragCallback, { downPointPosition, pointElem
 			limitTargetMove(initialTarget, containerInfo, movement)
       // update the position of the contour points
       // 更新轮廓点位置
-      updateContourPointPosition(downPointPosition, movement, pointElements)
+			_updateContourPointPosition(movement)
+
+			// update the state of the target element - 更新目标元素状态
+			_updateState(movement)
     }
     // Hand over control (moveTargetAction)
     // 将控制权（moveTargetAction）交出
     transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
-    // refLine.check(privateTarget, allTarget.filter(item => item !== privateTarget))
-
-		// update the state of the target element - 更新目标元素状态
-		updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
+		executePluginDrag(parameter.globalDataParameter.plugins, parameter, { movement, _updateContourPointPosition, _updateState })
 
     executeActionCallbacks(dragActions, initialTarget, 'afterCallback')
   }
@@ -457,17 +459,27 @@ export function movePointCallback (stateParameter, elementParameter, globalParam
     optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
     elementParameter: { pointElements }
   } = getParameter(target.dataset.index)
+	const parameter = getParameter(target.dataset.index)
 
 	const isContinue = executeActionCallbacks(resizeActions, initialTarget, 'beforeCallback')
 	if (isContinue === false) return
 
 	moveAction()
 
+	const _updateTargetStyle = ({ movementX, movementY }) => {
+		updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
+	}
+	const _updatePointPosition = ({ movementX, movementY }) => {
+		updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
+	}
+
 	limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
 
-	updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
+	_updateTargetStyle({ movementX, movementY })
 
-	updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
+	_updatePointPosition({ movementX, movementY })
+
+	executePluginResize(parameter.globalDataParameter.plugins, parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
 }
 
 

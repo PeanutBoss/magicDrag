@@ -55,12 +55,12 @@ export default class ContextMenu implements Plugin {
     this.bindHidden = this.hiddenMenu.bind(this)
     this.bindContextCallback = this.contextCallback.bind(this)
   }
-  init(elementParameter, stateParameter, globalDataParameter, options) {
+  init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
     const { privateTarget } = elementParameter
     privateTarget.addEventListener('contextmenu', this.bindContextCallback)
     this.actions = new Actions(this.getActionMapByKey(this.actionList), { actionList: this.actionList, options: this.options })
   }
-  unbind(elementParameter, stateParameter, globalDataParameter, options) {
+  unbind({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
     const { privateTarget } = elementParameter
     privateTarget.removeEventListener('contextmenu', this.bindContextCallback)
     this.destroyMenu()

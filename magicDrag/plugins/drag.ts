@@ -26,16 +26,14 @@ class Drag implements Plugin {
   constructor () {
     this.name = 'Drag'
   }
-	init (elementParameter, stateParameter, globalDataParameter, options) {
+	init ({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
 		// console.log(elementParameter, stateParameter, globalDataParameter, options)
     const { pointElements, target } = elementParameter
     const { targetState } = stateParameter
     const { containerInfo, initialTarget, downPointPosition } = globalDataParameter
-    const { skill = {}, callbacks = {} } = options
+    const { skill = {}, callbacks = {} } = optionParameter
     const { drag, limitDragDirection } = skill
     const { dragCallback } = callbacks
-
-		// if (!drag) return
 
 		// modify the icon for the hover state - 修改悬停状态的图标
 		drag && setStyle(target.value, 'cursor', 'all-scroll')
@@ -54,7 +52,7 @@ class Drag implements Plugin {
       { movementX, movementY }
     ))
 	}
-	unbind (elementParameter, stateParameter, globalDataParameter, options) {
+	unbind ({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
 	}
 }
 

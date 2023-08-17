@@ -19,7 +19,7 @@ export interface StateParameter {
 	targetState,
 }
 export interface GlobalDataParameter {
-  initialTarget, containerInfo, downPointPosition
+  initialTarget, containerInfo, downPointPosition, plugins
 }
 export interface OptionParameter {
   target: HTMLElement, container: HTMLElement, pointElements: any, allTarget: any

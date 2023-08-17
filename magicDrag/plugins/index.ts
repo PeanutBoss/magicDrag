@@ -1,31 +1,35 @@
-import { ElementParameter, StateParameter, GlobalDataParameter, OptionParameter } from '../utils/parameter.ts'
 import {baseErrorTips, isNullOrUndefined} from "../utils/tools.ts";
+import { Parameter } from '../utils/parameter.ts'
 
 export interface Plugin {
 	name: string
-	init (
-		elementParameter: ElementParameter,
-		stateParameter: StateParameter,
-		globalDataParameter: GlobalDataParameter,
-		options: OptionParameter
-	): void
-  unbind (
-		elementParameter: ElementParameter,
-		stateParameter: StateParameter,
-		globalDataParameter: GlobalDataParameter,
-		options: OptionParameter
-	): void
+	init (parameter: Parameter): void
+	drag?(parameter: Parameter, cb?): void
+	resize?(parameter: Parameter, cb?): void
+  unbind (parameter: Parameter): void
 }
 
 export function executePluginInit (plugins: Plugin[], elementParameter, stateParameter, globalDataParameter, options) {
 	plugins.forEach(plugin => {
-		plugin.init(elementParameter, stateParameter, globalDataParameter, options)
+		plugin.init({ elementParameter, stateParameter, globalDataParameter, optionParameter: options })
+	})
+}
+
+export function executePluginDrag (plugins: Plugin[], parameter, cb?) {
+	plugins.forEach(plugin => {
+		plugin?.drag?.(parameter, cb)
+	})
+}
+
+export function executePluginResize (plugins: Plugin[], parameter, cb?) {
+	plugins.forEach(plugin => {
+		plugin?.resize?.(parameter, cb)
 	})
 }
 
 export function executePluginUnbind (plugins: Plugin[], elementParameter, stateParameter, globalDataParameter, options) {
 	plugins.forEach(plugin => {
-		plugin.unbind(elementParameter, stateParameter, globalDataParameter, options)
+		plugin.unbind({ elementParameter, stateParameter, globalDataParameter, optionParameter: options })
 	})
 }
 

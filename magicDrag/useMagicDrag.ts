@@ -173,7 +173,8 @@ function useMagicDragAPI (
   let globalDataParameter = {
     initialTarget: { ...initialTarget },
     containerInfo:{ ...containerInfo },
-    downPointPosition: { ...downPointPosition }
+    downPointPosition: { ...downPointPosition },
+    plugins
   }
 
   // 显示或隐藏轮廓点的方法
