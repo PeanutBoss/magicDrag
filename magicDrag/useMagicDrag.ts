@@ -18,6 +18,8 @@ import { actionMap } from './plugins/contextMenu/actionMap.ts'
 *  4.可以根据轮廓点的类名获取它的尺寸
 *  5.参考线样式
 *  6.根据层级顺序获取元素列表
+*  7.优化插件机制
+*  8.重构
 * */
 
 export interface MagicDragOptions {
