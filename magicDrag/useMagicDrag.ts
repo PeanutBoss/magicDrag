@@ -1,28 +1,23 @@
 import { onBeforeUnmount, Ref, reactive, toRef, nextTick, ref } from 'vue'
-import {
-  getElement,
-  mergeObject,
-  removeElements,
-  baseErrorTips,
-  checkParameterType,
-  baseWarnTips
-} from './utils/tools.ts'
-import {
-  blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate
-} from './utils/magicDrag.ts'
+import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType, baseWarnTips } from './utils/tools.ts'
+import { blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag.ts'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins/index.ts'
-import {ElementParameter, setParameter} from './utils/parameter.ts'
+import { ElementParameter, setParameter } from './utils/parameter.ts'
 import { ClassName, MAGIC_DRAG } from './style/className.ts'
 import type { Direction } from './utils/magicDrag.ts'
 import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
 import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index.ts'
-import {actionMap} from "./plugins/contextMenu/actionMap.ts";
+import { actionMap } from './plugins/contextMenu/actionMap.ts'
 
 /*
 * TODO
 *  1.window触发resize的时候需要更新containerInfo
 *  2.useMagicDrag使用时需要创建，否则会有参数冲突问题
+*  3.拖拽元素达到边界且边界有达到吸附条件的元素时会跳动
+*  4.可以根据轮廓点的类名获取它的尺寸
+*  5.参考线样式
+*  6.根据层级顺序获取元素列表
 * */
 
 export interface MagicDragOptions {

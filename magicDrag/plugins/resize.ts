@@ -17,7 +17,6 @@ const pointDefaultStyle: { [key: string]: string } = {
   borderRadius: '50%',
   display: 'none',
   zIndex: '999',
-  // pointerEvents: 'none' // 防止轮廓点干扰点击事件
 }
 
 // initialize the contour point - 初始化轮廓点

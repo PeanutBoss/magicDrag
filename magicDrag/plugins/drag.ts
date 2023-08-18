@@ -2,7 +2,7 @@ import { Plugin } from './index.ts'
 import useMoveElement from '../useMoveElement.ts'
 import { moveTargetCallback, updateInitialTarget } from '../utils/magicDrag.ts'
 import { watch } from 'vue'
-import {setStyle} from '../utils/tools.ts'
+import { setStyle } from '../utils/tools.ts'
 
 function isPressChangeCallback ({ pointElements }, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
   return (newV) => {
@@ -17,6 +17,7 @@ function isPressChangeCallback ({ pointElements }, { targetState }, { downPointP
       // mouse up to update the coordinates of the target element
       // 鼠标抬起时更新目标元素的坐标
       updateInitialTarget(initialTarget, { top: initialTarget.top + movementY.value, left: initialTarget.left + movementX.value })
+			// TODO　隐藏参考线
     }
   }
 }

@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config ./config/webpack.tsconfig.js",
-    "serve": "webpack serve --config ./config/magicDrag.config.js"
+    "serve": "webpack serve --config ./config/magicDrag.config.js",
+    "build:tool": "webpack --config ./config/product.config.js"
   },
   "repository": {
     "type": "git",

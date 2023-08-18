@@ -148,7 +148,8 @@ export const actionMap: ActionMap = {
 		actionCallback() {
 			const {
 				globalDataParameter: { initialTarget, plugins },
-				elementParameter: { privateTarget }
+				elementParameter: { privateTarget },
+				optionParameter: { containerSelector }
 			} = getCurrentParameter()
 			if (initialTarget.isLock) return
 
@@ -163,7 +164,7 @@ export const actionMap: ActionMap = {
 			copyTarget.style.top = initialTarget.top + options.offsetY + 'px'
 			parent.appendChild(copyTarget)
 			// TODO 复制目标元素后，需要将target设置为新复制的元素
-			useMagicDrag(`.${newClassName}`, { containerSelector: '.wrap' }, [...plugins, new ContextMenu(actionList, options)])
+			useMagicDrag(`.${newClassName}`, { containerSelector }, [...plugins, new ContextMenu(actionList, options)])
 		}
 	},
 	delete: {
