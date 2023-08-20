@@ -1,3 +1,9 @@
+/*
+* MARK - 冲突执行情况
+*  执行最优先的（默认）
+*  按顺序执行
+*  取消和重做操作：保存每一次操作执行的方法和参数，反方向执行
+* */
 namespace SupportKeymap {
   // MARK 快捷键插件
   class ShortcutSupportPlugin {
@@ -30,6 +36,15 @@ namespace SupportKeymap {
       keys.push(event.key.toUpperCase())
       return keys.join('+')
     }
+
+    // 自定义配置
+    configureShortcuts(...args: any[]): any {}
+
+    // 启用快捷键
+    enableShortcut(...args: any[]): any {}
+
+    // 禁用快捷键
+    disableShortcut(...args: any[]): any {}
   }
   // 监听键盘事件，触发快捷键操作
   document.addEventListener('keydown', event => {
@@ -54,7 +69,7 @@ namespace SupportKeymap {
   shortcutPlugin.registerShortcut('Ctrl+S', () => {
     // 保存操作
   }, { priority: 1 })
-
+  const otherPlugin = {} as any
   otherPlugin.registerShortcut('Ctrl+S', () => {
     // 其他操作
   }, { priority: 2 })
