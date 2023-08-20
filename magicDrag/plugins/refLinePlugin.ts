@@ -1,5 +1,5 @@
 import { Plugin } from './index.ts'
-import {Parameter} from "../utils/parameter";
+import { Parameter } from "../utils/parameter";
 
 declare global {
 	interface HTMLElement {
@@ -239,7 +239,7 @@ class RefLine implements Plugin {
 		this.isHasAdsorbElementY = false
 		this.isHasAdsorbElementX = false
 		// 隐藏所有标线
-		Object.values(this.lines).forEach((item) => item.hide())
+		Object.values(this.lines).forEach((item: HTMLElement) => item.hide())
 		// 获取所有类名包含 ref-line-active 的元素，然后为这些元素删除 ref-line-active 这个类名
 		Array.from(document.querySelectorAll('.ref-line-active')).forEach((item) => item.classList.remove('ref-line-active'))
 	}
