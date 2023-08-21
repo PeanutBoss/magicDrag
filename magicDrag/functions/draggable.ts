@@ -1,16 +1,16 @@
-import { PluginBlueprint } from "../../pluginBlueprint/pluginManager.ts";
-import {setStyle, transferControl} from "../utils/tools.ts";
-import useMoveElement from "../useMoveElement.ts";
-import {updateContourPointPosition, updateInitialTarget, updateState} from "../utils/magicDrag.ts";
-import {watch} from "vue";
-import {getCurrentParameter, Parameter} from "../utils/parameter.ts";
-import {executeActionCallbacks, getActionCallbacks} from "../plugins/contextMenu/actionMap.ts";
-import {executePluginDrag} from "../plugins/index.ts";
+import { PluginBlueprint } from '../../pluginBlueprint/pluginManager.ts'
+import {setStyle, transferControl} from '../utils/tools.ts'
+import useMoveElement from '../useMoveElement.ts'
+import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag.ts'
+import {watch} from 'vue'
+import {getCurrentParameter, Parameter} from '../utils/parameter.ts'
+import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap.ts'
+import {executePluginDrag} from '../plugins/index.ts'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 
-class Draggable {
-	constructor(private plugins: PluginBlueprint.PluginManager, parameter: Parameter) {
+export default class Draggable {
+	constructor(private plugins: PluginBlueprint.PluginManager = new PluginBlueprint.PluginManager, parameter: Parameter) {
 		this.init(parameter)
 	}
 

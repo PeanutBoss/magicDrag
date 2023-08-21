@@ -9,6 +9,8 @@ import Drag from './plugins/drag.ts'
 import Resize from './plugins/resize.ts'
 import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index.ts'
 import { actionMap } from './plugins/contextMenu/actionMap.ts'
+import Draggable from './functions/draggable.ts'
+import Resizeable from './functions/resizeable.ts'
 
 /*
 * TODO
@@ -182,6 +184,8 @@ function useMagicDragAPI (
 
 		initTarget()
 
+    new Draggable(null, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
+    new Resizeable(null, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
@@ -267,8 +271,8 @@ export default function useMagicDrag (
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 
-  drag && plugins.push(Drag)
-  resize && plugins.push(Resize)
+  // drag && plugins.push(Drag)
+  // resize && plugins.push(Resize)
   baseWarnTips(actionList.length === 0, 'check that the actionList is empty and the use of ContextMenu is cancelled')
   actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
 
