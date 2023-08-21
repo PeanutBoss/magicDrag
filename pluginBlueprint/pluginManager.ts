@@ -1,6 +1,6 @@
-namespace PluginBlueprint {
+export namespace PluginBlueprint {
   // MARK 1.插件注册和管理 - 设计一个中心化的插件管理器，负责插件的注册、安装和卸载。
-  class PluginManager {
+  export class PluginManager {
     private plugins: Map<string, Plugin> = new Map()
 
     registerPlugin(name: string, plugin: Plugin) {
