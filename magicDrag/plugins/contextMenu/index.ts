@@ -46,6 +46,7 @@ const defaultContextMenuOptions: DefaultContextMenuOptions = {
   lockItemClassName: ClassName.LockItemClassName,
 }
 
+// TODO 将 executeActionCallbacks 需要执行的回调全部保存到插件中，在插件收到通知后执行所有回调
 export default class ContextMenu implements Plugin {
   name
   private actions

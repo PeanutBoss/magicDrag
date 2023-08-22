@@ -1,6 +1,14 @@
 import { PluginBlueprint } from '../../pluginBlueprint/pluginManager.ts'
 import { Parameter } from '../utils/parameter.ts'
 
+declare global {
+  interface HTMLElement {
+    show: () => void
+    hide: () => void
+    isShow: () => boolean
+    // 在这里可以添加其他自定义方法
+  }
+}
 
 let lines = null
 
@@ -62,9 +70,19 @@ export namespace RefLinePlugin {
 			}
 			this.checkAdsorb({ elementParameter }, adsorbCallback)
 		}
+    targetPressChange(isPress: boolean, elementParameter) {
+      isPress
+        ? this.checkAdsorb({ elementParameter })
+        : this.hideRefLine()
+    }
+    pointPressChange(isPress: boolean, elementParameter) {
+      isPress
+        ? this.checkAdsorb({ elementParameter })
+        : this.hideRefLine()
+    }
 
 		// 检查是否有达到吸附条件的元素
-		checkAdsorb({ elementParameter }, adsorbCallback) {
+		checkAdsorb({ elementParameter }, adsorbCallback?) {
 			const { privateTarget: dragNode, allTarget } = elementParameter
 			const checkNodes = allTarget.filter(node => node !== dragNode)
 			// 获取被拖拽元素相对视口的位置
@@ -222,9 +240,16 @@ export namespace RefLinePlugin {
 					})
 				}
 
-				if (this.isHasAdsorbElementX || this.isHasAdsorbElementY) adsorbCallback({
-					top: conditions.top.map(m => Math.abs(m.distance) <= this.options.gap ? m.distance : 0).find(item => Math.abs(item) > 0) || 0,
-					left: conditions.left.map(m => Math.abs(m.distance) <= this.options.gap ? m.distance : 0).find(item => Math.abs(item) > 0) || 0
+        const nearestTop = conditions.top.map(m => Math.abs(m.distance) <= this.options.gap ? m.distance : 0).find(item => Math.abs(item) > 0)
+        const nearestLeft = conditions.left.map(m => Math.abs(m.distance) <= this.options.gap ? m.distance : 0).find(item => Math.abs(item) > 0)
+        /*
+        * TODO adsorbCallback 的参数 left/top 不给默认为0，adsorbCallback执行时做非空判断，有值时才执行
+        *  FIXME resize时，同方向如果已经有一条边达到吸附状态，另一条边不会吸附
+        * */
+        console.log(nearestTop, nearestLeft, 'nearestTop, nearestLeft')
+				if (this.isHasAdsorbElementX || this.isHasAdsorbElementY) adsorbCallback?.({
+					top: nearestTop || 0,
+					left: nearestLeft || 0
 				})
 			})
 		}

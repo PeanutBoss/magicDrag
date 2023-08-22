@@ -52,11 +52,11 @@ export default class Resizeable {
 
       const isPress = this.addDragFunctionToPoint(elementParameter, stateParameter, globalDataParameter, options, { point, pointPosition, direction })
       // update the width and height information when releasing the mouse - 当释放鼠标时更新宽度和高度信息
-      watch(isPress, this.pointIsPressChangeCallback(target.value, { initialTarget, pointState, direction }))
+      watch(isPress, this.pointIsPressChangeCallback(target.value, { initialTarget, pointState, direction }, elementParameter))
     }
   }
 
-  pointIsPressChangeCallback (target, { initialTarget, pointState, direction }) {
+  pointIsPressChangeCallback (target, { initialTarget, pointState, direction }, elementParameter) {
     return newV => {
       // 与window绑定mousedown同理，取消无用更新
       const currentTarget = getCurrentTarget()
@@ -68,6 +68,7 @@ export default class Resizeable {
         updateInitialTarget(initialTarget, getCoordinateByElement(target))
       }
       // MARK 通知插件鼠标状态更新
+      this.plugins.callExtensionPoint('pointPressChange', newV, elementParameter)
     }
   }
 
@@ -131,7 +132,6 @@ export default class Resizeable {
 
     _updatePointPosition({ movementX, movementY })
 
-    // MARK 通知插件调整大小中
     this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
   }
 

@@ -32,7 +32,7 @@ export default class Draggable {
 			{ direction: limitDragDirection })
 
 		watch(isPress, this.isPressChangeCallback(
-			{pointElements},
+      { ...elementParameter },
 			{ targetState },
 			{ downPointPosition, initialTarget },
 			{ movementX, movementY }
@@ -113,18 +113,18 @@ export default class Draggable {
 		// mouse up to update the coordinates of the target element
 		// 鼠标抬起时更新目标元素的坐标
 		updateInitialTarget(initialTarget, { top: initialTarget.top + movementY.value, left: initialTarget.left + movementX.value })
-		// TODO　隐藏参考线
 	}
 
-	isPressChangeCallback({ pointElements }, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
+	isPressChangeCallback(elementParameter, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
 		return (newV) => {
 			this.updateState(targetState, 'isPress', newV)
 			if (newV) {
-				this.targetMouseDown({ downPointPosition, pointElements })
+				this.targetMouseDown({ downPointPosition, pointElements: elementParameter.pointElements })
 			} else {
 				this.targetMouseUp({ initialTarget, movementX, movementY })
 			}
-			// MARK 通知插件鼠标状态更新了
+
+      this.plugins.callExtensionPoint('targetPressChange', newV, elementParameter)
 		}
 	}
 	// TODO 复用其他

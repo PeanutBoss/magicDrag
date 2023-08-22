@@ -42,6 +42,8 @@ export namespace PluginBlueprint {
     unbind: () => void
     drag?: (...args: any[]) => void
     resize?: (...args: any[]) => void
+    targetPressChange?: (...args: any[]) => void
+    pointPressChange?: (...args: any[]) => void
   }
 
 

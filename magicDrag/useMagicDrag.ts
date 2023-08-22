@@ -22,6 +22,7 @@ import { RefLinePlugin } from './plugins/refLine.ts'
 *  6.根据层级顺序获取元素列表
 *  7.优化插件机制
 *  8.重构
+*  9.新增的图层级应该更高
 * */
 
 export interface MagicDragOptions {
