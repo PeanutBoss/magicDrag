@@ -22,10 +22,10 @@ export namespace PluginBlueprint {
     }
 
     // MARK 5.扩展点触发 - 在关键时刻触发扩展点，通知注册在该扩展点上的插件。
-    callExtensionPoint(extensionPoint: string) {
+    callExtensionPoint(extensionPoint: string, ...args: any[]) {
       this.plugins.forEach((plugin) => {
         if (typeof plugin[extensionPoint] === 'function') {
-          plugin[extensionPoint]()
+          plugin[extensionPoint](...args)
         }
       })
     }
@@ -36,11 +36,12 @@ export namespace PluginBlueprint {
 
 
   // MARK 2.插件接口 - 定义一个通用的插件接口，插件需要实现这个接口。
-  interface Plugin {
+  export interface Plugin {
     name: string
     init: () => void
     unbind: () => void
-    // 其他可能的生命周期方法
+    drag?: (...args: any[]) => void
+    resize?: (...args: any[]) => void
   }
 
 
@@ -84,7 +85,7 @@ export namespace PluginBlueprint {
   // MARK 6.使用插件
   const draggable = new Draggable(pluginManager)
 
-// 安装插件
+  // 安装插件
   pluginManager.installPlugin('MyPlugin')
 }
 

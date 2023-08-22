@@ -5,12 +5,12 @@ import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins/ind
 import { ElementParameter, setParameter } from './utils/parameter.ts'
 import { ClassName, MAGIC_DRAG } from './style/className.ts'
 import type { Direction } from './utils/magicDrag.ts'
-import Drag from './plugins/drag.ts'
-import Resize from './plugins/resize.ts'
 import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index.ts'
 import { actionMap } from './plugins/contextMenu/actionMap.ts'
 import Draggable from './functions/draggable.ts'
 import Resizeable from './functions/resizeable.ts'
+import { PluginBlueprint } from '../pluginBlueprint/pluginManager.ts'
+import { RefLinePlugin } from './plugins/refLine.ts'
 
 /*
 * TODO
@@ -148,6 +148,10 @@ function initGlobalData () {
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
 }
 
+const pluginManager = new PluginBlueprint.PluginManager()
+const refLine = new RefLinePlugin.RefLine()
+pluginManager.registerPlugin(refLine.name, refLine)
+
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
@@ -184,8 +188,10 @@ function useMagicDragAPI (
 
 		initTarget()
 
-    new Draggable(null, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
-    new Resizeable(null, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
+    pluginManager.installPlugin('refLine')
+
+    new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
+    new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 
     // 处理点击目标元素显示/隐藏轮廓点的逻辑

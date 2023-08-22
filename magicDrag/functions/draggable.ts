@@ -5,7 +5,6 @@ import {updateContourPointPosition, updateInitialTarget, updateState} from '../u
 import {watch} from 'vue'
 import {getCurrentParameter, Parameter} from '../utils/parameter.ts'
 import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap.ts'
-import {executePluginDrag} from '../plugins/index.ts'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 
@@ -80,8 +79,7 @@ export default class Draggable {
 			// 将控制权（moveTargetAction）交出
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
-			// MARK 拖拽中（一次拖拽逻辑将要结束）
-			executePluginDrag(parameter.globalDataParameter.plugins, parameter, { movement, _updateContourPointPosition, _updateState })
+			this.plugins.callExtensionPoint('drag', parameter, { movement, _updateContourPointPosition, _updateState })
 
 			executeActionCallbacks(dragActions, initialTarget, 'afterCallback')
 		}
@@ -109,8 +107,6 @@ export default class Draggable {
 		for (const key in pointElements) {
 			downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
 		}
-
-		// MARK 鼠标按下
 	}
 
 	targetMouseUp({ initialTarget, movementX, movementY }) {
@@ -118,7 +114,6 @@ export default class Draggable {
 		// 鼠标抬起时更新目标元素的坐标
 		updateInitialTarget(initialTarget, { top: initialTarget.top + movementY.value, left: initialTarget.left + movementX.value })
 		// TODO　隐藏参考线
-		// MARK 鼠标抬起
 	}
 
 	isPressChangeCallback({ pointElements }, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
@@ -129,6 +124,7 @@ export default class Draggable {
 			} else {
 				this.targetMouseUp({ initialTarget, movementX, movementY })
 			}
+			// MARK 通知插件鼠标状态更新了
 		}
 	}
 	// TODO 复用其他

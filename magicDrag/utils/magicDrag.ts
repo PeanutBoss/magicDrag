@@ -1,4 +1,4 @@
-import {conditionExecute, EXECUTE_NEXT_TASK, getObjectIntValue, setStyle, transferControl} from './tools.ts'
+import {conditionExecute, getObjectIntValue, setStyle, transferControl} from './tools.ts'
 import {reactive} from 'vue'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap.ts'
 import {
@@ -189,7 +189,7 @@ export function createParentPosition ({ left, top, width, height }, pointSize: n
 	}
 }
 
-interface InitPointOption {
+export interface InitPointOption {
   pointPosition: PointPosition
   direction: Direction
   pointSize: number
@@ -487,7 +487,7 @@ export function movePointCallback (stateParameter, elementParameter, globalParam
 /* ready to drag and resize - 准备拖动和调整大小 */
 // get coordinates and size information based on dom elements
 // 获取基于dom元素的坐标和大小信息
-function getCoordinateByElement (element: HTMLElement) {
+export function getCoordinateByElement (element: HTMLElement) {
   return {
     width: element.offsetWidth,
     height: element.offsetHeight,

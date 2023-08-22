@@ -1,7 +1,6 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
 import useMagicDrag from './useMagicDrag.ts'
 import "./style/index.scss"
-import RefLine from './plugins/refLinePlugin.ts'
 
 const imgSource = ref(null)
 // @ts-ignore
@@ -50,11 +49,10 @@ const App = {
         },
         customClass: {},
         contextMenuOption: {}
-      },
-      [new RefLine()]
+      }
     )
 
-    useMagicDrag('.box1', { containerSelector: '.wrap' }, [new RefLine()])
+    useMagicDrag('.box1', { containerSelector: '.wrap' })
 
     // useMagicDrag('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
