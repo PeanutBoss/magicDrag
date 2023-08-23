@@ -37,7 +37,7 @@ const App = {
       '.box',
       {
         minHeight: 200,
-        minWidth: 300,
+        minWidth: 200,
         // maxWidth: 600,
         // maxHeight: 400,
         // pageHasScrollBar: true,

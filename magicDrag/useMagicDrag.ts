@@ -23,6 +23,7 @@ import { RefLinePlugin } from './plugins/refLine.ts'
 *  7.优化插件机制
 *  8.重构
 *  9.新增的图层级应该更高
+*  10.设置初始尺寸
 * */
 
 export interface MagicDragOptions {
@@ -150,7 +151,7 @@ function initGlobalData () {
 }
 
 const pluginManager = new PluginBlueprint.PluginManager()
-const refLine = new RefLinePlugin.RefLine()
+const refLine = new RefLinePlugin.RefLine({ gap: 10 })
 pluginManager.registerPlugin(refLine.name, refLine)
 
 function useMagicDragAPI (
