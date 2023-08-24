@@ -155,8 +155,17 @@ const pluginManager = new PluginBlueprint.PluginManager()
 const refLine = new RefLinePlugin.RefLine({ gap: 10 })
 const keymap = new Keymap()
 
-keymap.registerShortcut('ctrl + shift + alt + a', (event) => {
-  console.log(event)
+keymap.registerShortcut('a + ctrl', () => {
+  console.log('全选')
+})
+keymap.registerShortcut('ctrl + c', () => {
+  console.log('复制')
+})
+keymap.registerShortcut('alt + shift + ctrl + v', () => {
+  console.log('all')
+})
+keymap.registerShortcut('ctrl + h', () => {
+  console.log('帮助')
 })
 
 pluginManager.registerPlugin(refLine.name, refLine)
