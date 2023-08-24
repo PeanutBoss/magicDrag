@@ -11,6 +11,7 @@ import Draggable from './functions/draggable.ts'
 import Resizeable from './functions/resizeable.ts'
 import { PluginBlueprint } from '../pluginBlueprint/pluginManager.ts'
 import { RefLinePlugin } from './plugins/refLine.ts'
+import Keymap from "./plugins/keymap.ts";
 
 /*
 * TODO
@@ -152,7 +153,14 @@ function initGlobalData () {
 
 const pluginManager = new PluginBlueprint.PluginManager()
 const refLine = new RefLinePlugin.RefLine({ gap: 10 })
+const keymap = new Keymap()
+
+keymap.registerShortcut('ctrl + shift + alt + a', (event) => {
+  console.log(event)
+})
+
 pluginManager.registerPlugin(refLine.name, refLine)
+pluginManager.registerPlugin(keymap.name, keymap)
 
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
@@ -190,7 +198,8 @@ function useMagicDragAPI (
 
 		initTarget()
 
-    pluginManager.installPlugin('refLine')
+    pluginManager.installPlugin(refLine.name)
+    pluginManager.installPlugin(keymap.name)
 
     new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })

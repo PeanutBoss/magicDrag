@@ -4,7 +4,7 @@ import "./style/index.scss"
 
 const imgSource = ref(null)
 // @ts-ignore
-import('./assets/image/suolong.png').then(res => {
+import('./assets/image/lufei.png').then(res => {
   imgSource.value = res.default
 })
 
