@@ -44,9 +44,9 @@ module.exports = {
       inject: 'head' // 将css插入head标签
     })
   ],
-  // resolve: {
-  //   extensions: ['.ts', '.json', '.tsx']
-  // },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'] // 自动追加的文件后缀名
+  },
   devServer: {
     // open: true,
     port: 9003,

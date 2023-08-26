@@ -1,5 +1,5 @@
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager.ts'
-import { Parameter } from '../utils/parameter.ts'
+import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import { Parameter } from '../utils/parameter'
 
 declare global {
   interface HTMLElement {

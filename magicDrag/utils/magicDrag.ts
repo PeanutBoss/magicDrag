@@ -1,14 +1,14 @@
-import {conditionExecute, getObjectIntValue, setStyle, transferControl} from './tools.ts'
+import {conditionExecute, getObjectIntValue, setStyle, transferControl} from './tools'
 import {reactive} from 'vue'
-import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap.ts'
+import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {
   getCurrentParameter,
   getCurrentTarget,
   getParameter,
   setCurrentTarget
-} from './parameter.ts'
-import {getTargetZIndex, TargetStatus} from "../style/className.ts";
-import {executePluginDrag, executePluginResize} from "../plugins/index.ts";
+} from './parameter'
+import {getTargetZIndex, TargetStatus} from "../style/className";
+import {executePluginDrag, executePluginResize} from "../plugins";
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')

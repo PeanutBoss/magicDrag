@@ -1,10 +1,10 @@
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager.ts'
-import {setStyle, transferControl} from '../utils/tools.ts'
-import useMoveElement from '../useMoveElement.ts'
-import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag.ts'
+import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import {setStyle, transferControl} from '../utils/tools'
+import useMoveElement from '../useMoveElement'
+import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag'
 import {watch} from 'vue'
-import {getCurrentParameter, Parameter} from '../utils/parameter.ts'
-import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap.ts'
+import {getCurrentParameter, Parameter} from '../utils/parameter'
+import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
 
 const dragActions = getActionCallbacks('dragCallbacks')
 

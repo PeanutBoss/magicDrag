@@ -1,17 +1,17 @@
 import { onBeforeUnmount, Ref, reactive, toRef, nextTick, ref } from 'vue'
-import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType, baseWarnTips } from './utils/tools.ts'
-import { blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag.ts'
-import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins/index.ts'
-import { ElementParameter, setParameter } from './utils/parameter.ts'
-import { ClassName, MAGIC_DRAG } from './style/className.ts'
-import type { Direction } from './utils/magicDrag.ts'
-import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index.ts'
-import { actionMap } from './plugins/contextMenu/actionMap.ts'
-import Draggable from './functions/draggable.ts'
-import Resizeable from './functions/resizeable.ts'
-import { PluginBlueprint } from '../pluginBlueprint/pluginManager.ts'
-import { RefLinePlugin } from './plugins/refLine.ts'
-import Keymap from "./plugins/keymap.ts";
+import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType, baseWarnTips } from './utils/tools'
+import { blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
+import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins'
+import { ElementParameter, setParameter } from './utils/parameter'
+import { ClassName, MAGIC_DRAG } from './style/className'
+import type { Direction } from './utils/magicDrag'
+import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/contextMenu/index'
+import { actionMap } from './plugins/contextMenu/actionMap'
+import Draggable from './functions/draggable'
+import Resizeable from './functions/resizeable'
+import { PluginBlueprint } from '../pluginBlueprint/pluginManager'
+import { RefLinePlugin } from './plugins/refLine'
+import Keymap from './plugins/keymap'
 
 /*
 * TODO
@@ -154,19 +154,6 @@ function initGlobalData () {
 const pluginManager = new PluginBlueprint.PluginManager()
 const refLine = new RefLinePlugin.RefLine({ gap: 10 })
 const keymap = new Keymap()
-
-keymap.registerShortcut('a + ctrl', () => {
-  console.log('全选')
-})
-keymap.registerShortcut('ctrl + c', () => {
-  console.log('复制')
-})
-keymap.registerShortcut('alt + shift + ctrl + v', () => {
-  console.log('all')
-})
-keymap.registerShortcut('ctrl + h', () => {
-  console.log('帮助')
-})
 
 pluginManager.registerPlugin(refLine.name, refLine)
 pluginManager.registerPlugin(keymap.name, keymap)

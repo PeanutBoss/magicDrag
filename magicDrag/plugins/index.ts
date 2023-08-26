@@ -1,5 +1,5 @@
-import {baseErrorTips, isNullOrUndefined} from "../utils/tools.ts";
-import { Parameter } from '../utils/parameter.ts'
+import {baseErrorTips, isNullOrUndefined} from "../utils/tools";
+import { Parameter } from '../utils/parameter'
 
 export interface Plugin {
 	name: string

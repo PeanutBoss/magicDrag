@@ -1,9 +1,9 @@
-import {showOrHideContourPoint, updatePointPosition} from '../../utils/magicDrag.ts'
-import useMagicDrag from '../../useMagicDrag.ts'
-import ContextMenu, {menuState} from '../contextMenu/index.ts'
-import {getCurrentParameter, getNotLockParameter} from '../../utils/parameter.ts'
-import {getTargetZIndex, TargetStatus} from "../../style/className.ts";
-import {addClassName, removeClassName, setStyle} from "../../utils/tools.ts";
+import {showOrHideContourPoint, updatePointPosition} from '../../utils/magicDrag'
+import useMagicDrag from '../../useMagicDrag'
+import ContextMenu, {menuState} from '../contextMenu/index'
+import {getCurrentParameter, getNotLockParameter} from '../../utils/parameter'
+import {getTargetZIndex, TargetStatus} from "../../style/className";
+import {addClassName, removeClassName, setStyle} from "../../utils/tools";
 
 function getScaleSize (originSize, ratio) {
 	return {

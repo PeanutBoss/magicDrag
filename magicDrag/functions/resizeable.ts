@@ -1,13 +1,13 @@
 import {watch} from 'vue'
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager.ts'
-import {getCurrentTarget, getParameter, Parameter} from '../utils/parameter.ts'
+import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import {getCurrentTarget, getParameter, Parameter} from '../utils/parameter'
 import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
-} from '../utils/magicDrag.ts'
-import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools.ts'
-import useMoveElement from '../useMoveElement.ts'
-import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap.ts'
+} from '../utils/magicDrag'
+import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools'
+import useMoveElement from '../useMoveElement'
+import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
 
 const resizeActions = getActionCallbacks('resizeCallbacks')
 

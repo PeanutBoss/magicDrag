@@ -1,8 +1,8 @@
-import { Plugin } from '../index.ts'
-import { actionMap, ActionDescribe, ActionMap } from './actionMap.ts'
-import {getCurrentParameter} from '../../utils/parameter.ts'
-import { ClassName } from "../../style/className.ts";
-import {mergeObject} from "../../utils/tools.ts";
+import { Plugin } from '../index'
+import { actionMap, ActionDescribe, ActionMap } from './actionMap'
+import {getCurrentParameter} from '../../utils/parameter'
+import { ClassName } from "../../style/className";
+import {mergeObject} from "../../utils/tools";
 
 export const menuState: any = {
   isInsertAction: false,

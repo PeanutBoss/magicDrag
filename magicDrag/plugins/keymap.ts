@@ -1,4 +1,31 @@
-import { PluginBlueprint } from "../../pluginBlueprint/pluginManager.ts";
+import { PluginBlueprint } from "../../pluginBlueprint/pluginManager";
+
+const defaultShortcut = {
+	'ctrl + a': event => {
+		event.preventDefault()
+		console.log('全选')
+	},
+	'ctrl + c': event => {
+		event.preventDefault()
+		console.log('复制')
+	},
+	'ctrl + v': event => {
+		event.preventDefault()
+		console.log('粘贴')
+	},
+	'ctrl + h': event => {
+		event.preventDefault()
+		console.log('帮助')
+	},
+	'ctrl + z': event => {
+		event.preventDefault()
+		console.log('撤销')
+	},
+	'ctrl + y': event => {
+		event.preventDefault()
+		console.log('重做')
+	}
+}
 
 class Keymap implements PluginBlueprint.Plugin {
 	name: string
@@ -10,6 +37,7 @@ class Keymap implements PluginBlueprint.Plugin {
 	constructor() {
 		this.name = 'keymap'
 		this.bindTriggerShortcut = this.triggerShortcut.bind(this)
+		this.configureShortcuts(defaultShortcut)
 	}
 	init() {
 		window.addEventListener('keydown', this.bindTriggerShortcut)
@@ -50,7 +78,6 @@ class Keymap implements PluginBlueprint.Plugin {
 	}
 	// 触发快捷键
 	triggerShortcut(event: KeyboardEvent) {
-    event.preventDefault()
 		const shortcut = this.getDescribeFromEvent(event)
 		if (this.shortcuts[shortcut]) {
 			this.shortcuts[shortcut].forEach(item => item.action(event))
@@ -64,6 +91,12 @@ class Keymap implements PluginBlueprint.Plugin {
 		if (event.altKey) describe.push(Keymap.ALT)
 		describe.push(event.key.toUpperCase())
 		return describe.join('+')
+	}
+	// 配置默认快捷键
+	configureShortcuts(shortcuts) {
+		for (const shortcutsKey in shortcuts) {
+			this.registerShortcut(shortcutsKey, shortcuts[shortcutsKey])
+		}
 	}
 	// 启用快捷键
 	enableShortcut(shortcut) {}
