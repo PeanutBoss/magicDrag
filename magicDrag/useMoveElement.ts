@@ -1,4 +1,4 @@
-import { reactive, ref, toRef, nextTick, watch, readonly, onUnmounted } from "vue/dist/vue.esm-bundler.js";
+import { reactive, ref, toRef, nextTick, watch, readonly, onUnmounted } from "vue";
 import { getElement, transferControl } from './utils/tools.ts'
 import { throttle } from 'lodash'
 
