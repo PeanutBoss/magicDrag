@@ -9,7 +9,11 @@ describe("base function", () => {
     mouseMoveEvent
   beforeAll(() => {
 
-    mouseDownEvent = new MouseEvent('mousedown')
+    mouseDownEvent = new MouseEvent('mousedown', {
+      bubbles: true,
+      cancelable: true,
+      view: window
+    })
     mouseUpEvent = new MouseEvent('mouseup')
     mouseMoveEvent = new MouseEvent('mousemove', { movementX: 10, movementY: 10 })
 
@@ -20,23 +24,15 @@ describe("base function", () => {
     element = document.getElementById('element')
 
     targetState = useMagicDrag(element)
-    // const {
-    //   targetLeft,
-    //   targetTop,
-    //   targetHeight,
-    //   targetWidth,
-    //   targetIsLock,
-    //   targetIsPress
-    // } = useMagicDrag(element)
-
   })
 
-  it('is the mouse press down', () => {
+  it.only('is the mouse press down', async () => {
     element.dispatchEvent(mouseDownEvent)
+    await new Promise(resolve => setTimeout(resolve, 500))
     expect(targetState.targetIsPress.value).toBe(true)
 
-
     element.dispatchEvent(mouseUpEvent)
+    await new Promise(resolve => setTimeout(resolve, 500))
     expect(targetState.targetIsPress.value).toBe(false)
   })
 
