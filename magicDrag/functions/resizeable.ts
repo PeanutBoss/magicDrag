@@ -1,5 +1,5 @@
 import {watch} from 'vue'
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import { PluginBlueprint } from '../plugins/pluginManager.ts'
 import {getCurrentTarget, getParameter, Parameter} from '../utils/parameter'
 import {
   Direction, InitPointOption, PointPosition,

@@ -1,4 +1,4 @@
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import { PluginBlueprint } from '../plugins/pluginManager.ts'
 import {setStyle, transferControl} from '../utils/tools'
 import useMoveElement from '../useMoveElement'
 import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag'
