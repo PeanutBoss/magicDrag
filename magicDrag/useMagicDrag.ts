@@ -9,8 +9,8 @@ import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/con
 import { actionMap } from './plugins/contextMenu/actionMap'
 import Draggable from './functions/draggable'
 import Resizeable from './functions/resizeable'
-import { PluginBlueprint } from './functions/pluginManager'
-import { RefLinePlugin } from './plugins/refLine'
+import { PluginManager } from './functions/pluginManager'
+import { RefLine } from './plugins/refLine'
 import Keymap from './plugins/keymap'
 
 /*
@@ -151,8 +151,8 @@ function initGlobalData () {
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
 }
 
-const pluginManager = new PluginBlueprint.PluginManager()
-const refLine = new RefLinePlugin.RefLine({ gap: 10 })
+const pluginManager = new PluginManager()
+const refLine = new RefLine({ gap: 10 })
 const keymap = new Keymap()
 
 pluginManager.registerPlugin(refLine.name, refLine)

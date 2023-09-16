@@ -1,4 +1,4 @@
-import { PluginBlueprint } from '../functions/pluginManager'
+import { Plugin } from '../functions/pluginManager'
 
 const defaultShortcut = {
 	'ctrl + a': event => {
@@ -27,7 +27,7 @@ const defaultShortcut = {
 	}
 }
 
-class Keymap implements PluginBlueprint.Plugin {
+class Keymap implements Plugin {
 	name: string
 	static CTRL = 'CTRL'
 	static SHIFT = 'SHIFT'

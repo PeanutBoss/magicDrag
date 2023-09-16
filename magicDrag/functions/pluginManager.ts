@@ -1,96 +1,43 @@
-export namespace PluginBlueprint {
-  // MARK 1.插件注册和管理 - 设计一个中心化的插件管理器，负责插件的注册、安装和卸载。
-  export class PluginManager {
-    private plugins: Map<string, Plugin> = new Map()
+export class PluginManager {
+  private plugins: Map<string, Plugin> = new Map()
 
-    registerPlugin(name: string, plugin: Plugin) {
-      this.plugins.set(name, plugin)
+  registerPlugin(name: string, plugin: Plugin) {
+    this.plugins.set(name, plugin)
+  }
+
+  installPlugin(name: string) {
+    const plugin = this.plugins.get(name)
+    if (plugin) {
+      plugin.init()
     }
+  }
 
-    installPlugin(name: string) {
-      const plugin = this.plugins.get(name)
-      if (plugin) {
-        plugin.init()
+  uninstallPlugin(name: string) {
+    const plugin = this.plugins.get(name)
+    if (plugin) {
+      plugin.unbind()
+    }
+  }
+
+  // MARK 5.扩展点触发 - 在关键时刻触发扩展点，通知注册在该扩展点上的插件。
+  callExtensionPoint(extensionPoint: string, ...args: any[]) {
+    this.plugins.forEach((plugin) => {
+      if (typeof plugin[extensionPoint] === 'function') {
+        plugin[extensionPoint](...args)
       }
-    }
-
-    uninstallPlugin(name: string) {
-      const plugin = this.plugins.get(name)
-      if (plugin) {
-        plugin.unbind()
-      }
-    }
-
-    // MARK 5.扩展点触发 - 在关键时刻触发扩展点，通知注册在该扩展点上的插件。
-    callExtensionPoint(extensionPoint: string, ...args: any[]) {
-      this.plugins.forEach((plugin) => {
-        if (typeof plugin[extensionPoint] === 'function') {
-          plugin[extensionPoint](...args)
-        }
-      })
-    }
+    })
   }
-
-  const pluginManager = new PluginManager()
-
-
-
-  // MARK 2.插件接口 - 定义一个通用的插件接口，插件需要实现这个接口。
-  export interface Plugin {
-    name: string
-    init: () => void
-    unbind: () => void
-    drag?: (...args: any[]) => void
-    resize?: (...args: any[]) => void
-    targetPressChange?: (...args: any[]) => void
-    pointPressChange?: (...args: any[]) => void
-  }
-
-
-
-  // MARK 3.扩展点设计 -  在库的关键时机或逻辑点上定义扩展点，插件可以注册到这些扩展点。
-  class Draggable {
-    constructor(private plugins: PluginManager) {}
-
-    dragStart() {
-      // 在拖拽开始时触发扩展点，通知插件
-      this.plugins.callExtensionPoint('onDragStart')
-    }
-
-    // 其他拖拽逻辑
-  }
-
-
-
-  // MARK 4.插件实现 - 编写插件实现，实现插件接口并注册到插件管理器。
-  class MyPlugin implements Plugin {
-    name = 'MyPlugin'
-
-    init() {
-      // 在初始化时做一些操作
-      console.log('MyPlugin initialized')
-    }
-
-    unbind() {
-      // 在解绑时做一些操作
-      console.log('MyPlugin unbound')
-    }
-
-    // 可能的其他生命周期方法
-  }
-
-  const myPlugin = new MyPlugin()
-  pluginManager.registerPlugin(myPlugin.name, myPlugin)
-
-
-
-  // MARK 6.使用插件
-  const draggable = new Draggable(pluginManager)
-
-  // 安装插件
-  pluginManager.installPlugin('MyPlugin')
 }
 
+export interface Plugin {
+  name: string
+  init: () => void
+  unbind: () => void
+  drag?: (...args: any[]) => void
+  resize?: (...args: any[]) => void
+  targetPressChange?: (...args: any[]) => void
+  pointPressChange?: (...args: any[]) => void
+}
 /*
 * MARK 当设计插件机制时，可以遵循以下一般的工作流程：
    定义接口或基类： 首先，你需要定义一个接口或基类，用于规定插件应该实现的方法或属性。这可以帮助确保插件遵循相同的结构和约定。

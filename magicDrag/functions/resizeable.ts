@@ -1,5 +1,5 @@
 import {watch} from 'vue'
-import { PluginBlueprint } from './pluginManager'
+import { PluginManager } from './pluginManager'
 import {getCurrentTarget, getParameter, Parameter} from '../utils/parameter'
 import {
   Direction, InitPointOption, PointPosition,
@@ -12,7 +12,7 @@ import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu
 const resizeActions = getActionCallbacks('resizeCallbacks')
 
 export default class Resizeable {
-  constructor(private plugins: PluginBlueprint.PluginManager = new PluginBlueprint.PluginManager(), parameter: Parameter) {
+  constructor(private plugins: PluginManager = new PluginManager(), parameter: Parameter) {
     this.init(parameter)
   }
 
