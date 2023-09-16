@@ -4,21 +4,30 @@
   "description": "拖拽",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config ./config/webpack.tsconfig.js",
     "serve": "webpack serve --config ./config/magicDrag.config.js",
-    "build:tool": "webpack --config ./config/product.config.js"
+    "build:tool": "webpack --config ./config/product.config.js",
+    "test": "jest test"
   },
   "repository": {
     "type": "git",
     "url": "https://gitee.com/hc1106/interesting-api.git"
   },
+  "jest": {
+    "testEnvironment": "jsdom"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.22.15",
+    "@babel/preset-env": "^7.22.15",
+    "@babel/preset-typescript": "^7.22.15",
+    "@testing-library/dom": "^9.3.1",
+    "babel-jest": "^29.6.4",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.3",
+    "jest-environment-jsdom": "^29.6.4",
     "ts-loader": "^9.4.4",
     "typescript": "^5.1.5",
     "webpack": "^5.88.0",
@@ -27,11 +36,14 @@
     "webpack-merge": "^5.9.0"
   },
   "dependencies": {
+    "@types/jest": "^29.5.4",
     "css-loader": "^6.8.1",
+    "jest": "^29.6.4",
     "lodash": "^4.17.21",
     "sass": "^1.63.6",
     "sass-loader": "^13.3.2",
     "style-loader": "^3.3.3",
+    "ts-jest": "^29.1.1",
     "vue": "^3.3.4",
     "vue-loader": "^17.2.2",
     "vue-style-loader": "^4.1.3",

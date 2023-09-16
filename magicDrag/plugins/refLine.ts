@@ -270,8 +270,8 @@ export namespace RefLinePlugin {
           leftList = conditions.left
         if (way === 'resize') {
           // MARK X轴有满足吸附条件的元素 而且 X轴的是中间的线则过滤掉中间的线（即resize时中间的线不吸附）
-          (this.isHasAdsorbElementX && this.isCenterX) && (leftList = leftList.filter(item => !item.isCenter));
-          (this.isHasAdsorbElementY && this.isCenterY) && (topList = topList.filter(item => !item.isCenter))
+          (this.isHasAdsorbElementX && this.isCenterX) && (leftList = leftList.filter((item: any) => !item.isCenter));
+          (this.isHasAdsorbElementY && this.isCenterY) && (topList = topList.filter((item: any) => !item.isCenter))
         }
 
         const nearestTop = topList.map(m => Math.abs(m.distance) <= this.options.gap ? m.distance : 0).find(item => Math.abs(item) > 0)
