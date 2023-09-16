@@ -1,4 +1,4 @@
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import { PluginBlueprint } from '../functions/pluginManager'
 import { Parameter } from '../utils/parameter'
 
 declare global {

@@ -9,7 +9,7 @@ import ContextMenu, { DefaultContextMenuOptions, ActionKey } from './plugins/con
 import { actionMap } from './plugins/contextMenu/actionMap'
 import Draggable from './functions/draggable'
 import Resizeable from './functions/resizeable'
-import { PluginBlueprint } from '../pluginBlueprint/pluginManager'
+import { PluginBlueprint } from './functions/pluginManager'
 import { RefLinePlugin } from './plugins/refLine'
 import Keymap from './plugins/keymap'
 

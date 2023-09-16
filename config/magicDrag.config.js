@@ -48,7 +48,7 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.jsx'] // 自动追加的文件后缀名
   },
   devServer: {
-    // open: true,
+    open: true,
     port: 9003,
     hot: true
   },

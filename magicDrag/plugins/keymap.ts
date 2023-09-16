@@ -1,4 +1,4 @@
-import { PluginBlueprint } from "../../pluginBlueprint/pluginManager";
+import { PluginBlueprint } from "../functions/pluginManager";
 
 const defaultShortcut = {
 	'ctrl + a': event => {

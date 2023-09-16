@@ -1,35 +1,79 @@
-import watcher from '../utils/watcher'
+type DomElementState = {
+	element: HTMLElement
+	state: any
+}
+
+type Callback = (element: HTMLElement, state: any) => void
 
 class StateManager {
-	private elementStateMap
-	private currentElement
-	private currentData
-	private targetState
-	private pointState
-	constructor() {
-		this.elementStateMap = new WeakMap()
-	}
+	private elementStates: DomElementState[] = []
+	private selectedElement: HTMLElement | null = null
+	private selectedState: any = null
+	private subscriptions: Record<string, Callback[]> = {}
 
-	registerElement(element, data) {
-		if (this.elementStateMap[element]) {
+	// 添加 DOM 元素的状态
+	registerElementState(element: HTMLElement, initialState: any) {
+		if (this.getElementState(element)) {
 			console.warn('元素已经注册，将覆盖该元素的状态信息')
 		}
-		this.elementStateMap[element] = data
+		this.elementStates.push({ element, state: initialState })
 	}
 
-	setCurrentElement(element) {
-		if (!this.elementStateMap[element]) throw Error('元素未注册')
-		this.currentElement = element
-		this.currentData = this.elementStateMap[element]
+	// 获取 DOM 元素的状态
+	getElementState(element: HTMLElement) {
+		const elementState = this.elementStates.find((es) => es.element === element)
+		if (!elementState) throw Error('元素未注册')
+		return elementState ? elementState.state : null
 	}
 
-	getElementState(element) {
-		return this.elementStateMap.get(element) || {}
+	// 更新 DOM 元素的状态
+	updateElementState(element: HTMLElement, newState: any) {
+		const elementState = this.elementStates.find((es) => es.element === element)
+		if (elementState) {
+			elementState.state = newState
+			this.notifySubscribers(element, newState)
+		}
 	}
 
-	updateElementState(element, newState) {
-		this.elementStateMap.set(element, newState)
-		// 触发事件，通知插件状态更新
-		watcher.trigger('elementStateChanged', element)
+	// 获取当前选中的 DOM 元素
+	get currentElement() {
+		return this.selectedElement
+	}
+
+	// 获取当前选中的 DOM 元素的状态
+	get currentState() {
+		return this.selectedState
+	}
+
+	// 设置当前选中的 DOM 元素和状态
+	setCurrentElement(element: HTMLElement | null) {
+		this.selectedElement = element
+		this.selectedState = this.getElementState(element!) // 获取选中元素的状态
+		this.notifySubscribers(this.selectedElement, this.selectedState)
+	}
+
+	// 订阅状态变化
+	subscribe(key: string, callback: Callback) {
+		if (!this.subscriptions[key]) {
+			this.subscriptions[key] = []
+		}
+		this.subscriptions[key].push(callback)
+	}
+
+	// 取消订阅状态变化
+	unsubscribe(key: string, callback: Callback) {
+		if (this.subscriptions[key]) {
+			this.subscriptions[key] = this.subscriptions[key].filter((cb) => cb !== callback)
+		}
+	}
+
+	// 通知订阅者状态变化
+	private notifySubscribers(element: HTMLElement | null, state: any) {
+		const callbacks = this.subscriptions['selection']
+		if (callbacks) {
+			callbacks.forEach((callback) => callback(element!, state))
+		}
 	}
 }
+
+export default StateManager

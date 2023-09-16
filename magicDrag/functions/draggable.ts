@@ -1,4 +1,4 @@
-import { PluginBlueprint } from '../../pluginBlueprint/pluginManager'
+import { PluginBlueprint } from './pluginManager'
 import {setStyle, transferControl} from '../utils/tools'
 import useMoveElement from '../useMoveElement'
 import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag'
@@ -9,8 +9,13 @@ import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu
 const dragActions = getActionCallbacks('dragCallbacks')
 
 export default class Draggable {
-	constructor(private plugins: PluginBlueprint.PluginManager = new PluginBlueprint.PluginManager, parameter: Parameter) {
+	private bindElement: HTMLElement
+	constructor(private plugins: PluginBlueprint.PluginManager = new PluginBlueprint.PluginManager, parameter: Parameter, stateManager?) {
 		this.init(parameter)
+	}
+
+	setElement(element: HTMLElement) {
+		this.bindElement = element
 	}
 
 	init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
