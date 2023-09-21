@@ -1,10 +1,9 @@
-import {Direction} from "../utils/magicDrag";
-import {ActionKey, DefaultContextMenuOptions} from "../plugins/contextMenu";
-import {Plugin} from "../plugins";
-import {ClassName} from "../style/className";
-import {actionMap} from "../plugins/contextMenu/actionMap";
-import {Ref, reactive} from "vue";
-import {ref} from "_vue@3.3.4@vue";
+import {Direction} from '../utils/magicDrag'
+import {ActionKey, DefaultContextMenuOptions} from '../plugins/contextMenu'
+import {Plugin} from '../plugins'
+import {ClassName} from '../style/className'
+import {actionMap} from '../plugins/contextMenu/actionMap'
+import {Ref, reactive, ref} from 'vue'
 
 export interface MagicDragOptions {
 	containerSelector: string

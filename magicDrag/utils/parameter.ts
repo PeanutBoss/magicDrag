@@ -1,7 +1,7 @@
 // 以目标元素的 dataset.index 作为key保存所有参数信息
 import {MagicDragOptions} from '../common/magicDragAssist'
 import { Ref } from 'vue'
-import {isNullOrUndefined} from "./tools";
+import {isNullOrUndefined} from './tools'
 
 let currentTarget = null
 

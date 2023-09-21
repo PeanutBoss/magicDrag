@@ -11,12 +11,15 @@ class StateManager {
 	private selectedState: any = null
 	private subscriptions: Record<string, Callback[]> = {}
 
-	// 添加 DOM 元素的状态
-	registerElementState(element: HTMLElement, initialState: any) {
-		if (this.getElementState(element)) {
-			console.warn('元素已经注册，将覆盖该元素的状态信息')
-		}
+	/**
+	 * 添加 DOM 元素的状态
+	 * @param element 添加的DOM元素
+	 * @param initialState DOM
+	 * @param isSetSelected 是否设置为选中状态
+	 */
+	registerElementState(element: HTMLElement, initialState: any, isSetSelected = true) {
 		this.elementStates.push({ element, state: initialState })
+		isSetSelected && this.setCurrentElement(element)
 	}
 
 	// 获取 DOM 元素的状态
@@ -43,6 +46,10 @@ class StateManager {
 	// 获取当前选中的 DOM 元素的状态
 	get currentState() {
 		return this.selectedState
+	}
+
+	get size() {
+		return this.elementStates.length
 	}
 
 	// 设置当前选中的 DOM 元素和状态

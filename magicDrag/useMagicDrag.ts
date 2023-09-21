@@ -18,6 +18,7 @@ import {
   MagicDragState,
   storingDataContainer
 } from './common/magicDragAssist'
+import StateManager from './functions/stateManager'
 
 /*
 * TODO
@@ -53,6 +54,7 @@ function initGlobalData () {
 }
 
 const pluginManager = new PluginManager()
+const stateManager = new StateManager()
 const refLine = new RefLine({ gap: 10 })
 const keymap = new Keymap()
 
@@ -88,7 +90,7 @@ function useMagicDragAPI (
   }
 
   // 显示或隐藏轮廓点的方法
-  const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState)
+  const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState, stateManager)
 
 	nextTick(() => {
     initContainer()
@@ -98,7 +100,9 @@ function useMagicDragAPI (
     pluginManager.installPlugin(refLine.name)
     pluginManager.installPlugin(keymap.name)
 
-    new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
+    // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
+    stateManager.registerElementState($target.value, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, true)
+    new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
     new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 

@@ -1,10 +1,7 @@
-import {conditionExecute, getObjectIntValue, setStyle, transferControl} from './tools'
+import {conditionExecute, getObjectIntValue, setStyle} from './tools'
 import {reactive} from 'vue'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {
-  getCurrentParameter,
-  getCurrentTarget,
-  getParameter,
   setCurrentTarget
 } from './parameter'
 import {getTargetZIndex, TargetStatus} from "../style/className";
@@ -221,14 +218,14 @@ export function showOrHideContourPoint (pointElements, isShow) {
     setStyle(pointElements[key], 'display', isShow ? 'block' : 'none')
   }
 }
-function checkIsContains (target, pointElements, targetState, event) {
+function checkIsContains (target, pointElements, targetState, stateManager, event) {
 
   const {
     globalDataParameter: { initialTarget, downPointPosition },
     stateParameter: { pointState },
     optionParameter: { pointSize },
 		elementParameter: { allContainer, target: $target, privateTarget }
-  } = getParameter(target.dataset.index)
+  } = stateManager.getElementState(target)
 
 	// 如果点击目标元素是容器则隐藏轮廓点
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
@@ -248,6 +245,7 @@ function checkIsContains (target, pointElements, targetState, event) {
 
   // 设置当前选中的target
   setCurrentTarget(target)
+	stateManager.setCurrentElement(target)
   // 按下鼠标时更新轮廓点位置信息
   const isContinue = executeActionCallbacks(mousedownActions, initialTarget, 'beforeCallback')
   if (isContinue === false) return
@@ -273,11 +271,11 @@ function checkIsContains (target, pointElements, targetState, event) {
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
-export function blurOrFocus (pointElements, targetState) {
+export function blurOrFocus (pointElements, targetState, stateManager) {
   let checkIsContainsTarget
   return (target: HTMLElement, isBind = true) => {
     if (isBind) {
-      window.addEventListener('mousedown', checkIsContainsTarget ?? (checkIsContainsTarget = checkIsContains.bind(null, target, pointElements, targetState)))
+      window.addEventListener('mousedown', checkIsContainsTarget ?? (checkIsContainsTarget = checkIsContains.bind(null, target, pointElements, targetState, stateManager)))
     } else {
       window.removeEventListener('mousedown', checkIsContainsTarget)
     }
@@ -290,46 +288,6 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
   for (const key in pointElements) {
     setStyle(pointElements[key], 'left', downPointPosition[key][0] + movement.x + 'px')
     setStyle(pointElements[key], 'top', downPointPosition[key][1] + movement.y + 'px')
-  }
-}
-export function moveTargetCallback (dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
-  return (moveAction, movement) => {
-		const parameter = getCurrentParameter()
-		const initialTarget = parameter.globalDataParameter.initialTarget
-    // 如果目标元素处于锁定状态则不允许拖拽
-    const isContinue = executeActionCallbacks(dragActions, initialTarget, 'beforeCallback')
-    if (isContinue === false) return
-
-		const _updateContourPointPosition = (movement) => {
-			updateContourPointPosition(downPointPosition, movement, pointElements)
-		}
-		const _updateState = (movement) => {
-			updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
-		}
-
-    // Wrap the action to move the target element as a separate new function, and if the user defines a callback
-    // use moveTargetAction as an argument to that callback
-    // 将移动目标元素的操作包装为单独新的函数,如果用户有定义回调，则将moveTargetAction作为这个回调的参数
-    const moveTargetAction = () => {
-      // perform the default action for movePoint
-      // 执行movePoint的默认动作
-      moveAction()
-			// 限制目标元素在容器内移动
-			limitTargetMove(initialTarget, containerInfo, movement)
-      // update the position of the contour points
-      // 更新轮廓点位置
-			_updateContourPointPosition(movement)
-
-			// update the state of the target element - 更新目标元素状态
-			_updateState(movement)
-    }
-    // Hand over control (moveTargetAction)
-    // 将控制权（moveTargetAction）交出
-    transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
-
-		executePluginDrag(parameter.globalDataParameter.plugins, parameter, { movement, _updateContourPointPosition, _updateState })
-
-    executeActionCallbacks(dragActions, initialTarget, 'afterCallback')
   }
 }
 
@@ -449,38 +407,6 @@ export function limitTargetResize (target, { direction, movementX, movementY }, 
   const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
 }
-// a callback function that moves contour points - 移动轮廓点的回调函数
-export function movePointCallback (stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
-	const { moveAction, target, direction, movementX, movementY } = runTimeParameter
-
-  const {
-    globalDataParameter: { initialTarget, containerInfo },
-    stateParameter: { targetState, pointState },
-    optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
-    elementParameter: { pointElements }
-  } = getParameter(target.dataset.index)
-	const parameter = getParameter(target.dataset.index)
-
-	const isContinue = executeActionCallbacks(resizeActions, initialTarget, 'beforeCallback')
-	if (isContinue === false) return
-
-	moveAction()
-
-	const _updateTargetStyle = ({ movementX, movementY }) => {
-		updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
-	}
-	const _updatePointPosition = ({ movementX, movementY }) => {
-		updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
-	}
-
-	limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
-
-	_updateTargetStyle({ movementX, movementY })
-
-	_updatePointPosition({ movementX, movementY })
-
-	executePluginResize(parameter.globalDataParameter.plugins, parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
-}
 
 
 
@@ -495,20 +421,7 @@ export function getCoordinateByElement (element: HTMLElement) {
     top: element.offsetTop
   }
 }
-export function pointIsPressChangeCallback (target, { initialTarget, pointState, direction }) {
-  return newV => {
-    // 与window绑定mousedown同理，取消无用更新
-    const currentTarget = getCurrentTarget()
-    if (target !== currentTarget) return
 
-    pointState.isPress = newV
-    pointState.direction = direction
-    if (!newV) {
-			pointState.direction = null
-      updateInitialTarget(initialTarget, getCoordinateByElement(target))
-    }
-  }
-}
 // creates/updates objects that record coordinate and dimension information for target elements
 // 创建/更新记录目标元素坐标和维度信息的对象
 export function updateInitialTarget (targetCoordinate?, newCoordinate?) {

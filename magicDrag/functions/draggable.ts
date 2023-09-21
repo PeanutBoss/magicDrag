@@ -10,8 +10,8 @@ const dragActions = getActionCallbacks('dragCallbacks')
 
 export default class Draggable {
 	private bindElement: HTMLElement
-	constructor(private plugins: PluginManager = new PluginManager, parameter: Parameter, stateManager?) {
-		this.init(parameter)
+	constructor(private plugins: PluginManager = new PluginManager, parameter: Parameter, private stateManager) {
+		this.init(stateManager.currentState)
 	}
 
 	setElement(element: HTMLElement) {
@@ -51,7 +51,7 @@ export default class Draggable {
 
 	moveTargetCallback(dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
 		return (moveAction, movement) => {
-			const parameter = getCurrentParameter()
+			const parameter = this.stateManager.currentState
 			const initialTarget = parameter.globalDataParameter.initialTarget
 			// 如果目标元素处于锁定状态则不允许拖拽
 			const isContinue = executeActionCallbacks(dragActions, initialTarget, 'beforeCallback')
