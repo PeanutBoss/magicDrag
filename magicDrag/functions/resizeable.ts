@@ -1,6 +1,6 @@
 import {watch} from 'vue'
 import { PluginManager } from './pluginManager'
-import {getCurrentTarget, getParameter, Parameter} from '../utils/parameter'
+import {Parameter} from '../utils/parameter'
 import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
@@ -12,8 +12,8 @@ import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu
 const resizeActions = getActionCallbacks('resizeCallbacks')
 
 export default class Resizeable {
-  constructor(private plugins: PluginManager = new PluginManager(), parameter: Parameter) {
-    this.init(parameter)
+  constructor(private plugins: PluginManager = new PluginManager(), parameter: Parameter, private stateManager) {
+    this.init(stateManager.currentState)
   }
 
   init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
@@ -59,7 +59,7 @@ export default class Resizeable {
   pointIsPressChangeCallback (target, { initialTarget, pointState, direction }, elementParameter) {
     return newV => {
       // 与window绑定mousedown同理，取消无用更新
-      const currentTarget = getCurrentTarget()
+      const currentTarget = this.stateManager.currentState
       if (target !== currentTarget) return
       pointState.isPress = newV
       pointState.direction = direction
@@ -106,13 +106,13 @@ export default class Resizeable {
   movePointCallback (stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
     const { moveAction, target, direction, movementX, movementY } = runTimeParameter
 
+    const parameter = this.stateManager.getElementState(target)
     const {
       globalDataParameter: { initialTarget, containerInfo },
       stateParameter: { targetState, pointState },
       optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
       elementParameter: { pointElements }
-    } = getParameter(target.dataset.index)
-    const parameter = getParameter(target.dataset.index)
+    } = parameter
 
     const isContinue = executeActionCallbacks(resizeActions, initialTarget, 'beforeCallback')
     if (isContinue === false) return

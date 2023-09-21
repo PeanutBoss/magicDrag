@@ -37,6 +37,7 @@ type WholeParameter = {
 }
 
 const wholeParameter: WholeParameter = {}
+window.wholeParameter = wholeParameter
 
 export function getParameter (index: number): Parameter {
 	return wholeParameter[index]

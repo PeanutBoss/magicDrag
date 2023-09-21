@@ -3,7 +3,7 @@ import {setStyle, transferControl} from '../utils/tools'
 import useMoveElement from '../useMoveElement'
 import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag'
 import {watch} from 'vue'
-import {getCurrentParameter, Parameter} from '../utils/parameter'
+import {Parameter} from '../utils/parameter'
 import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
 
 const dragActions = getActionCallbacks('dragCallbacks')

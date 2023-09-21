@@ -102,8 +102,9 @@ function useMagicDragAPI (
 
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
     stateManager.registerElementState($target.value, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, true)
+    window.stateManager = stateManager
     new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
-    new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
+    new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
     executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
@@ -192,7 +193,7 @@ export default function useMagicDrag (
   // drag && plugins.push(Drag)
   // resize && plugins.push(Resize)
   baseWarnTips(actionList.length === 0, 'check that the actionList is empty and the use of ContextMenu is cancelled')
-  actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
+  // actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
 
   plugins = duplicateRemovalPlugin(plugins)
 
