@@ -59,7 +59,7 @@ export default class Resizeable {
   pointIsPressChangeCallback (target, { initialTarget, pointState, direction }, elementParameter) {
     return newV => {
       // 与window绑定mousedown同理，取消无用更新
-      const currentTarget = this.stateManager.currentState
+      const currentTarget = this.stateManager.currentElement
       if (target !== currentTarget) return
       pointState.isPress = newV
       pointState.direction = direction
