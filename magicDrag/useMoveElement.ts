@@ -1,4 +1,4 @@
-import { reactive, ref, toRef, nextTick, watch, readonly, onUnmounted } from "vue";
+import { reactive, ref, toRef, nextTick, watch, readonly } from "vue";
 import { getElement, transferControl } from './utils/tools.ts'
 import { throttle } from 'lodash'
 
@@ -23,11 +23,11 @@ export default function useMoveElement (selector: string | HTMLElement, moveCall
 		$ele = getElement(selector)
 		$ele.addEventListener('mousedown', mouseDown)
 	})
-  onUnmounted(() => {
-    $ele.removeEventListener('mousedown', mouseDown)
-    window.removeEventListener('mousedown', throttleMouseMove)
-    window.removeEventListener('mouseup', mouseUp)
-  })
+	function destroy() {
+		$ele.removeEventListener('mousedown', mouseDown)
+		window.removeEventListener('mousedown', throttleMouseMove)
+		window.removeEventListener('mouseup', mouseUp)
+	}
 	let $ele
 
 	// 是否可以移动
@@ -99,6 +99,7 @@ export default function useMoveElement (selector: string | HTMLElement, moveCall
 		movementX: toRef(movement, 'x'),
 		movementY: toRef(movement, 'y'),
     isPress: readonly(isPress),
-    stopCoordinate
+    stopCoordinate,
+		destroy
 	}
 }
