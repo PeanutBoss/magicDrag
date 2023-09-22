@@ -1,6 +1,36 @@
+import {Ref} from "vue";
+import {MagicDragOptions} from '../common/magicDragAssist'
+
 type DomElementState = {
 	element: HTMLElement
-	state: any
+	state: State
+}
+
+export interface ElementParameter {
+	target: Ref<HTMLElement>
+	container: Ref<HTMLElement>
+	privateTarget: HTMLElement | null
+	privateContainer: HTMLElement | null
+	pointElements: any
+	allTarget: HTMLElement[]
+	allContainer: HTMLElement[]
+}
+export interface StateParameter {
+	pointState,
+	targetState,
+}
+export interface GlobalDataParameter {
+	initialTarget, containerInfo, downPointPosition, plugins
+}
+export interface OptionParameter {
+	target: HTMLElement, container: HTMLElement, pointElements: any, allTarget: any
+}
+
+export type State = {
+	elementParameter: ElementParameter
+	stateParameter: StateParameter
+	globalDataParameter: GlobalDataParameter
+	optionParameter: MagicDragOptions
 }
 
 type Callback = (element: HTMLElement, state: any) => void
@@ -50,6 +80,12 @@ class StateManager {
 
 	get size() {
 		return this.elementStates.length
+	}
+
+	get notLockState() {
+		return this.elementStates.filter(item => !item.state.globalDataParameter.initialTarget.isLock)
+			.filter(item => item.state.elementParameter.privateTarget !== this.currentElement)
+			.map(m => ({ target: m.element, zIndex: m.state.globalDataParameter.initialTarget.zIndex }))
 	}
 
 	// 设置当前选中的 DOM 元素和状态

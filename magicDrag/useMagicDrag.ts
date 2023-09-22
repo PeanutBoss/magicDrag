@@ -2,7 +2,7 @@ import { onBeforeUnmount, toRef, nextTick, ref } from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType, baseWarnTips } from './utils/tools'
 import { blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins'
-import { ElementParameter, setParameter } from './utils/parameter'
+import { ElementParameter } from './functions/stateManager'
 import { MAGIC_DRAG } from './style/className'
 import ContextMenu from './plugins/contextMenu'
 import Draggable from './functions/draggable'
@@ -102,9 +102,8 @@ function useMagicDragAPI (
 
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
     stateManager.registerElementState($target.value, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, true)
-    window.stateManager = stateManager
-    new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
-    new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
+    options.skill.drag && new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
+    options.skill.resize && new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
     executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
 
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
@@ -143,7 +142,6 @@ function useMagicDragAPI (
     $target.value.addEventListener('click', updateTargetValue)
 
     $target.value.dataset.index = allTarget.length
-    setParameter(allTarget.length, { elementParameter, stateParameter, globalDataParameter, optionParameter: options })
     allTarget.push($target.value)
 
     baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
@@ -186,14 +184,12 @@ export default function useMagicDrag (
   checkParameterType(defaultOptions(), options)
   options = mergeObject(defaultOptions(), options)
   const { contextMenuOption, actionList } = options
-  const { drag, resize, contextMenu } = options.skill
+  const { contextMenu } = options.skill
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 
-  // drag && plugins.push(Drag)
-  // resize && plugins.push(Resize)
   baseWarnTips(actionList.length === 0, 'check that the actionList is empty and the use of ContextMenu is cancelled')
-  // actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption))
+  actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption, stateManager))
 
   plugins = duplicateRemovalPlugin(plugins)
 

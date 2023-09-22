@@ -1,7 +1,6 @@
 import {showOrHideContourPoint, updatePointPosition} from '../../utils/magicDrag'
 import useMagicDrag from '../../useMagicDrag'
 import ContextMenu, {menuState} from '../contextMenu/index'
-import {getCurrentParameter, getNotLockParameter} from '../../utils/parameter'
 import {getTargetZIndex, TargetStatus} from "../../style/className";
 import {addClassName, removeClassName, setStyle} from "../../utils/tools";
 
@@ -42,7 +41,7 @@ export interface ActionDescribe {
 	}
 	mousedownCallbacks?: {
 		beforeCallback? (targetState): boolean
-		afterCallback? (targetState): void
+		afterCallback? (targetState, state: any): void
 	}
 	[key: string]: any
 }
@@ -54,8 +53,8 @@ export const actionMap: ActionMap = {
 		name: 'lock',
 		actionName: '锁定',
 		actionDom: null,
-		actionCallback () {
-			const { stateParameter, elementParameter, globalDataParameter: { initialTarget } } = getCurrentParameter()
+		actionCallback (stateManager) {
+			const { stateParameter, elementParameter, globalDataParameter: { initialTarget } } = stateManager.currentState
       const { options: { lockTargetClassName } } = this.getMenuContextParameter()
 			stateParameter.targetState.isLock = !initialTarget.isLock
 			initialTarget.isLock = !initialTarget.isLock
@@ -88,12 +87,12 @@ export const actionMap: ActionMap = {
 		name: 'blowUp',
 		actionName: '放大',
 		actionDom: null,
-		actionCallback() {
+		actionCallback (stateManager) {
 			const {
 				stateParameter: { targetState, pointState },
 				globalDataParameter: { initialTarget },
 				elementParameter: { pointElements, privateTarget }
-			} = getCurrentParameter()
+			} = stateManager.currentState
 			if (initialTarget.isLock) return
 
 			const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
@@ -116,13 +115,13 @@ export const actionMap: ActionMap = {
 		name: 'reduce',
 		actionName: '缩小',
 		actionDom: null,
-		actionCallback() {
+		actionCallback (stateManager) {
 			const {
 				stateParameter: { targetState, pointState },
 				globalDataParameter: { initialTarget },
 				elementParameter: { pointElements, privateTarget },
 				optionParameter: { pointSize }
-			} = getCurrentParameter()
+			} = stateManager.currentState
 			if (initialTarget.isLock) return
 
 			const scaleSize = getScaleSize({ width: initialTarget.originWidth, height: initialTarget.originHeight }, 0.1)
@@ -145,12 +144,12 @@ export const actionMap: ActionMap = {
 		name: 'copy',
 		actionName: '复制',
 		actionDom: null,
-		actionCallback() {
+		actionCallback(stateManager) {
 			const {
 				globalDataParameter: { initialTarget, plugins },
 				elementParameter: { privateTarget },
 				optionParameter: { containerSelector }
-			} = getCurrentParameter()
+			} = stateManager.currentState
 			if (initialTarget.isLock) return
 
 			const { actionList, options } = this.getMenuContextParameter()
@@ -164,18 +163,18 @@ export const actionMap: ActionMap = {
 			copyTarget.style.top = initialTarget.top + options.offsetY + 'px'
 			parent.appendChild(copyTarget)
 			// TODO 复制目标元素后，需要将target设置为新复制的元素
-			useMagicDrag(`.${newClassName}`, { containerSelector }, [...plugins, new ContextMenu(actionList, options)])
+			useMagicDrag(`.${newClassName}`, { containerSelector }, [...plugins, new ContextMenu(actionList, options, stateManager)])
 		}
 	},
 	delete: {
 		name: 'delete',
 		actionName: '删除',
 		actionDom: null,
-		actionCallback() {
+		actionCallback(stateManager) {
 			const {
 				elementParameter: { privateTarget, pointElements },
 				globalDataParameter: { initialTarget }
-			} = getCurrentParameter()
+			} = stateManager.currentState
 			if (initialTarget.isLock) return
 
 			showOrHideContourPoint(pointElements, false)
@@ -186,8 +185,8 @@ export const actionMap: ActionMap = {
 		name: 'rotate',
 		actionName: '旋转',
 		actionDom: null,
-		actionCallback(event) {
-			const { elementParameter: { privateTarget, pointElements }, globalDataParameter: { initialTarget, downPointPosition } } = getCurrentParameter()
+		actionCallback(stateManager) {
+			const { elementParameter: { privateTarget, pointElements }, globalDataParameter: { initialTarget, downPointPosition } } = stateManager.currentState
 			const rotate = 45
 			initialTarget.rotate = 45
 			privateTarget.style.transform = `rotate(${rotate}deg)`
@@ -200,8 +199,8 @@ export const actionMap: ActionMap = {
 		actionName: '置顶',
 		actionDom: null,
 		customData: { index: 0 },
-		actionCallback() {
-			const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
+		actionCallback(stateManager) {
+			const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = stateManager.currentState
 			setStyle(privateTarget, 'zIndex', getTargetZIndex(TargetStatus.Uppermost, privateTarget) + ++this.customData.index)
 			initialTarget.zIndex = TargetStatus.Uppermost + this.customData.index
 		},
@@ -212,16 +211,16 @@ export const actionMap: ActionMap = {
 		actionName: '置底',
 		actionDom: null,
 		customData: { index: 0 },
-		actionCallback() {
-			const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
+		actionCallback(stateManager) {
+			const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = stateManager.currentState
 			setStyle(privateTarget, 'zIndex', getTargetZIndex(TargetStatus.Lowest, privateTarget) - ++this.customData.index)
 			initialTarget.zIndex = TargetStatus.Lowest - this.customData.index
 		},
 		mousedownCallbacks: {
-			afterCallback() {
-				const { elementParameter: { privateTarget } } = getCurrentParameter()
+			afterCallback(targetState, stateManager) {
+				const { elementParameter: { privateTarget } } = stateManager.currentState
 				// 获取没有锁定的元素
-				const notLockTargetList = getNotLockParameter(privateTarget.dataset.index)
+				const notLockTargetList = stateManager.notLockState
 				// 设置为正常状态
 				for (const notLockTarget of notLockTargetList) {
 					setStyle(notLockTarget.target, 'zIndex', notLockTarget.zIndex || getTargetZIndex(TargetStatus.Normal, notLockTarget.target))
@@ -242,13 +241,14 @@ export function getActionCallbacks (type: 'dragCallbacks' | 'resizeCallbacks' | 
 	return actions
 }
 
-export function executeActionCallbacks (actionData, targetState, type: 'beforeCallback' | 'afterCallback') {
+export function executeActionCallbacks (actionData, stateManager, type: 'beforeCallback' | 'afterCallback') {
+	const targetState = stateManager.currentState.globalDataParameter.initialTarget
 	let isContinue = true
 	try {
 		for (let i = 0; i < actionData.length; i++) {
 			const data = actionData[i]
 			// 获取回调执行结果，如果没有返回值则默认为true
-			isContinue = data?.actions?.[type]?.(targetState) ?? true
+			isContinue = data?.actions?.[type]?.(targetState, stateManager) ?? true
 			// 如果某个回调返回false，则终止执行其他回调
 			if (isContinue === false) break
 		}

@@ -1,12 +1,12 @@
 import {baseErrorTips, isNullOrUndefined} from "../utils/tools";
-import { Parameter } from '../utils/parameter'
+import { State } from '../functions/stateManager'
 
 export interface Plugin {
 	name: string
-	init (parameter: Parameter): void
-	drag?(parameter: Parameter, cb?): void
-	resize?(parameter: Parameter, cb?): void
-  unbind (parameter: Parameter): void
+	init (parameter: State): void
+	drag?(parameter: State, cb?): void
+	resize?(parameter: State, cb?): void
+  unbind (parameter: State): void
 }
 
 export function executePluginInit (plugins: Plugin[], elementParameter, stateParameter, globalDataParameter, options) {

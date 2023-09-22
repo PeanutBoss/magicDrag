@@ -1,6 +1,6 @@
 import {watch} from 'vue'
 import { PluginManager } from './pluginManager'
-import {Parameter} from '../utils/parameter'
+import {State} from './stateManager'
 import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
@@ -12,7 +12,7 @@ import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu
 const resizeActions = getActionCallbacks('resizeCallbacks')
 
 export default class Resizeable {
-  constructor(private plugins: PluginManager = new PluginManager(), parameter: Parameter, private stateManager) {
+  constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
     this.init(stateManager.currentState)
   }
 
@@ -114,7 +114,7 @@ export default class Resizeable {
       elementParameter: { pointElements }
     } = parameter
 
-    const isContinue = executeActionCallbacks(resizeActions, initialTarget, 'beforeCallback')
+    const isContinue = executeActionCallbacks(resizeActions, this.stateManager, 'beforeCallback')
     if (isContinue === false) return
 
     moveAction()

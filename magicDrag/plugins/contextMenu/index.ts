@@ -1,8 +1,6 @@
 import { Plugin } from '../index'
 import { actionMap, ActionDescribe, ActionMap } from './actionMap'
-import {getCurrentParameter} from '../../utils/parameter'
 import { ClassName } from "../../style/className";
-import {mergeObject} from "../../utils/tools";
 
 export const menuState: any = {
   isInsertAction: false,
@@ -50,18 +48,19 @@ const defaultContextMenuOptions: DefaultContextMenuOptions = {
 export default class ContextMenu implements Plugin {
   name
   private actions
-  constructor(private actionList, private options) {
+  constructor(private actionList, private options, private stateManager) {
     this.name = 'ContextMenu'
     this.getMenuBox()
     this.bindHidden = this.hiddenMenu.bind(this)
     this.bindContextCallback = this.contextCallback.bind(this)
   }
-  init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
+  init() {
+    const { elementParameter } = this.stateManager.currentState
     const { privateTarget } = elementParameter
     privateTarget.addEventListener('contextmenu', this.bindContextCallback)
-    this.actions = new Actions(this.getActionMapByKey(this.actionList), { actionList: this.actionList, options: this.options })
+    this.actions = new Actions(this.getActionMapByKey(this.actionList), { actionList: this.actionList, options: this.options }, this.stateManager)
   }
-  unbind({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
+  unbind({ elementParameter }) {
     const { privateTarget } = elementParameter
     privateTarget.removeEventListener('contextmenu', this.bindContextCallback)
     this.destroyMenu()
@@ -75,7 +74,7 @@ export default class ContextMenu implements Plugin {
   }
   contextCallback (event) {
     event.preventDefault()
-    const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = getCurrentParameter()
+    const { elementParameter: { privateTarget }, globalDataParameter: { initialTarget } } = this.stateManager.currentState
     const lockDom = this.actions.findActionDom('lock')
     lockDom && (lockDom.innerText = initialTarget.isLock ? '解锁' : '锁定')
 
@@ -111,7 +110,7 @@ export default class ContextMenu implements Plugin {
 }
 
 class Actions {
-  constructor(private actionMap: ActionMap, options?) {
+  constructor(private actionMap: ActionMap, options, private stateManager) {
     this.insertAction(menuState.menuBox, options)
   }
   insertAction (menuBox: HTMLElement, options) {
@@ -136,7 +135,7 @@ class Actions {
     const { options: { itemClassName } } = action.getMenuContextParameter()
     actionElement.className = itemClassName
     actionElement.textContent = action.actionName
-    actionElement.onclick = action.actionCallback.bind(action)
+    actionElement.onclick = action.actionCallback.bind(action, this.stateManager)
     return actionElement
   }
   findActionDom (actionName) {

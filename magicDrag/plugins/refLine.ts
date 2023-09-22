@@ -1,5 +1,5 @@
 import { Plugin } from '../functions/pluginManager'
-import { Parameter } from '../utils/parameter'
+import { State } from '../functions/stateManager'
 
 declare global {
   interface HTMLElement {
@@ -59,7 +59,7 @@ export class RefLine implements Plugin {
 		this.lines = getLines()
 	}
 	unbind() {}
-	drag({ elementParameter, stateParameter, globalDataParameter, optionParameter }: Parameter, { movement, _updateContourPointPosition, _updateState }) {
+	drag({ elementParameter, stateParameter, globalDataParameter, optionParameter }: State, { movement, _updateContourPointPosition, _updateState }) {
 		const adsorbCallback = ({ top, left }) => {
 			movement.x -= left
 			movement.y -= top
@@ -68,7 +68,7 @@ export class RefLine implements Plugin {
 		}
 		this.checkAdsorb({ elementParameter }, 'drag', adsorbCallback)
 	}
-	resize({ elementParameter }: Parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {
+	resize({ elementParameter }: State, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {
 		const adsorbCallback = ({ top, left }) => {
 			movementX.value -= left
 			movementY.value -= top
