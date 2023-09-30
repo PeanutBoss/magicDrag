@@ -445,13 +445,13 @@ export function initTargetStyle (target) {
 
 // initializes the target element coordinates
 // 初始化目标元素的坐标
-export function initTargetCoordinate (target, initialTarget) {
+export function initTargetCoordinate (target, initialTarget, isTest) {
 	// 直接获取相对于父元素的坐标
 	const rect = {
-		left: target.offsetLeft,
-		top: target.offsetTop,
-		width: target.offsetWidth,
-		height: target.offsetHeight
+		left: isTest ? target.offsetLeft : parseInt(target.style.left),
+		top: isTest ? target.offsetTop : parseInt(target.style.top),
+		width: isTest ? target.offsetWidth : parseInt(target.style.width),
+		height: isTest ? target.offsetHeight : parseInt(target.style.height)
 	}
 	for (const rectKey in initialTarget) {
 		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]
@@ -459,4 +459,8 @@ export function initTargetCoordinate (target, initialTarget) {
 	// 放大缩小是需要用到原始尺寸
 	initialTarget.originWidth = target.offsetWidth
 	initialTarget.originHeight = target.offsetHeight
+}
+
+export function todoUnMount(cb) {
+  console.info('待实现')
 }

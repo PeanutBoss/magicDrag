@@ -1,6 +1,6 @@
-import { onBeforeUnmount, toRef, nextTick } from 'vue'
+import { toRef, nextTick } from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
-import { blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
+import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins'
 import { ElementParameter } from './functions/stateManager'
 import { MAGIC_DRAG } from './style/className'
@@ -63,7 +63,8 @@ pluginManager.registerPlugin(keymap.name, keymap)
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
-  plugins?: Plugin[]
+  plugins?: Plugin[],
+  TEST = false
 ): MagicDragState {
   const { containerSelector } = options
 
@@ -109,7 +110,7 @@ function useMagicDragAPI (
     processBlurOrFocus($target.value)
   })
 
-  onBeforeUnmount(() => {
+  todoUnMount(() => {
     // unbind the mousedown event added for window to handle the target element
     //  解绑为 window 添加的 mousedown 事件以处理目标元素
     processBlurOrFocus($target.value, false)
@@ -147,7 +148,7 @@ function useMagicDragAPI (
 
     initTargetStyle($target.value)
 
-    initTargetCoordinate($target.value, globalDataParameter.initialTarget)
+    initTargetCoordinate($target.value, globalDataParameter.initialTarget, TEST)
 
     // 初始化结束后更新状态
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
@@ -191,5 +192,28 @@ export default function useMagicDrag (
     targetSelector,
     options,
     plugins
+  )
+}
+
+export function testMagicDrag (
+  targetSelector: string | HTMLElement,
+  options?: MagicDragOptions,
+  plugins: Plugin[] = []
+) {
+  const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
+  baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
+
+  checkParameterType(defaultOptions(), options)
+  options = mergeObject(defaultOptions(), options)
+  const { customPointClass } = options.customClass
+  baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
+
+  plugins = duplicateRemovalPlugin(plugins)
+
+  return useMagicDragAPI(
+    targetSelector,
+    options,
+    plugins,
+    true
   )
 }
