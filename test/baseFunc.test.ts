@@ -59,8 +59,8 @@ describe("base function", () => {
 
   it.skip('show ref line or not', () => {
     const refLineEle = document.querySelectorAll('.ref-line')
-    const displayList = [...refLineEle].map(m => m.style.display)
-    // expect(displayList.includes('block')).toBe(true)
+    const displayList = [...refLineEle].map((m: HTMLElement) => m.style.display)
+    expect(displayList.includes('block')).toBe(true)
   })
 
 })
