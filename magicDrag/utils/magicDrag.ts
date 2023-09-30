@@ -448,10 +448,10 @@ export function initTargetStyle (target) {
 export function initTargetCoordinate (target, initialTarget, isTest) {
 	// 直接获取相对于父元素的坐标
 	const rect = {
-		left: isTest ? target.offsetLeft : parseInt(target.style.left),
-		top: isTest ? target.offsetTop : parseInt(target.style.top),
-		width: isTest ? target.offsetWidth : parseInt(target.style.width),
-		height: isTest ? target.offsetHeight : parseInt(target.style.height)
+		left: isTest ? parseInt(target.style.left) : target.offsetLeft,
+		top: isTest ? parseInt(target.style.top) : target.offsetTop,
+		width: isTest ? parseInt(target.style.width) : target.offsetWidth,
+		height: isTest ? parseInt(target.style.height) : target.offsetHeight
 	}
 	for (const rectKey in initialTarget) {
 		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]

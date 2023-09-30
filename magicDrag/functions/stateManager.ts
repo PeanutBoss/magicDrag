@@ -1,5 +1,5 @@
-import {Ref} from "vue";
-import {MagicDragOptions} from '../common/magicDragAssist'
+import { Ref } from 'vue'
+import { MagicDragOptions } from '../common/magicDragAssist'
 
 type DomElementState = {
 	element: HTMLElement
@@ -68,6 +68,10 @@ class StateManager {
 		}
 	}
 
+  get targetState() {
+    return this.currentState.targetState
+  }
+
 	// 获取当前选中的 DOM 元素
 	get currentElement() {
 		return this.selectedElement
@@ -92,8 +96,21 @@ class StateManager {
 	setCurrentElement(element: HTMLElement | null) {
 		this.selectedElement = element
 		this.selectedState = this.getElementState(element!) // 获取选中元素的状态
+    this.updatePublicTargetState() // 更新公共状态
 		this.notifySubscribers(this.selectedElement, this.selectedState)
 	}
+
+  updatePublicTargetState() {
+    StateManager.COORDINATE_KEY.forEach(key => {
+      this.currentState.stateParameter.targetState[key] = this.currentState.globalDataParameter.initialTarget[key]
+    })
+  }
+
+  updatePublicPointState() {
+    StateManager.COORDINATE_KEY.forEach(key => {
+
+    })
+  }
 
 	// 订阅状态变化
 	subscribe(key: string, callback: Callback) {
@@ -117,6 +134,8 @@ class StateManager {
 			callbacks.forEach((callback) => callback(element!, state))
 		}
 	}
+
+  static COORDINATE_KEY = ['left', 'top', 'width', 'height']
 }
 
 export default StateManager
