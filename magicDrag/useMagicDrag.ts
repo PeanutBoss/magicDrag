@@ -1,10 +1,9 @@
-import { onBeforeUnmount, toRef, nextTick, ref } from 'vue'
-import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType, baseWarnTips } from './utils/tools'
+import { onBeforeUnmount, toRef, nextTick } from 'vue'
+import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
 import { blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins'
 import { ElementParameter } from './functions/stateManager'
 import { MAGIC_DRAG } from './style/className'
-import ContextMenu from './plugins/contextMenu'
 import Draggable from './functions/draggable'
 import Resizeable from './functions/resizeable'
 import { PluginManager } from './functions/pluginManager'
@@ -183,13 +182,8 @@ export default function useMagicDrag (
 
   checkParameterType(defaultOptions(), options)
   options = mergeObject(defaultOptions(), options)
-  const { contextMenuOption, actionList } = options
-  const { contextMenu } = options.skill
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
-
-  baseWarnTips(actionList.length === 0, 'check that the actionList is empty and the use of ContextMenu is cancelled')
-  actionList.length && contextMenu && plugins.push(new ContextMenu(actionList, contextMenuOption, stateManager))
 
   plugins = duplicateRemovalPlugin(plugins)
 
@@ -198,15 +192,4 @@ export default function useMagicDrag (
     options,
     plugins
   )
-}
-
-export function getUseMagicDrag (options: MagicDragOptions, plugins: Plugin[] = []) {
-  /*
-    targetSelector: string | HTMLElement,
-    options?: MagicDragOptions,
-    plugins?: Plugin[]
-  */
-  return (targetSelector) => {
-    return useMagicDrag(targetSelector, options, plugins)
-  }
 }
