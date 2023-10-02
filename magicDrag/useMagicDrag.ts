@@ -1,4 +1,4 @@
-import { toRef, nextTick } from 'vue'
+import {toRef, nextTick, computed} from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
 import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins'
@@ -31,6 +31,7 @@ import StateManager from './functions/stateManager'
 *  8.重构
 *  9.新增的图层级应该更高
 *  10.设置初始尺寸
+*  11.轮廓点位置设置为中心点
 * MARK 公用的方法组合成一个类
 * */
 
@@ -162,13 +163,20 @@ function useMagicDragAPI (
     targetHeight: toRef(stateParameter.targetState, 'height'),
     targetIsPress: toRef(stateParameter.targetState, 'isPress'),
     targetIsLock: toRef(stateParameter.targetState, 'isLock'),
-    pointLeft: toRef(stateParameter.pointState, 'left'),
-    pointTop: toRef(stateParameter.pointState, 'top'),
+    // pointLeft: toRef(stateParameter.pointState, 'left'),
+    // pointTop: toRef(stateParameter.pointState, 'top'),
+    pointLeft: computed(() => getPointValue(stateParameter.pointState, 'left')),
+    pointTop: computed(() => getPointValue(stateParameter.pointState, 'top')),
     direction: toRef(stateParameter.pointState, 'direction'),
     pointIsPress: toRef(stateParameter.pointState, 'isPress'),
     pointMovementX: toRef(stateParameter.pointState, 'movementX'),
     pointMovementY: toRef(stateParameter.pointState, 'movementY')
   }
+}
+
+function getPointValue(obj, key) {
+  if (!obj.direction) return null
+  return  obj[key]
 }
 
 export default function useMagicDrag (
