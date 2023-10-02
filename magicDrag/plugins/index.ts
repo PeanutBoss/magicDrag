@@ -1,4 +1,4 @@
-import {baseErrorTips, isNullOrUndefined} from "../utils/tools";
+import { baseErrorTips, isNullOrUndefined } from "../utils/tools";
 import { State } from '../functions/stateManager'
 
 export interface Plugin {

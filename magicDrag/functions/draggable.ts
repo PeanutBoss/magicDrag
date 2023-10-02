@@ -1,12 +1,9 @@
+import { watch } from 'vue'
 import { PluginManager } from './pluginManager'
-import {setStyle, transferControl} from '../utils/tools'
+import { setStyle, transferControl } from '../utils/tools'
 import useMoveElement from '../useMoveElement'
-import {updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag'
-import {watch} from 'vue'
-import {State} from './stateManager'
-import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
-
-const dragActions = getActionCallbacks('dragCallbacks')
+import { updateContourPointPosition, updateInitialTarget, updateState } from '../utils/magicDrag'
+import { State } from './stateManager'
 
 export default class Draggable {
 	private bindElement: HTMLElement
@@ -53,9 +50,6 @@ export default class Draggable {
 		return (moveAction, movement) => {
 			const parameter = this.stateManager.currentState
 			const initialTarget = parameter.globalDataParameter.initialTarget
-			// 如果目标元素处于锁定状态则不允许拖拽
-			const isContinue = executeActionCallbacks(dragActions, this.stateManager, 'beforeCallback')
-			if (isContinue === false) return
 
 			const _updateContourPointPosition = (movement) => {
 				updateContourPointPosition(downPointPosition, movement, pointElements)
@@ -85,8 +79,6 @@ export default class Draggable {
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
 			this.plugins.callExtensionPoint('drag', parameter, { movement, _updateContourPointPosition, _updateState })
-
-			executeActionCallbacks(dragActions, this.stateManager, 'afterCallback')
 		}
 	}
 

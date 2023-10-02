@@ -136,3 +136,16 @@ export interface MagicDragState {
 	pointIsPress: Ref<boolean>
 	direction: Ref<string | null>
 }
+
+
+
+export function composeParameter(
+  { ...stateParameter },
+  { ...elementParameter },
+  { ...globalDataParameter },
+  optionParameter
+) {
+  return {
+    stateParameter, elementParameter, globalDataParameter, optionParameter
+  }
+}

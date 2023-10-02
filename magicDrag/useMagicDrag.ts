@@ -1,8 +1,7 @@
-import {toRef, nextTick, computed} from 'vue'
+import { toRef, nextTick, computed } from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
 import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
-import { duplicateRemovalPlugin, executePluginInit, Plugin } from './plugins'
-import { ElementParameter } from './functions/stateManager'
+import { duplicateRemovalPlugin, Plugin } from './plugins'
 import { MAGIC_DRAG } from './style/className'
 import Draggable from './functions/draggable'
 import Resizeable from './functions/resizeable'
@@ -13,9 +12,10 @@ import {
   allElement,
   defaultOptions,
   defaultState,
+  storingDataContainer,
+  composeParameter,
   MagicDragOptions,
-  MagicDragState,
-  storingDataContainer
+  MagicDragState
 } from './common/magicDragAssist'
 import StateManager from './functions/stateManager'
 
@@ -32,6 +32,9 @@ import StateManager from './functions/stateManager'
 *  9.新增的图层级应该更高
 *  10.设置初始尺寸
 *  11.轮廓点位置设置为中心点
+*  12.阴影
+*  13.间距提示
+*  14.resize的点可以配置显示隐藏哪几个，与各自的样式
 * MARK 公用的方法组合成一个类
 * */
 
@@ -70,25 +73,12 @@ function useMagicDragAPI (
   const { containerSelector } = options
 
   initGlobalData()
-  let stateParameter = {
-    pointState,
-    targetState
-  }
-  let elementParameter: ElementParameter = {
-    target: $target,
-    container: $container,
-    pointElements,
-    allTarget,
-    allContainer,
-    privateContainer: null,
-    privateTarget: null
-  }
-  let globalDataParameter = {
-    initialTarget: { ...initialTarget },
-    containerInfo:{ ...containerInfo },
-    downPointPosition: { ...downPointPosition },
-    plugins
-  }
+  const { stateParameter, elementParameter, globalDataParameter, optionParameter } = composeParameter(
+    { pointState, targetState },
+    { target:$target, container: $container, pointElements, allTarget, allContainer, privateTarget: null, privateContainer: null },
+    { initialTarget, containerInfo, downPointPosition, plugins },
+    options
+  )
 
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState, stateManager)
@@ -102,10 +92,11 @@ function useMagicDragAPI (
     pluginManager.installPlugin(keymap.name)
 
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
-    stateManager.registerElementState($target.value, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, true)
-    options.skill.drag && new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
-    options.skill.resize && new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter: options }, stateManager)
-    executePluginInit(plugins, elementParameter, stateParameter, globalDataParameter, options)
+    stateManager.registerElementState($target.value, { elementParameter, stateParameter, globalDataParameter, optionParameter }, true)
+    // @ts-ignore
+    options.skill.drag && new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter }, stateManager)
+    // @ts-ignore
+    options.skill.resize && new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter }, stateManager)
 
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
     processBlurOrFocus($target.value)
@@ -163,8 +154,6 @@ function useMagicDragAPI (
     targetHeight: toRef(stateParameter.targetState, 'height'),
     targetIsPress: toRef(stateParameter.targetState, 'isPress'),
     targetIsLock: toRef(stateParameter.targetState, 'isLock'),
-    // pointLeft: toRef(stateParameter.pointState, 'left'),
-    // pointTop: toRef(stateParameter.pointState, 'top'),
     pointLeft: computed(() => getPointValue(stateParameter.pointState, 'left')),
     pointTop: computed(() => getPointValue(stateParameter.pointState, 'top')),
     direction: toRef(stateParameter.pointState, 'direction'),
