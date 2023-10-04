@@ -4,7 +4,7 @@ const copyPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   // entry: './Audio/main.ts',
-  entry: './Audio/index.ts',
+  entry: './magicDrag/index.ts',
   output: {
     path: path.resolve(__dirname, '../dist'),
     clean: true
@@ -38,13 +38,13 @@ module.exports = {
   },
   plugins: [
     new htmlPlugin({
-      template: path.resolve(__dirname, '../Audio/template/index.html'),
-      favicon: path.resolve(__dirname, '../Audio/assets/favicon.ico')
+      template: path.resolve(__dirname, '../magicDrag/template/index.html'),
+      favicon: path.resolve(__dirname, '../magicDrag/assets/favicon.ico')
     }),
     // 这里的资源是直接复制过来的，不会经过file-loader处理
     new copyPlugin({
       patterns: [
-        { from: path.resolve(__dirname, '../Audio/assets'), to: path.resolve(__dirname, '../dist/assets') }
+        { from: path.resolve(__dirname, '../magicDrag/assets'), to: path.resolve(__dirname, '../dist/assets') }
       ]
     })
   ],

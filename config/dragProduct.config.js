@@ -13,6 +13,9 @@ module.exports = {
   experiments: {
     outputModule: true, // 启用实验性的输出模块功能
   },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'] // 自动追加的文件后缀名
+  },
   module: {
     rules: [
       {
@@ -43,13 +46,13 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new htmlPlugin({
-      template: path.resolve(__dirname, '../magicDrag/template.html'),
-      favicon: path.resolve(__dirname, '../magicDrag/assets/favicon.ico'),
-      inject: 'head' // 将css插入head标签
-    })
-  ],
+  // plugins: [
+  //   new htmlPlugin({
+  //     template: path.resolve(__dirname, '../magicDrag/template.html'),
+  //     favicon: path.resolve(__dirname, '../magicDrag/assets/favicon.ico'),
+  //     inject: 'head' // 将css插入head标签
+  //   })
+  // ],
   // resolve: {
   //   extensions: ['.ts', '.json', '.tsx']
   // },
@@ -58,6 +61,6 @@ module.exports = {
     port: 9003,
     hot: true
   },
-  mode: 'development'
+  mode: 'production'
 }
 
