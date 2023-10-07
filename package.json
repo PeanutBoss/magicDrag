@@ -6,6 +6,7 @@
   "scripts": {
     "build": "webpack --config ./config/magicDrag.config.js",
     "serve": "webpack serve --config ./config/magicDrag.config.js",
+    "serve:example": "webpack serve --config ./config/example.config.js",
     "build:drag": "webpack --config ./config/dragProduct.config.js",
     "build:move": "webpack --config ./config/moveProduct.config.js",
     "test": "jest test"

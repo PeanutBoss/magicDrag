@@ -1,7 +1,7 @@
 // vue和sass的config
 const vueLoader  = require('vue-loader')
 
-export default {
+module.exports = {
   module: {
     rules: [
       {
