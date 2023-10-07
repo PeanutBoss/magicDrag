@@ -7,9 +7,6 @@ import {
 } from '../utils/magicDrag'
 import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools'
 import useMoveElement from '../useMoveElement'
-import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
-
-const resizeActions = getActionCallbacks('resizeCallbacks')
 
 export default class Resizeable {
   constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
@@ -113,9 +110,6 @@ export default class Resizeable {
       optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
       elementParameter: { pointElements }
     } = parameter
-
-    const isContinue = executeActionCallbacks(resizeActions, this.stateManager, 'beforeCallback')
-    if (isContinue === false) return
 
     moveAction()
 

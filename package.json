@@ -1,6 +1,6 @@
 {
   "name": "magic_drag",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "draggable, resizeable",
   "main": "magicDrag/useMagicDrag.ts",
   "scripts": {

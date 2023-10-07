@@ -1,12 +1,6 @@
 import {conditionExecute, getObjectIntValue, setStyle} from './tools'
 import {reactive} from 'vue'
-import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {getTargetZIndex, TargetStatus} from "../style/className";
-import {executePluginDrag, executePluginResize} from "../plugins";
-
-const dragActions = getActionCallbacks('dragCallbacks')
-const resizeActions = getActionCallbacks('resizeCallbacks')
-const mousedownActions = getActionCallbacks('mousedownCallbacks')
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
 interface DirectionDescription {
@@ -242,9 +236,6 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 
   // 设置当前选中的target
 	stateManager.setCurrentElement(target)
-  // 按下鼠标时更新轮廓点位置信息
-  const isContinue = executeActionCallbacks(mousedownActions, stateManager, 'beforeCallback')
-  if (isContinue === false) return
 
   const pointPosition = updatePointPosition(
     target,
@@ -262,8 +253,6 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
   showOrHideContourPoint(pointElements, true)
   // 设置选中元素的层级
   setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
-
-  executeActionCallbacks(mousedownActions, stateManager, 'afterCallback')
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示

@@ -1,8 +1,6 @@
 import {Direction} from '../utils/magicDrag'
-import {ActionKey, DefaultContextMenuOptions} from '../plugins/contextMenu'
 import {Plugin} from '../plugins'
 import {ClassName} from '../style/className'
-import {actionMap} from '../plugins/contextMenu/actionMap'
 import {Ref, reactive, ref} from 'vue'
 
 export interface MagicDragOptions {
@@ -23,7 +21,6 @@ export interface MagicDragOptions {
 	skill?: {
 		resize?: boolean
 		drag?: boolean
-		contextMenu?: boolean
 		limitRatio?: [number, number]
 		limitDragDirection?: 'X' | 'Y' | null
 	}
@@ -34,8 +31,6 @@ export interface MagicDragOptions {
 	customClass?: {
 		customPointClass?: string
 	}
-	contextMenuOption?: DefaultContextMenuOptions
-	actionList?: ActionKey[]
 	plugins?: Plugin[]
 }
 
@@ -52,18 +47,8 @@ const _defaultOptions: MagicDragOptions = {
 	skill: {
 		resize: true, // whether the size adjustment is supported - 是否支持大小调整
 		drag: true, // whether to support dragging - 是否支持拖动
-		contextMenu: true,
 		limitDragDirection: null // restricted direction of movement - 限制移动方向
 	},
-	contextMenuOption: {
-		offsetX: 20, // 复制的新元素的X轴偏移量
-		offsetY: 20, // 复制的新元素的Y轴偏移量
-		lockTargetClassName: ClassName.LockTargetClassName, // 目标元素锁定的类名
-		containerClassName: ClassName.ContainerClassName, // menuContext容器的类名
-		itemClassName: ClassName.ItemClassName, // menuContext选项的类名
-		lockItemClassName: ClassName.LockItemClassName // 锁定目标元素后menuContext选项的类名
-	},
-	actionList: Object.keys(actionMap) as ActionKey[],
 	customClass: {
 		customPointClass: ClassName.OutlinePoint, // 自定义轮廓点的类名
 	},
