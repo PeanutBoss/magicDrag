@@ -1,4 +1,4 @@
-## MagicResize
+## MagicDrag
 
 ### useMoveElement
 

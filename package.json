@@ -1,8 +1,8 @@
 {
-  "name": "nimble-drag-resize",
-  "version": "1.0.0",
-  "description": "拖拽",
-  "main": "index.js",
+  "name": "magic_drag",
+  "version": "1.0.2",
+  "description": "draggable, resizeable",
+  "main": "magicDrag/useMagicDrag.ts",
   "scripts": {
     "build": "webpack --config ./config/magicDrag.config.js",
     "serve": "webpack serve --config ./config/magicDrag.config.js",
