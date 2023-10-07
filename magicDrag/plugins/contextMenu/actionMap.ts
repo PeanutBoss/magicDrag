@@ -1,5 +1,5 @@
 import {showOrHideContourPoint, updatePointPosition} from '../../utils/magicDrag'
-import useMagicDrag from '../../useMagicDrag'
+import { useMagicDrag } from '../../index'
 import ContextMenu, {menuState} from '../contextMenu/index'
 import {getTargetZIndex, TargetStatus} from "../../style/className";
 import {addClassName, removeClassName, setStyle} from "../../utils/tools";

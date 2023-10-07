@@ -29,7 +29,7 @@ body {
 container开启定位后，给目标元素设置的left、top都是相对于container的，但轮廓点的left、top是相对于body的
 */
 .container {
-  width: 760px;
+  width: 1000px;
   height: 800px;
   position: relative;
 }

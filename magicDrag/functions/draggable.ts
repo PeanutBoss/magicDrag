@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { PluginManager } from './pluginManager'
 import { setStyle, transferControl } from '../utils/tools'
-import useMoveElement from '../useMoveElement'
+import { useMoveElement } from '../useMoveElement'
 import { updateContourPointPosition, updateInitialTarget, updateState } from '../utils/magicDrag'
 import { State } from './stateManager'
 

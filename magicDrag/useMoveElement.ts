@@ -1,5 +1,5 @@
 import { reactive, ref, toRef, nextTick, watch, readonly } from "vue";
-import { getElement, transferControl } from './utils/tools.ts'
+import { getElement, transferControl } from './utils/tools'
 import { throttle } from 'lodash'
 
 /**
@@ -14,7 +14,7 @@ interface moveOption {
   stopMovementY?: boolean
   throttleTime?: number
 }
-export default function useMoveElement (selector: string | HTMLElement, moveCallback?, limitOption: moveOption = {}) {
+export function useMoveElement (selector: string | HTMLElement, moveCallback?, limitOption: moveOption = {}) {
   const { direction: limitDirection, stopMovementX = true, stopMovementY = true, throttleTime = 10 } = limitOption
   if (throttleTime >= 100) {
     console.warn('the throttleTime is greater than 100 and the visual effects may not be smooth')

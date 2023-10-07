@@ -1,5 +1,5 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
-import useMagicDrag from '../magicDrag/useMagicDrag.ts'
+import { useMagicDrag } from '../magicDrag'
 import "./style/index.scss"
 
 const imgSource = ref(null)

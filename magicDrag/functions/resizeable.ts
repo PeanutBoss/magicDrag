@@ -6,7 +6,7 @@ import {
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
 } from '../utils/magicDrag'
 import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools'
-import useMoveElement from '../useMoveElement'
+import { useMoveElement } from '../useMoveElement'
 import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
 
 const resizeActions = getActionCallbacks('resizeCallbacks')
