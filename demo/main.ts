@@ -10,19 +10,25 @@ import('./assets/image/lufei.png').then(res => {
 
 const App = {
   template: `
-    <div class="wrap" style="height: 800px">
-      {{ state.targetIsPress }}<br>
-      {{ state.targetLeft }} - {{ state.targetTop }}<br>
-      {{ state.targetWidth }} - {{ state.targetHeight }}<br>
-      <hr>
-      {{ state.pointLeft }} - {{ state.pointTop }}<br>
-      {{ state.direction }} - {{ state.pointIsPress }}<br>
-      {{ state.pointMovementX }} - {{ state.pointMovementY }}<br>
-      {{ state.targetIsLock }}
-      <hr>
-      <img :src="imgSource" class="box">
-      <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
-<!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
+    <div>
+      <div class="placeholder-top"></div>
+      <div style="display: flex;width: 100%">
+        <div class="placeholder-left"></div>
+        <div class="wrap" style="height: 800px;width: 800px">
+          {{ state.targetIsPress }}<br>
+          {{ state.targetLeft }} - {{ state.targetTop }}<br>
+          {{ state.targetWidth }} - {{ state.targetHeight }}<br>
+          <hr>
+          {{ state.pointLeft }} - {{ state.pointTop }}<br>
+          {{ state.direction }} - {{ state.pointIsPress }}<br>
+          {{ state.pointMovementX }} - {{ state.pointMovementY }}<br>
+          {{ state.targetIsLock }}
+          <hr>
+          <img :src="imgSource" class="box">
+          <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
+          <!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
+        </div>
+      </div>
     </div>
   `,
   setup () {
@@ -41,7 +47,7 @@ const App = {
         // maxWidth: 600,
         // maxHeight: 400,
         // pageHasScrollBar: true,
-        containerSelector: 'body',
+        containerSelector: '.wrap',
         callbacks: {
           // dragCallback (moveAction) {
           //   pressShift && moveAction()
