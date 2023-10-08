@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-import useMagicDrag from "../magicDrag/useMagicDrag.ts";
+import { useMagicDrag } from "../magicDrag";
 
-useMagicDrag('.box')
+useMagicDrag('.box', {})
 
 </script>
 

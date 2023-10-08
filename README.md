@@ -2,7 +2,7 @@
 
 ### useMoveElement
 
-_接受一个dom元素或一个选择器（selector）使其可拖拽，接受可选的两个参数 moveCallback moveOption_
+接受一个dom元素或一个选择器使其可拖拽，接受可选的两个参数 moveCallback moveOption
 
 #### 参数
 
@@ -159,3 +159,40 @@ onBeforeUnmount(state.destroy)
 
 
 ### useMagicDrag
+
+接受一个dom元素或一个选择器使其可拖拽和调整大小
+
+#### 参数
+
+ - targetSelector: 选择器
+```vue
+<template>
+  <div class="container">
+    <div class="box"></div>
+  </div>
+</template>
+
+<script setup>
+import { useMagicDrag } from 'magicDrag'
+
+useMagicDrag('.box')
+
+</script>
+ ```
+
+- options
+
+| 属性                           | 描述                   | 默认值   |
+|------------------------------|----------------------|-------|
+| containerSelector            | 容器元素的选择器，元素只能在该容器内移动 | body  |
+| minWidth                     | 容器可以缩放的最小宽度          | 100   |
+| minHeight                    | 容器可以缩放的最小高度          | 100   |
+| maxWidth                     | 容器可以放大的最大宽度          | 999999 |
+| maxHeight                    | 容器可以放大的最大高度          | 999999 |
+| pointSize                    | 调整大小的轮廓点的尺寸（直径）      | 10    |
+| customClass.customPointClass | 自定义轮廓点的类名            |       |
+| skill.resize                 | 是否开启调整大小功能           |       |
+| skill.drag                   | 是否开启拖拽功能             |       |
+| skill.limitDragDirection     | 限制目标元素拖拽方向           |       |
+| callbacks.dragCallback       | 拖拽的回调                |       |
+| callbacks.resizeCallback     | 调整大小的回调              |       |

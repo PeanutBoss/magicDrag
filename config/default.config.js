@@ -45,7 +45,7 @@ function createDefaultConfig (entry, output, templatePath) {
       extensions: ['.ts', '.tsx', '.js', '.jsx'] // 自动追加的文件后缀名
     },
     devServer: {
-      port: 8080,
+      port: 9001,
       open: true
     },
     mode: 'development'

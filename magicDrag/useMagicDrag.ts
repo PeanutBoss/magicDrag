@@ -1,7 +1,6 @@
 import { toRef, nextTick, computed } from 'vue'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
 import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
-import { duplicateRemovalPlugin, Plugin } from './plugins'
 import { MAGIC_DRAG } from './style/className'
 import Draggable from './functions/draggable'
 import Resizeable from './functions/resizeable'
@@ -67,7 +66,6 @@ pluginManager.registerPlugin(keymap.name, keymap)
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
-  plugins?: Plugin[],
   TEST = false
 ): MagicDragState {
   const { containerSelector } = options
@@ -76,7 +74,7 @@ function useMagicDragAPI (
   const { stateParameter, elementParameter, globalDataParameter, optionParameter } = composeParameter(
     { pointState, targetState },
     { target:$target, container: $container, pointElements, allTarget, allContainer, privateTarget: null, privateContainer: null },
-    { initialTarget, containerInfo, downPointPosition, plugins },
+    { initialTarget, containerInfo, downPointPosition },
     options
   )
 
@@ -174,7 +172,6 @@ function getPointValue(obj, key) {
 export function useMagicDrag (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
-  plugins: Plugin[] = []
 ) {
   // check whether targetSelector is a selector or an HTMLElement
   // 检查 targetSelector 是否为选择器或 HTMLElement
@@ -186,19 +183,15 @@ export function useMagicDrag (
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 
-  plugins = duplicateRemovalPlugin(plugins)
-
   return useMagicDragAPI(
     targetSelector,
-    options,
-    plugins
+    options
   )
 }
 
 export function testMagicDrag (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
-  plugins: Plugin[] = []
 ) {
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
@@ -208,12 +201,9 @@ export function testMagicDrag (
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 
-  plugins = duplicateRemovalPlugin(plugins)
-
   return useMagicDragAPI(
     targetSelector,
     options,
-    plugins,
     true
   )
 }
