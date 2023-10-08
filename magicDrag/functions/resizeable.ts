@@ -94,7 +94,7 @@ export default class Resizeable {
           elementParameter,
           globalDataParameter,
           options,
-          { direction, movementX, movementY, moveAction, target: target.value }
+          { limitDirection: direction, movementX, movementY, moveAction, target: target.value }
         )
       }
       // Hand over control (moveResizeAction) - 将控制权（moveResizeAction）交出
