@@ -8,14 +8,16 @@ import { throttle } from 'lodash'
  * @param moveCallback 移动时的回调
  * @param limitOption 限制移动的配置项
  */
-interface moveOption {
+interface MoveOption {
   direction?: 'X' | 'Y' | null
   stopMovementX?: boolean
   stopMovementY?: boolean
   throttleTime?: number
+	offsetLeft?: number
+	offsetTop?: number
 }
-export function useMoveElement (selector: string | HTMLElement, moveCallback?, limitOption: moveOption = {}) {
-  const { direction: limitDirection, stopMovementX = true, stopMovementY = true, throttleTime = 10 } = limitOption
+export function useMoveElement (selector: string | HTMLElement, moveCallback?, limitOption: MoveOption = {}) {
+  const { direction: limitDirection, throttleTime = 10, offsetLeft = 0, offsetTop = 0 } = limitOption
   if (throttleTime >= 100) {
     console.warn('the throttleTime is greater than 100 and the visual effects may not be smooth')
   }
@@ -52,8 +54,8 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, l
 		x: 0,
 		y: 0
 	})
-  const isUpdateMovementX = limitDirection !== 'X' && stopMovementX
-  const isUpdateMovementY = limitDirection !== 'Y' && stopMovementY
+  const isUpdateMovementX = limitDirection !== 'X'
+  const isUpdateMovementY = limitDirection !== 'Y'
 	function mouseDown (event) {
     event.preventDefault()
 		isPress.value = true
@@ -75,9 +77,18 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, l
     const moveAction = () => {
       // 取消文本选中
       event.preventDefault()
+			// console.log(startCoordinate.x,  movement.x, minLeft, 'startCoordinate.x, movement.x, minLeft')
       // 如果有限制移动，则不更新movement和元素坐标
       isUpdateMovementX && (movement.x = event.pageX - startOffset.x)
       isUpdateMovementY && (movement.y = event.pageY - startOffset.y)
+
+			if (startCoordinate.x + movement.x < offsetLeft) {
+				movement.x = offsetLeft - startCoordinate.x
+			}
+			if (startCoordinate.y + movement.y < offsetTop) {
+				movement.y = offsetTop - startCoordinate.y
+			}
+
       // 如果不能移动，则更新movement但不更新元素坐标
       stopCoordinate.x && ($ele.style.left = startCoordinate.x + movement.x + 'px')
       stopCoordinate.y && ($ele.style.top = startCoordinate.y + movement.y + 'px')
