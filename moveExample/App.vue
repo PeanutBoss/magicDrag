@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount } from 'vue'
 import { useMoveElement } from '../magicDrag'
 const state = useMoveElement(
     '.box',
@@ -21,6 +22,8 @@ const state = useMoveElement(
       offsetTop: 100
     }
 )
+// 卸载组件实例时销毁state
+onBeforeUnmount(state.destroy)
 </script>
 
 <style scoped>

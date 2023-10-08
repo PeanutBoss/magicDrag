@@ -37,9 +37,9 @@ onMounted(() => {
 </script>
 ```
 
-- moveCallback：元素被拖拽移动时执行的回调，参数为moveAction和movement，moveAction移动时必须执行
-> 当给useMoveElement传入回调参数时，useMoveElement会将 moveAction 做为回调的第一个参数，将移动的控制权交出给用户
-> （moveAction是执行移动操作的方法）。movement是本次移动操作（鼠标按下到抬起）的偏移量。
+- moveCallback：元素被拖拽移动时执行的回调，参数为moveAction和movement，moveAction是执行移动操作的方法，在moveCallback中必须执行。
+> 当给useMoveElement传入回调参数时，useMoveElement会将 moveAction 做为回调的第一个参数，将移动的控制权交出给用户。
+> movement是本次移动操作（鼠标按下到抬起）的偏移量。
 
 ```vue
 <template>
@@ -111,13 +111,25 @@ onMounted(() => {
 })
 </script>
 ```
-![offset.png](..%2Foffset.png)
+![offset.png](offset.png)
 
 #### 返回值
+
+| 属性名        | 描述                      |
+|------------|-------------------------|
+| left       | 目标元素的left值              |
+| top        | 目标元素的top值               |
+| movementX  | 本次移动X轴偏移量               |
+| movementY  | 本次移动Y轴偏移量               |
+| mouseX     | 鼠标相对目标元素的X轴方向偏移量        |
+| mouseY     | 鼠标相对目标元素的Y轴方向偏移量        |
+| isPress    | 鼠标是否按下                  |
+| destroy    | 解除绑定事件等                 |
+
 ```vue
 <template>
   <div class="container">
-    目标元素top{{ state.top.value + state.movementY.value }}<br>
+    {{ state.top.value + state.movementY.value }}<br>
     目标元素left{{ state.left.value + state.movementX.value }}<br>
     本次移动X轴偏移量{{ state.movementX }}<br>
     本次移动Y轴偏移量{{ state.movementY }}<br>
@@ -129,6 +141,7 @@ onMounted(() => {
 </template>
 
 <script setup>
+import { onBeforeUnmount } from 'vue'
 import { useMoveElement } from 'magicDrag'
 const state = useMoveElement(
     '.box',
@@ -138,6 +151,8 @@ const state = useMoveElement(
       offsetTop: 100
     }
 )
+// 卸载组件实例时解绑useMoveElement的事件
+onBeforeUnmount(state.destroy)
 </script>
 ```
 

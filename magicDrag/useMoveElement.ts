@@ -1,4 +1,4 @@
-import {reactive, ref, toRef, nextTick, watch, readonly, computed} from "vue";
+import { reactive, ref, toRef, nextTick, watch, readonly, computed } from 'vue'
 import { getElement, transferControl } from './utils/tools'
 import { throttle } from 'lodash'
 
