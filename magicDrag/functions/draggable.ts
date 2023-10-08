@@ -31,7 +31,7 @@ export default class Draggable {
 			this.moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, containerInfo
 			}),
-			{ direction: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop })
+			{ limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop })
 
 		watch(isPress, this.isPressChangeCallback(
       { ...elementParameter },
