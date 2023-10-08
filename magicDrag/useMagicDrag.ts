@@ -117,11 +117,14 @@ function useMagicDragAPI (
     elementParameter.privateContainer = $container.value = getElement(containerSelector)
     allContainer.push(elementParameter.privateContainer)
     const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing } = getComputedStyle(elementParameter.container.value)
+    const containerRect = elementParameter.container.value.getBoundingClientRect()
     const isBorderBox = boxSizing === 'border-box'
     const containerWidth = isBorderBox ? parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight) : parseInt(width)
     const containerHeight = isBorderBox ? parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom) : parseInt(height)
     globalDataParameter.containerInfo.width = containerWidth
     globalDataParameter.containerInfo.height = containerHeight
+    globalDataParameter.containerInfo.offsetLeft = containerRect.left
+    globalDataParameter.containerInfo.offsetTop = containerRect.top
   }
 
   function updateTargetValue (event) {
@@ -168,7 +171,7 @@ function getPointValue(obj, key) {
   return  obj[key]
 }
 
-export default function useMagicDrag (
+export function useMagicDrag (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
   plugins: Plugin[] = []

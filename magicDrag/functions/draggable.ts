@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { PluginManager } from './pluginManager'
 import { setStyle, transferControl } from '../utils/tools'
-import useMoveElement from '../useMoveElement'
+import { useMoveElement } from '../useMoveElement'
 import { updateContourPointPosition, updateInitialTarget, updateState } from '../utils/magicDrag'
 import { State } from './stateManager'
 
@@ -31,7 +31,7 @@ export default class Draggable {
 			this.moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, containerInfo
 			}),
-			{ direction: limitDragDirection })
+			{ direction: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop })
 
 		watch(isPress, this.isPressChangeCallback(
       { ...elementParameter },
@@ -85,17 +85,18 @@ export default class Draggable {
 	// 限制容器内移动
 	limitTargetMove (initialTarget, containerInfo, movement) {
 		const { left, top, width: targetWidth , height: targetHeight } = initialTarget
-		const { width: containerWidth, height: containerHeight } = containerInfo
+		const { width: containerWidth, height: containerHeight, offsetLeft, offsetTop } = containerInfo
 
 		const comeAcrossLeft = movement.x + left <= 0
 		const comeAcrossTop = movement.y + top <= 0
-		const comeAcrossRight = movement.x + left + targetWidth >= containerWidth
-		const comeAcrossBottom = movement.y + top + targetHeight >= containerHeight
+		// containerWidth + offsetLeft, containerHeight + offsetTop 是计算过容器元素相对body偏移之后的位置
+		const comeAcrossRight = movement.x + left + targetWidth >= containerWidth + offsetLeft
+		const comeAcrossBottom = movement.y + top + targetHeight >= containerHeight + offsetTop
 
 		comeAcrossLeft && (movement.x = -left)
 		comeAcrossTop && (movement.y = -top)
-		comeAcrossRight && (movement.x = containerWidth - targetWidth - left)
-		comeAcrossBottom && (movement.y = containerHeight - targetHeight - top)
+		comeAcrossRight && (movement.x = containerWidth + offsetLeft - targetWidth - left)
+		comeAcrossBottom && (movement.y = containerHeight + offsetTop - targetHeight - top)
 	}
 
 	targetMouseDown({ downPointPosition, pointElements }) {

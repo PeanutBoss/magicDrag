@@ -2,7 +2,7 @@
   "name": "magic_drag",
   "version": "1.0.5",
   "description": "draggable, resizeable",
-  "main": "magicDrag/useMagicDrag.ts",
+  "main": "magicDrag/index.ts",
   "scripts": {
     "build": "webpack --config ./config/magicDrag.config.js",
     "serve": "webpack serve --config ./config/magicDrag.config.js",
