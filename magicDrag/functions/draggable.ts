@@ -1,9 +1,10 @@
-import { watch } from 'vue'
+import { watch, computed } from 'vue'
 import { PluginManager } from './pluginManager'
 import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import { updateContourPointPosition, updateInitialTarget, updateState } from '../utils/magicDrag'
 import { State } from './stateManager'
+import {watchIsPress} from "../helper";
 
 export default class Draggable {
 	private bindElement: HTMLElement
@@ -38,6 +39,12 @@ export default class Draggable {
 			{ downPointPosition, initialTarget },
 			{ movementX, movementY }
 		))
+		// watchIsPress(this.isPressChangeCallback(
+		// 	{ ...elementParameter },
+		// 	{ targetState },
+		// 	{ downPointPosition, initialTarget },
+		// 	{ movementX, movementY }
+		// ))
 	}
 
 	dragStart() {

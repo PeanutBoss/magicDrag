@@ -1,3 +1,9 @@
+const resolvePromise = Promise.resolve()
+
+export function nextTick(cb) {
+	return resolvePromise.then(cb)
+}
+
 export function useWatchData(data, cb) {
 	return new Proxy(data, {
 		get(target: any, p: string | symbol, receiver: any): any {
@@ -11,8 +17,8 @@ export function useWatchData(data, cb) {
 	})
 }
 
-const resolvePromise = Promise.resolve()
-
-export function nextTick(cb) {
-	return resolvePromise.then(cb)
+export function watchIsPress(callback) {
+	window.addEventListener('mouseup', callback.bind(null, false))
+	window.addEventListener('mousedown', callback.bind(null, true))
 }
+

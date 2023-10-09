@@ -1,7 +1,6 @@
 import { reactive, ref, toRef, readonly, computed } from '@vue/reactivity'
-import { getElement, transferControl } from './utils/tools'
-import { throttle } from 'lodash'
-import { useWatchData, nextTick } from './help'
+import { getElement, transferControl, throttle } from './utils/tools'
+import { useWatchData, nextTick, watchIsPress } from './helper'
 
 /**
  * @description 移动元素
@@ -71,7 +70,8 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 		window.addEventListener('mousemove', throttleMouseMove)
 		window.addEventListener('mouseup', mouseUp)
 	}
-  const throttleMouseMove = throttle(mouseMove, throttleTime, { leading: true })
+  const throttleMouseMove = throttle(mouseMove, 10, { leading: true })
+  // const throttleMouseMove = mouseMove
 	function mouseMove (event) {
     if (!isPress.value) return
     const moveAction = () => {

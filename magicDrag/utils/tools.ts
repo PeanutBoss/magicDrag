@@ -1,13 +1,11 @@
-export const EXECUTE_NEXT_TASK = 'EXECUTE_NEXT_TASK'
-
 export function throttle (fn: any, delay: number, options: any = {}) {
-  let { immediate = false } = options
+  let { leading = false } = options
 	let flag = true
 	return (...rest) => {
 		if (!flag) return
-    if (immediate) {
+    if (leading) {
       fn(...rest)
-      immediate = false
+			leading = false
     }
 		flag = false
 		setTimeout(() => {
@@ -67,19 +65,6 @@ export function baseWarnTips (condition, msg) {
 	}
 }
 
-export function insertAfter () {
-  Reflect.set(Function.prototype, 'after', function (fn) {
-    const self = this
-    return function (...rest) {
-      const ret = self.apply(this, rest)
-      if (ret === EXECUTE_NEXT_TASK) {
-        return fn.apply(this, rest)
-      }
-      return ret
-    }
-  })
-}
-
 type SetStyle = {
   (target: HTMLElement, styleData: { [key: string]: string }): void
   (target: HTMLElement, styleKey: string, styleValue: string | number): void
@@ -137,4 +122,19 @@ export function addClassName (element: HTMLElement, className: string) {
 
 export function removeClassName (element: HTMLElement, className: string) {
   element.className = element.className.replaceAll(className, '')
+}
+
+export function watcher() {
+	let callbacks = []
+	return {
+		executeCB(newV, oldV) {
+			callbacks.forEach(cb => cb(newV, oldV))
+		},
+		insertCB(callback) {
+			callbacks.push(callback)
+		},
+		destroy() {
+			callbacks = null
+		}
+	}
 }

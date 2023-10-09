@@ -1,4 +1,5 @@
-import { toRef, nextTick, computed } from 'vue'
+import { toRef, computed } from '@vue/reactivity'
+import { nextTick } from './helper'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
 import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { MAGIC_DRAG } from './style/className'
