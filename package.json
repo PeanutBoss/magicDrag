@@ -1,8 +1,8 @@
 {
   "name": "nimble-drag-resize",
   "version": "1.0.0",
-  "description": "拖拽",
-  "main": "index.js",
+  "description": "A simple drag and resizing tool",
+  "main": "magicDrag/index.ts",
   "scripts": {
     "build": "webpack --config ./config/magicDrag.config.js",
     "serve": "webpack serve --config ./config/magicDrag.config.js",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/hc1106/interesting-api.git"
+    "url": "https://github.com/PeanutBoss/magicDrag/tree/magic_drag"
   },
   "jest": {
     "testEnvironment": "jsdom"
