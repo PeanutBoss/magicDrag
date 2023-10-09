@@ -1,12 +1,13 @@
 <template>
   <div class="container">
-    目标元素top{{ state.top.value + state.movementY.value }}<br>
-    目标元素left{{ state.left.value + state.movementX.value }}<br>
+    目标元素top{{ state.top.value }}<br>
+    目标元素left{{ state.left.value }}<br>
     本次移动X轴偏移量{{ state.movementX }}<br>
     本次移动Y轴偏移量{{ state.movementY }}<br>
     鼠标相对目标元素的X轴方向偏移量{{ state.mouseX }}<br>
     鼠标相对目标元素的Y轴方向偏移量{{ state.mouseY }}<br>
     鼠标是否按下{{ state.isPress }}<br>
+<!--    <input type="text" v-model.number="state.movementX.value">-->
     <div class="box" ref="Box"></div>
   </div>
 </template>

@@ -334,7 +334,6 @@ function whetherUpdateState (direction, targetState, newState) {
  * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
  */
 export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
-	console.log(pointElements, 'pointElements')
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used

@@ -1,6 +1,7 @@
-import { reactive, ref, toRef, nextTick, watch, readonly, computed } from 'vue'
+import { reactive, ref, toRef, readonly, computed } from '@vue/reactivity'
 import { getElement, transferControl } from './utils/tools'
 import { throttle } from 'lodash'
+import { useWatchData, nextTick } from './help'
 
 /**
  * @description 移动元素
@@ -92,22 +93,26 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
       $ele.style.left = startCoordinate.x + movement.x + 'px'
       $ele.style.top = startCoordinate.y + movement.y + 'px'
     }
-    transferControl(moveAction, moveCallback, movement)
+    transferControl(moveAction, moveCallback, watchMovement)
 	}
 	function mouseUp () {
 		isPress.value = false
 	}
-  watch(movement, () => {
-    $ele.style.left = startCoordinate.x + movement.x + 'px'
-    $ele.style.top = startCoordinate.y + movement.y + 'px'
-  })
+
+	const watchMovement = useWatchData(movement, updatePosition)
+
+	function updatePosition() {
+		$ele.style.left = startCoordinate.x + movement.x + 'px'
+		$ele.style.top = startCoordinate.y + movement.y + 'px'
+	}
+
 	return {
 		mouseX: computed(() => startOffset.x - startCoordinate.x),
 		mouseY: computed(() => startOffset.y - startCoordinate.y),
 		left: toRef(startCoordinate, 'x'),
 		top: toRef(startCoordinate, 'y'),
-		movementX: toRef(movement, 'x'),
-		movementY: toRef(movement, 'y'),
+		movementX: toRef(watchMovement, 'x'),
+		movementY: toRef(watchMovement, 'y'),
     isPress: readonly(isPress),
 		destroy
 	}
