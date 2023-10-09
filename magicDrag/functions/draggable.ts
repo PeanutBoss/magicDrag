@@ -25,13 +25,12 @@ export default class Draggable {
 
 		// modify the icon for the hover state - 修改悬停状态的图标
 		drag && setStyle(target.value, 'cursor', 'all-scroll')
-
 		const { movementX, movementY, isPress } = useMoveElement(
 			target.value,
 			this.moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, containerInfo
 			}),
-			{ limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop })
+			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop })
 
 		watch(isPress, this.isPressChangeCallback(
       { ...elementParameter },

@@ -1,7 +1,5 @@
 import {Direction} from '../utils/magicDrag'
-import {ActionKey, DefaultContextMenuOptions} from '../plugins/contextMenu'
 import {ClassName} from '../style/className'
-import {actionMap} from '../plugins/contextMenu/actionMap'
 import {Ref, reactive, ref} from 'vue'
 
 export interface MagicDragOptions {
@@ -27,14 +25,12 @@ export interface MagicDragOptions {
 		limitDragDirection?: 'X' | 'Y' | null
 	}
 	callbacks?: {
-		dragCallback?: (moveTargetAction: (moveAction) => void, movement: { movementX: number, movementY: number }) => void
-		resizeCallback?: (moveResizeAction: (moveAction) => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
+		dragCallback?: (dragAction: () => void, movement: { movementX: number, movementY: number }) => void
+		resizeCallback?: (resizeAction: () => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
 	}
 	customClass?: {
 		customPointClass?: string
 	}
-	contextMenuOption?: DefaultContextMenuOptions
-	actionList?: ActionKey[]
 }
 
 // default configuration

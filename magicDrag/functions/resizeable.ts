@@ -13,12 +13,29 @@ const resizeActions = getActionCallbacks('resizeCallbacks')
 
 export default class Resizeable {
   constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
+    this.setPointStyle()
     this.init(stateManager.currentState)
   }
 
   init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
     const pointPosition = this.createParentPosition(globalDataParameter.initialTarget, optionParameter.pointSize)
     this.initContourPoints(elementParameter, stateParameter, globalDataParameter, optionParameter, { pointPosition })
+  }
+
+  setPointStyle() {
+    const styleEl = document.createElement('style')
+    const cssText = `
+      .magic_drag-outline_point {
+        position: absolute;
+        box-sizing: border-box;
+        border: 1px solid #999;
+        border-radius: 50%;
+        display: none;
+        z-index: 88888;
+      }
+    `
+    styleEl.appendChild(document.createTextNode(cssText))
+    document.body.appendChild(styleEl)
   }
 
   createParentPosition ({ left, top, width, height }, pointSize: number): PointPosition {
@@ -94,12 +111,12 @@ export default class Resizeable {
           elementParameter,
           globalDataParameter,
           options,
-          { limitDirection: direction, movementX, movementY, moveAction, target: target.value }
+          { direction, movementX, movementY, moveAction, target: target.value }
         )
       }
       // Hand over control (moveResizeAction) - 将控制权（moveResizeAction）交出
       transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value })
-    }, { direction: pointPosition[direction][3] })
+    }, { limitDirection: pointPosition[direction][3] })
     return isPress
   }
 

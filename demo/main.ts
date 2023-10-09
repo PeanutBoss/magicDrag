@@ -53,8 +53,7 @@ const App = {
           //   pressShift && moveAction()
           // }
         },
-        customClass: {},
-        contextMenuOption: {}
+        customClass: {}
       }
     )
 

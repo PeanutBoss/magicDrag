@@ -188,15 +188,6 @@ export interface InitPointOption {
   direction: Direction
   pointSize: number
 }
-// initializes the style of the contour points
-// 初始化轮廓点的样式
-export function initPointStyle (point: HTMLElement, { pointPosition, direction, pointSize }: InitPointOption, pointDefaultStyle?) {
-  pointDefaultStyle && setStyle(point, pointDefaultStyle)
-  setStyle(point, 'width', pointSize + 'px')
-  setStyle(point, 'height', pointSize + 'px')
-  setStyle(point, 'cursor', pointPosition[direction][2])
-  setPosition(point, pointPosition, direction)
-}
 
 // update state - 更新状态
 export function updateState (state, newState) {
@@ -220,7 +211,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
   const {
     globalDataParameter: { initialTarget, downPointPosition },
     stateParameter: { pointState },
-    optionParameter: { pointSize },
+    optionParameter: { pointSize, skill },
 		elementParameter: { allContainer, target: $target, privateTarget }
   } = stateManager.getElementState(target)
 
@@ -246,7 +237,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
   const isContinue = executeActionCallbacks(mousedownActions, stateManager, 'beforeCallback')
   if (isContinue === false) return
 
-  const pointPosition = updatePointPosition(
+  const pointPosition = skill.resize && updatePointPosition(
     target,
     { direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
     { initialTarget, pointElements, pointSize, pointState },
@@ -285,22 +276,6 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
     setStyle(pointElements[key], 'left', downPointPosition[key][0] + movement.x + 'px')
     setStyle(pointElements[key], 'top', downPointPosition[key][1] + movement.y + 'px')
   }
-}
-
-// 限制目标元素在container内拖拽
-function limitTargetMove (initialTarget, containerInfo, movement) {
-	const { left, top, width: targetWidth , height: targetHeight } = initialTarget
-	const { width: containerWidth, height: containerHeight } = containerInfo
-
-	const comeAcrossLeft = movement.x + left <= 0
-	const comeAcrossTop = movement.y + top <= 0
-	const comeAcrossRight = movement.x + left + targetWidth >= containerWidth
-	const comeAcrossBottom = movement.y + top + targetHeight >= containerHeight
-
-	comeAcrossLeft && (movement.x = -left)
-	comeAcrossTop && (movement.y = -top)
-	comeAcrossRight && (movement.x = containerWidth - targetWidth - left)
-	comeAcrossBottom && (movement.y = containerHeight - targetHeight - top)
 }
 
 
@@ -359,6 +334,7 @@ function whetherUpdateState (direction, targetState, newState) {
  * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
  */
 export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
+	console.log(pointElements, 'pointElements')
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
