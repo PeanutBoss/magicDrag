@@ -1,5 +1,4 @@
 import {Direction} from '../utils/magicDrag'
-import {Plugin} from '../plugins'
 import {ClassName} from '../style/className'
 import {Ref, reactive, ref} from 'vue'
 
@@ -25,13 +24,12 @@ export interface MagicDragOptions {
 		limitDragDirection?: 'X' | 'Y' | null
 	}
 	callbacks?: {
-		dragCallback?: (moveTargetAction: (moveAction) => void, movement: { movementX: number, movementY: number }) => void
-		resizeCallback?: (moveResizeAction: (moveAction) => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
+		dragCallback?: (dragAction: () => void, movement: { movementX: number, movementY: number }) => void
+		resizeCallback?: (resizeAction: () => void, direction: Direction, movement: { movementX: number, movementY: number } ) => void
 	}
 	customClass?: {
 		customPointClass?: string
 	}
-	plugins?: Plugin[]
 }
 
 // default configuration
@@ -40,8 +38,8 @@ const _defaultOptions: MagicDragOptions = {
 	containerSelector: 'body',
 	minWidth: 100, // minimum width - 最小宽度
 	minHeight: 100, // minimum height - 最小高度
-	maxWidth: 100000, // 最大宽度
-	maxHeight: 100000, // 最大高度
+	maxWidth: 999999, // 最大宽度
+	maxHeight: 999999, // 最大高度
 	pointSize: 10, // the size of the contour point - 轮廓点的大小
 	// pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
 	skill: {
