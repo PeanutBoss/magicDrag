@@ -54,15 +54,11 @@ export function removeElements (elements: HTMLElement[]) {
 }
 
 export function baseErrorTips (condition, msg) {
-	if (condition) {
-		throw Error(msg)
-	}
+	if (condition) throw Error(msg)
 }
 
 export function baseWarnTips (condition, msg) {
-	if (condition) {
-		console.warn(msg)
-	}
+	if (condition) console.warn(msg)
 }
 
 type SetStyle = {
