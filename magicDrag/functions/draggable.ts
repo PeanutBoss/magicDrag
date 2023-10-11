@@ -5,16 +5,11 @@ import { updateContourPointPosition, updateInitialTarget, updateState } from '..
 import { State, PluginManager } from './index'
 
 export default class Draggable {
-	private bindElement: HTMLElement
 	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager) {
-		this.init(stateManager.currentState)
+		this.start(stateManager.currentState)
 	}
 
-	setElement(element: HTMLElement) {
-		this.bindElement = element
-	}
-
-	init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
+	start({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
 		const { pointElements, target } = elementParameter
 		const { targetState } = stateParameter
 		const { containerInfo, initialTarget, downPointPosition } = globalDataParameter
@@ -29,7 +24,8 @@ export default class Draggable {
 			this.moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, containerInfo
 			}),
-			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop })
+			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop }
+		)
 
 		watch(isPress, this.isPressChangeCallback(
       { ...elementParameter },
@@ -37,12 +33,6 @@ export default class Draggable {
 			{ downPointPosition, initialTarget },
 			{ movementX, movementY }
 		))
-		// watchIsPress(this.isPressChangeCallback(
-		// 	{ ...elementParameter },
-		// 	{ targetState },
-		// 	{ downPointPosition, initialTarget },
-		// 	{ movementX, movementY }
-		// ))
 	}
 
 	dragStart() {

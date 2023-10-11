@@ -20,8 +20,6 @@ export interface MagicDragOptions {
 	skill?: {
 		resize?: boolean
 		drag?: boolean
-		contextMenu?: boolean
-		limitRatio?: [number, number]
 		limitDragDirection?: 'X' | 'Y' | null
 	}
 	callbacks?: {

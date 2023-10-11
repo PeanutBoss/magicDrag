@@ -82,7 +82,7 @@ function useMagicDragAPI (
     // the dom element is destroyed when the page is uninstalled
     // 页面卸载时销毁 dom 元素
     removeElements(Object.values(elementParameter.pointElements))
-    $target.value.removeEventListener('click', updateTargetValue)
+    $target.value.removeEventListener('click', updateTargetPointTo)
   })
 
   function readyMagicDrag() {
@@ -150,7 +150,7 @@ function useMagicDragAPI (
       allTarget.push($target.value)
     }
     function saveTargetData() {
-      $target.value.addEventListener('click', updateTargetValue)
+      $target.value.addEventListener('click', updateTargetPointTo)
       $target.value.dataset.index = allTarget.length
     }
   }
@@ -170,7 +170,7 @@ function useMagicDragAPI (
     pointMovementX: toRef(stateParameter.pointState, 'movementX'),
     pointMovementY: toRef(stateParameter.pointState, 'movementY')
   }
-  function updateTargetValue (event) {
+  function updateTargetPointTo (event) {
     $target.value = event.target
   }
   function initialState(): State {
