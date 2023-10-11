@@ -1,6 +1,6 @@
 import {Direction} from '../utils/magicDrag'
 import {ClassName} from '../style/className'
-import {Ref, reactive, ref} from 'vue'
+import {Ref, reactive, ref} from '@vue/reactivity'
 
 export interface MagicDragOptions {
 	containerSelector: string

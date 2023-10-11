@@ -3,21 +3,10 @@ import { nextTick } from './helper'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
 import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { MAGIC_DRAG } from './style/className'
-import Draggable from './functions/draggable'
-import Resizeable from './functions/resizeable'
-import { PluginManager } from './functions/pluginManager'
-import { RefLine } from './plugins/refLine'
-import Keymap from './plugins/keymap'
-import {
-  allElement,
-  defaultOptions,
-  defaultState,
-  storingDataContainer,
-  composeParameter,
-  MagicDragOptions,
-  MagicDragState
-} from './common/magicDragAssist'
-import StateManager from './functions/stateManager'
+import { usePlugin, setInitialState, pluginManager, stateManager } from './manager'
+import { allElement, defaultOptions, defaultState,
+  storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
+import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
 
 /*
 * TODO
@@ -35,6 +24,7 @@ import StateManager from './functions/stateManager'
 *  12.阴影
 *  13.间距提示
 *  14.resize的点可以配置显示隐藏哪几个，与各自的样式
+*  15.使用 key 的映射表来保存坐标、尺寸等信息
 * MARK 公用的方法组合成一个类
 * */
 
@@ -55,15 +45,12 @@ function initGlobalData () {
   Object.assign(targetState, { left: 0, top: 0, height: 0, width: 0, isPress: false, isLock: false })
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
 }
+function getPointValue(obj, key) {
+  if (!obj.direction) return null
+  return obj[key]
+}
 
-const pluginManager = new PluginManager()
-const stateManager = new StateManager()
-const refLine = new RefLine({ gap: 10 })
-const keymap = new Keymap()
-
-pluginManager.registerPlugin(refLine.name, refLine)
-pluginManager.registerPlugin(keymap.name, keymap)
-
+usePlugin()
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
@@ -71,35 +58,22 @@ function useMagicDragAPI (
 ): MagicDragState {
   const { containerSelector } = options
 
+  // 初始化全局数据
   initGlobalData()
-  const { stateParameter, elementParameter, globalDataParameter, optionParameter } = composeParameter(
-    { pointState, targetState },
-    { target:$target, container: $container, pointElements, allTarget, allContainer, privateTarget: null, privateContainer: null },
-    { initialTarget, containerInfo, downPointPosition },
-    options
-  )
+  const stateParameter: StateParameter = { pointState, targetState }
+  const globalDataParameter: GlobalDataParameter = { initialTarget, containerInfo, downPointPosition }
+  const elementParameter: ElementParameter = {
+    pointElements, allTarget, allContainer,
+    target: $target,
+    container: $container,
+    privateTarget: null as HTMLElement,
+    privateContainer: null as HTMLElement
+  }
 
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState, stateManager)
 
-	nextTick(() => {
-    initContainer()
-
-		initTarget()
-
-    pluginManager.installPlugin(refLine.name)
-    pluginManager.installPlugin(keymap.name)
-
-    // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
-    stateManager.registerElementState($target.value, { elementParameter, stateParameter, globalDataParameter, optionParameter }, true)
-    // @ts-ignore
-    options.skill.drag && new Draggable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter }, stateManager)
-    // @ts-ignore
-    options.skill.resize && new Resizeable(pluginManager, { elementParameter, stateParameter, globalDataParameter, optionParameter }, stateManager)
-
-    // 处理点击目标元素显示/隐藏轮廓点的逻辑
-    processBlurOrFocus($target.value)
-  })
+	nextTick(readyMagicDrag)
 
   todoUnMount(() => {
     // unbind the mousedown event added for window to handle the target element
@@ -111,41 +85,74 @@ function useMagicDragAPI (
     $target.value.removeEventListener('click', updateTargetValue)
   })
 
+  function readyMagicDrag() {
+    initContainer()
+    initTarget()
+    // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
+    setInitialState($target.value, initialState(), true)
+    enableDragFunc()
+    enableResizeFunc()
+    // 处理点击目标元素显示/隐藏轮廓点的逻辑
+    processBlurOrFocus($target.value)
+  }
+
   // initializes the container element - 初始化容器元素
   function initContainer () {
-    elementParameter.privateContainer = $container.value = getElement(containerSelector)
-    allContainer.push(elementParameter.privateContainer)
-    const { paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing } = getComputedStyle(elementParameter.container.value)
-    const containerRect = elementParameter.container.value.getBoundingClientRect()
-    const isBorderBox = boxSizing === 'border-box'
-    const containerWidth = isBorderBox ? parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight) : parseInt(width)
-    const containerHeight = isBorderBox ? parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom) : parseInt(height)
-    globalDataParameter.containerInfo.width = containerWidth
-    globalDataParameter.containerInfo.height = containerHeight
-    globalDataParameter.containerInfo.offsetLeft = containerRect.left
-    globalDataParameter.containerInfo.offsetTop = containerRect.top
+    saveContainerEl()
+    saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
+    function saveContainerEl() {
+      elementParameter.privateContainer = $container.value = getElement(containerSelector)
+      allContainer.push(elementParameter.privateContainer)
+    }
+    function contentAreaSize() {
+      const {
+        paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing,
+        borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth
+      } = getComputedStyle(elementParameter.container.value)
+      return { containerWidth: containerWidth(), containerHeight: containerHeight() }
+      function isBorderBox() {
+        return boxSizing === 'border-box'
+      }
+      function containerHeight() {
+        return isBorderBox()
+          ? parseInt(height) - parseInt(paddingTop) - parseInt(paddingBottom) - parseInt(borderBottomWidth) - parseInt(borderTopWidth)
+          : parseInt(height)
+      }
+      function containerWidth() {
+        return isBorderBox()
+          ? parseInt(width) - parseInt(paddingLeft) - parseInt(paddingRight) - parseInt(borderLeftWidth) - parseInt(borderRightWidth)
+          : parseInt(width)
+      }
+    }
+    function contentAreaOffset() {
+      const containerRect = elementParameter.container.value.getBoundingClientRect()
+      return { offsetLeft: containerRect.left, offsetTop: containerRect.top }
+    }
+    function saveContainerSizeAndOffset({ containerWidth, containerHeight }, { offsetLeft, offsetTop }) {
+      globalDataParameter.containerInfo.width = containerWidth
+      globalDataParameter.containerInfo.height = containerHeight
+      globalDataParameter.containerInfo.offsetLeft = offsetLeft
+      globalDataParameter.containerInfo.offsetTop = offsetTop
+    }
   }
 
-  function updateTargetValue (event) {
-    $target.value = event.target
-  }
   // initializes the target element - 初始化目标元素
   function initTarget () {
-    elementParameter.privateTarget = $target.value = getElement(targetSelector)
-
-    $target.value.addEventListener('click', updateTargetValue)
-
-    $target.value.dataset.index = allTarget.length
-    allTarget.push($target.value)
-
+    saveTargetEl()
+    saveTargetData()
     baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
-
     initTargetStyle($target.value)
-
     initTargetCoordinate($target.value, globalDataParameter.initialTarget, TEST)
-
     // 初始化结束后更新状态
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
+    function saveTargetEl() {
+      elementParameter.privateTarget = $target.value = getElement(targetSelector)
+      allTarget.push($target.value)
+    }
+    function saveTargetData() {
+      $target.value.addEventListener('click', updateTargetValue)
+      $target.value.dataset.index = allTarget.length
+    }
   }
 
 
@@ -163,11 +170,18 @@ function useMagicDragAPI (
     pointMovementX: toRef(stateParameter.pointState, 'movementX'),
     pointMovementY: toRef(stateParameter.pointState, 'movementY')
   }
-}
-
-function getPointValue(obj, key) {
-  if (!obj.direction) return null
-  return  obj[key]
+  function updateTargetValue (event) {
+    $target.value = event.target
+  }
+  function initialState(): State {
+    return { elementParameter, stateParameter, globalDataParameter, optionParameter: options }
+  }
+  function enableDragFunc() {
+    options.skill.drag && new Draggable(pluginManager, initialState(), stateManager)
+  }
+  function enableResizeFunc() {
+    options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager)
+  }
 }
 
 export function useMagicDrag (

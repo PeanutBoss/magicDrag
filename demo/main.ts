@@ -15,6 +15,7 @@ const App = {
       <div style="display: flex;width: 100%">
         <div class="placeholder-left"></div>
         <div class="wrap" style="height: 800px;width: 800px">
+          {{ state.pointMovementX }} {{ state.pointMovementY }}<br>
           {{ state.targetIsPress }}<br>
           {{ state.targetLeft }} - {{ state.targetTop }}<br>
           {{ state.targetWidth }} - {{ state.targetHeight }}<br>

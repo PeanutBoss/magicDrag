@@ -1,22 +1,23 @@
-export class PluginManager {
-  private plugins: Map<string, Plugin> = new Map()
-
-  registerPlugin(name: string, plugin: Plugin) {
-    this.plugins.set(name, plugin)
+export default class PluginManager {
+  private _plugins: Map<string, Plugin> = new Map()
+  get plugins() {
+    return new Map(this._plugins)
   }
 
-  installPlugin(name: string) {
-    const plugin = this.plugins.get(name)
-    if (plugin) {
+  registerPlugin(name: string, plugin: Plugin) {
+    this._plugins.set(name, plugin)
+  }
+
+  installPlugin() {
+    this.plugins.forEach(plugin => {
       plugin.init()
-    }
+    })
   }
 
   uninstallPlugin(name: string) {
-    const plugin = this.plugins.get(name)
-    if (plugin) {
+    this.plugins.forEach(plugin => {
       plugin.unbind()
-    }
+    })
   }
 
   // MARK 5.扩展点触发 - 在关键时刻触发扩展点，通知注册在该扩展点上的插件。

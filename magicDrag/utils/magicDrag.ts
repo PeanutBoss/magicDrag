@@ -1,5 +1,5 @@
 import {conditionExecute, getObjectIntValue, setStyle} from './tools'
-import {reactive} from 'vue'
+import {reactive} from '@vue/reactivity'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {getTargetZIndex, TargetStatus} from "../style/className";
 import {executePluginDrag, executePluginResize} from "../plugins";

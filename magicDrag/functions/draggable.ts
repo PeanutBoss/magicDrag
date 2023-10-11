@@ -1,10 +1,8 @@
-import { watch, computed } from 'vue'
-import { PluginManager } from './pluginManager'
+import { watch } from '@vue/runtime-core'
 import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import { updateContourPointPosition, updateInitialTarget, updateState } from '../utils/magicDrag'
-import { State } from './stateManager'
-import {watchIsPress} from "../helper";
+import { State, PluginManager } from './index'
 
 export default class Draggable {
 	private bindElement: HTMLElement
