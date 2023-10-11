@@ -1,6 +1,6 @@
 import { reactive, ref, toRef, readonly, computed } from '@vue/reactivity'
 import { getElement, transferControl, throttle, baseWarnTips } from './utils/tools'
-import { useWatchData, nextTick, watchIsPress } from './helper'
+import { useWatchData, nextTick } from './helper'
 
 /**
  * @description 移动元素
@@ -110,8 +110,8 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 		isPress.value = newStatus
 	}
 	function setMovement({ x, y }: Pos) {
-		movement.x = x || movement.x
-		movement.y = y || movement.y
+		movement.x = x ?? movement.x
+		movement.y = y ?? movement.y
 	}
 	function setStartOffset({ x, y }: Pos) {
 		startOffset.x = x
