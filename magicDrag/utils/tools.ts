@@ -43,7 +43,8 @@ export function isNullOrUndefined (val: unknown): boolean {
 	return val === null || val === undefined
 }
 
-export function conditionExecute (condition, task1, task2) {
+export function conditionExecute (condition, task1, task2?) {
+	if (!task2) return condition && task1()
 	return condition ? task1 : task2
 }
 
@@ -133,4 +134,19 @@ export function watcher() {
 			callbacks = null
 		}
 	}
+}
+
+export function deepFlatObj(object) {
+	const result = {}
+	for (const key in object) {
+		result[key] = object[key]
+		if (typeof object[key] === 'object' && !isHTMLEl(object[key])) {
+			result[key] = deepFlatObj(object[key])
+		}
+	}
+	return result
+}
+
+function isHTMLEl(data) {
+	return data instanceof HTMLElement
 }

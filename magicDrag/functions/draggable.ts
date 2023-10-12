@@ -1,21 +1,21 @@
 import { watch } from '@vue/runtime-core'
 import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
-import { updateContourPointPosition, updateInitialTarget, updateState } from '../utils/magicDrag'
-import { State, PluginManager } from './index'
+import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../utils/magicDrag'
+import {State, PluginManager, splitState} from './index'
 
 export default class Draggable {
 	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager) {
 		this.start(stateManager.currentState)
 	}
 
-	start({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
-		const { pointElements, target } = elementParameter
-		const { targetState } = stateParameter
-		const { containerInfo, initialTarget, downPointPosition } = globalDataParameter
-		const { skill = {}, callbacks = {} } = optionParameter
-		const { drag, limitDragDirection } = skill
-		const { dragCallback } = callbacks
+	// start({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
+	start(currentState) {
+		const {
+			pointElements, target, targetState, containerInfo,
+			initialTarget, downPointPosition,
+			drag, limitDragDirection, dragCallback
+		} = splitState(currentState)
 
 		// modify the icon for the hover state - 修改悬停状态的图标
 		drag && setStyle(target.value, 'cursor', 'all-scroll')
@@ -28,7 +28,7 @@ export default class Draggable {
 		)
 
 		watch(isPress, this.isPressChangeCallback(
-      { ...elementParameter },
+      { ...currentState.elementParameter },
 			{ targetState },
 			{ downPointPosition, initialTarget },
 			{ movementX, movementY }
@@ -44,13 +44,6 @@ export default class Draggable {
 		return (moveAction, movement) => {
 			const parameter = this.stateManager.currentState
 			const initialTarget = parameter.globalDataParameter.initialTarget
-
-			const _updateContourPointPosition = (movement) => {
-				updateContourPointPosition(downPointPosition, movement, pointElements)
-			}
-			const _updateState = (movement) => {
-				updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
-			}
 
 			// Wrap the action to move the target element as a separate new function, and if the user defines a callback
 			// use moveTargetAction as an argument to that callback
@@ -73,6 +66,13 @@ export default class Draggable {
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
 			this.plugins.callExtensionPoint('drag', parameter, { movement, _updateContourPointPosition, _updateState })
+
+			function _updateContourPointPosition (movement) {
+				updateContourPointPosition(downPointPosition, movement, pointElements)
+			}
+			function _updateState(movement) {
+				updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
+			}
 		}
 	}
 
@@ -81,35 +81,38 @@ export default class Draggable {
 		const { left, top, width: targetWidth , height: targetHeight } = initialTarget
 		const { width: containerWidth, height: containerHeight, offsetLeft, offsetTop } = containerInfo
 
-		const comeAcrossLeft = movement.x + left <= 0
-		const comeAcrossTop = movement.y + top <= 0
+		comeAcrossLeft() && (movement.x = -left)
+		comeAcrossTop() && (movement.y = -top)
+		comeAcrossRight() && (movement.x = containerWidth + offsetLeft - targetWidth - left)
+		comeAcrossBottom() && (movement.y = containerHeight + offsetTop - targetHeight - top)
 		// containerWidth + offsetLeft, containerHeight + offsetTop 是计算过容器元素相对body偏移之后的位置
-		const comeAcrossRight = movement.x + left + targetWidth >= containerWidth + offsetLeft
-		const comeAcrossBottom = movement.y + top + targetHeight >= containerHeight + offsetTop
-
-		comeAcrossLeft && (movement.x = -left)
-		comeAcrossTop && (movement.y = -top)
-		comeAcrossRight && (movement.x = containerWidth + offsetLeft - targetWidth - left)
-		comeAcrossBottom && (movement.y = containerHeight + offsetTop - targetHeight - top)
+		function comeAcrossLeft() {
+			return movement.x + left <= 0
+		}
+		function comeAcrossRight() {
+			return movement.x + left + targetWidth >= containerWidth + offsetLeft
+		}
+		function comeAcrossTop() {
+			return movement.y + top <= 0
+		}
+		function comeAcrossBottom() {
+			return movement.y + top + targetHeight >= containerHeight + offsetTop
+		}
 	}
 
 	targetMouseDown({ downPointPosition, pointElements }) {
-		// the coordinates of all contour points are recorded when the target element is pressed
-		// 当按下目标元素时，记录所有轮廓点的坐标
-		for (const key in pointElements) {
-			downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
-		}
+		saveDownPointPosition({ downPointPosition, pointElements })
 	}
 
 	targetMouseUp({ initialTarget, movementX, movementY }) {
 		// mouse up to update the coordinates of the target element
-		// 鼠标抬起时更新目标元素的坐标
+		// 鼠标抬起时更新目标元素的坐标数据
 		updateInitialTarget(initialTarget, { top: initialTarget.top + movementY.value, left: initialTarget.left + movementX.value })
 	}
 
 	isPressChangeCallback(elementParameter, { targetState }, { downPointPosition, initialTarget }, { movementX, movementY }) {
 		return (newV) => {
-			this.updateState(targetState, 'isPress', newV)
+			updateState(targetState, 'isPress', newV)
 			if (newV) {
 				this.targetMouseDown({ downPointPosition, pointElements: elementParameter.pointElements })
 			} else {
@@ -117,14 +120,6 @@ export default class Draggable {
 			}
 
       this.plugins.callExtensionPoint('targetPressChange', newV, elementParameter)
-		}
-	}
-	// TODO 复用其他
-	updateState(state, key: object | string, value?) {
-		if (typeof key === 'object') {
-			Object.assign(state, key)
-		} else {
-			state[key] = value
 		}
 	}
 }

@@ -155,7 +155,6 @@ function useMagicDragAPI (
     }
   }
 
-
   return {
     targetLeft: toRef(stateParameter.targetState, 'left'),
     targetTop: toRef(stateParameter.targetState, 'top'),
@@ -186,7 +185,7 @@ function useMagicDragAPI (
 
 export function useMagicDrag (
   targetSelector: string | HTMLElement,
-  options?: MagicDragOptions,
+  options?: MagicDragOptions
 ) {
   // check whether targetSelector is a selector or an HTMLElement
   // 检查 targetSelector 是否为选择器或 HTMLElement
@@ -195,8 +194,10 @@ export function useMagicDrag (
 
   checkParameterType(defaultOptions(), options)
   options = mergeObject(defaultOptions(), options)
-  const { customPointClass } = options.customClass
-  baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
+  baseErrorTips(
+    options.customClass.customPointClass.startsWith(MAGIC_DRAG),
+    `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`
+  )
 
   return useMagicDragAPI(
     targetSelector,

@@ -190,9 +190,13 @@ export interface InitPointOption {
 }
 
 // update state - 更新状态
-export function updateState (state, newState) {
-	for (const targetKey in state) {
-		state[targetKey] = newState[targetKey] ?? state[targetKey]
+export function updateState (state, keyOrState: object | string, value?) {
+	if (typeof keyOrState === 'object') {
+		for (const targetKey in state) {
+			state[targetKey] = keyOrState[targetKey] ?? state[targetKey]
+		}
+	} else {
+		state[keyOrState] = value
 	}
 }
 
@@ -410,6 +414,14 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
 		rotate: 0,
 		zIndex: null
   })
+}
+
+export function saveDownPointPosition({ downPointPosition, pointElements }) {
+	// the coordinates of all contour points are recorded when the target element is pressed
+	// 当按下目标元素时，记录所有轮廓点的坐标
+	for (const key in pointElements) {
+		downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
+	}
 }
 
 export function initTargetStyle (target) {
