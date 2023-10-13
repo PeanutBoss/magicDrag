@@ -1,4 +1,28 @@
-## MagicResize
+## MagicDrag
+
+该工具暂未提供js版本，使用前请配置ts-loader  
+`npm install ts-loader typescript -D` 或 `yarn add ts-loader typescript -D`  
+并在webpack的配置文件 module.rules 中加入ts-loader配置 [参考链接](https://github.com/PeanutBoss/magicDrag/blob/magic_drag/config/magicDrag.config.js)  
+```js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+------
 
 ### useMoveElement
 
@@ -156,7 +180,7 @@ onBeforeUnmount(state.destroy)
 </script>
 ```
 
-
+------
 
 ### useMagicDrag
 

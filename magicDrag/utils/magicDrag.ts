@@ -1,5 +1,5 @@
 import {conditionExecute, getObjectIntValue, setStyle} from './tools'
-import {reactive} from 'vue'
+import {reactive} from '@vue/reactivity'
 import {getTargetZIndex, TargetStatus} from "../style/className";
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
@@ -184,9 +184,13 @@ export interface InitPointOption {
 }
 
 // update state - 更新状态
-export function updateState (state, newState) {
-	for (const targetKey in state) {
-		state[targetKey] = newState[targetKey] ?? state[targetKey]
+export function updateState (state, keyOrState: object | string, value?) {
+	if (typeof keyOrState === 'object') {
+		for (const targetKey in state) {
+			state[targetKey] = keyOrState[targetKey] ?? state[targetKey]
+		}
+	} else {
+		state[keyOrState] = value
 	}
 }
 
@@ -323,7 +327,6 @@ function whetherUpdateState (direction, targetState, newState) {
  * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
  */
 export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
-	console.log(pointElements, 'pointElements')
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = createParamStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
@@ -400,6 +403,14 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
 		rotate: 0,
 		zIndex: null
   })
+}
+
+export function saveDownPointPosition({ downPointPosition, pointElements }) {
+	// the coordinates of all contour points are recorded when the target element is pressed
+	// 当按下目标元素时，记录所有轮廓点的坐标
+	for (const key in pointElements) {
+		downPointPosition[key] = [parseInt(pointElements[key].style.left), parseInt(pointElements[key].style.top)]
+	}
 }
 
 export function initTargetStyle (target) {

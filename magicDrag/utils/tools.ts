@@ -1,13 +1,11 @@
-export const EXECUTE_NEXT_TASK = 'EXECUTE_NEXT_TASK'
-
 export function throttle (fn: any, delay: number, options: any = {}) {
-  let { immediate = false } = options
+  let { leading = false } = options
 	let flag = true
 	return (...rest) => {
 		if (!flag) return
-    if (immediate) {
+    if (leading) {
       fn(...rest)
-      immediate = false
+			leading = false
     }
 		flag = false
 		setTimeout(() => {
@@ -45,7 +43,8 @@ export function isNullOrUndefined (val: unknown): boolean {
 	return val === null || val === undefined
 }
 
-export function conditionExecute (condition, task1, task2) {
+export function conditionExecute (condition, task1, task2?) {
+	if (!task2) return condition && task1()
 	return condition ? task1 : task2
 }
 
@@ -56,28 +55,11 @@ export function removeElements (elements: HTMLElement[]) {
 }
 
 export function baseErrorTips (condition, msg) {
-	if (condition) {
-		throw Error(msg)
-	}
+	if (condition) throw Error(msg)
 }
 
 export function baseWarnTips (condition, msg) {
-	if (condition) {
-		console.warn(msg)
-	}
-}
-
-export function insertAfter () {
-  Reflect.set(Function.prototype, 'after', function (fn) {
-    const self = this
-    return function (...rest) {
-      const ret = self.apply(this, rest)
-      if (ret === EXECUTE_NEXT_TASK) {
-        return fn.apply(this, rest)
-      }
-      return ret
-    }
-  })
+	if (condition) console.warn(msg)
 }
 
 type SetStyle = {
@@ -137,4 +119,34 @@ export function addClassName (element: HTMLElement, className: string) {
 
 export function removeClassName (element: HTMLElement, className: string) {
   element.className = element.className.replaceAll(className, '')
+}
+
+export function watcher() {
+	let callbacks = []
+	return {
+		executeCB(newV, oldV) {
+			callbacks.forEach(cb => cb(newV, oldV))
+		},
+		insertCB(callback) {
+			callbacks.push(callback)
+		},
+		destroy() {
+			callbacks = null
+		}
+	}
+}
+
+export function deepFlatObj(object) {
+	const result = {}
+	for (const key in object) {
+		result[key] = object[key]
+		if (typeof object[key] === 'object' && !isHTMLEl(object[key])) {
+			result[key] = deepFlatObj(object[key])
+		}
+	}
+	return result
+}
+
+function isHTMLEl(data) {
+	return data instanceof HTMLElement
 }

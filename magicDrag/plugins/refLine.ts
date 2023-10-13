@@ -44,7 +44,7 @@ function getLines () {
 	return lines
 }
 
-export class RefLine implements Plugin {
+export default class RefLine implements Plugin {
 	name: string
 	private lines
 	private isHasAdsorbElementX = false

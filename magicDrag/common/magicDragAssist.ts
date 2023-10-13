@@ -1,6 +1,6 @@
 import {Direction} from '../utils/magicDrag'
 import {ClassName} from '../style/className'
-import {Ref, reactive, ref} from 'vue'
+import {Ref, reactive, ref} from '@vue/reactivity'
 
 export interface MagicDragOptions {
 	containerSelector: string
@@ -20,7 +20,6 @@ export interface MagicDragOptions {
 	skill?: {
 		resize?: boolean
 		drag?: boolean
-		limitRatio?: [number, number]
 		limitDragDirection?: 'X' | 'Y' | null
 	}
 	callbacks?: {
