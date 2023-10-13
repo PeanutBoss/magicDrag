@@ -1,6 +1,7 @@
 import {Direction} from '../utils/magicDrag'
 import {ClassName} from '../style/className'
 import {Ref, reactive, ref} from '@vue/reactivity'
+import {deepClone} from "../utils/tools";
 
 export interface MagicDragOptions {
 	containerSelector: string
@@ -20,6 +21,8 @@ export interface MagicDragOptions {
 	skill?: {
 		resize?: boolean
 		drag?: boolean
+		refLine?: boolean
+		keymap?: boolean
 		limitDragDirection?: 'X' | 'Y' | null
 	}
 	callbacks?: {
@@ -44,6 +47,8 @@ const _defaultOptions: MagicDragOptions = {
 	skill: {
 		resize: true, // whether the size adjustment is supported - 是否支持大小调整
 		drag: true, // whether to support dragging - 是否支持拖动
+		refLine: true, // whether to support refLine - 是否支持参考线
+		keymap: false, // whether to support shortcut - 是否支持快捷键
 		limitDragDirection: null // restricted direction of movement - 限制移动方向
 	},
 	customClass: {
@@ -53,7 +58,7 @@ const _defaultOptions: MagicDragOptions = {
 }
 
 export function defaultOptions(): MagicDragOptions {
-	return _defaultOptions
+	return deepClone(_defaultOptions)
 }
 
 

@@ -89,15 +89,15 @@ const limitBoundaryTasks = {
 		movementX.value + initialTarget.left <= 0 && (movementX.value = -initialTarget.left)
 	},
 	right ({ movementX, initialTarget, containerInfo }) {
-		movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width &&
-		(movementX.value = containerInfo.width - initialTarget.left - initialTarget.width)
+		movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width + containerInfo.offsetLeft &&
+		(movementX.value = containerInfo.width - initialTarget.left - initialTarget.width + containerInfo.offsetLeft)
 	},
 	top ({ movementY, initialTarget }) {
 		movementY.value + initialTarget.top <= 0 && (movementY.value = -initialTarget.top)
 	},
 	bottom ({ movementY, initialTarget, containerInfo }) {
-		movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height &&
-		(movementY.value = containerInfo.height - initialTarget.top - initialTarget.height)
+		movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height + containerInfo.offsetTop &&
+		(movementY.value = containerInfo.height - initialTarget.top - initialTarget.height + containerInfo.offsetTop)
 	}
 }
 // create a policy to limit the minimum size when resizing the target

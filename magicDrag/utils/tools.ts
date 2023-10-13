@@ -150,3 +150,37 @@ export function deepFlatObj(object) {
 function isHTMLEl(data) {
 	return data instanceof HTMLElement
 }
+
+export const createElement = document.createElement
+
+export function deepClone(obj: object, clones = new WeakMap()) {
+	if (typeof obj !== 'object') return obj
+
+	if (clones.has(obj)) {
+		return clones.get(obj)
+	}
+
+	const result = {}
+
+	for (const key in obj) {
+		if (typeof obj === 'object' && !isNullOrUndefined(obj[key])) {
+			result[key] = deepClone(obj[key])
+		} else if (Array.isArray(obj[key])) {
+			result[key] = [...obj[key]]
+		} else if (isNullOrUndefined(obj[key])) {
+			result[key] = null
+		} else if (obj[key] instanceof Date) {
+			result[key] = new Date(obj[key])
+		} else if (obj[key] instanceof RegExp) {
+			result[key] = new RegExp(obj[key])
+		} else if (typeof obj[key] === 'symbol') {
+			result[key] = Symbol(obj[key].description)
+		} else {
+			result[key] = obj[key]
+		}
+	}
+
+	clones.set(obj, result)
+
+	return result
+}

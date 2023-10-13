@@ -50,7 +50,7 @@ function getPointValue(obj, key) {
   return obj[key]
 }
 
-usePlugin()
+usePlugin(defaultOptions().skill)
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,

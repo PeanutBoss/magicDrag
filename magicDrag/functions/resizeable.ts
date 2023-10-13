@@ -4,7 +4,7 @@ import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
 } from '../utils/magicDrag'
-import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools'
+import {addClassName, appendChild, createElement, setStyle, transferControl} from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
 
@@ -21,6 +21,7 @@ export default class Resizeable {
     this.initContourPoints(elementParameter, stateParameter, globalDataParameter, optionParameter, { pointPosition })
   }
 
+  // TODO style类控制
   setPointStyle() {
     const styleEl = document.createElement('style')
     const cssText = `
