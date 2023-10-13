@@ -7,6 +7,7 @@ import { usePlugin, setInitialState, pluginManager, stateManager } from './manag
 import { allElement, defaultOptions, defaultState,
   storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
+import { insertResizeTask, stopListen } from './helper'
 
 /*
 * TODO
@@ -25,6 +26,7 @@ import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable,
 *  13.间距提示
 *  14.resize的点可以配置显示隐藏哪几个，与各自的样式
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
+*  16.window触发resize时调整元素位置 可配置
 * MARK 公用的方法组合成一个类
 * */
 
@@ -83,6 +85,7 @@ function useMagicDragAPI (
     // 页面卸载时销毁 dom 元素
     removeElements(Object.values(elementParameter.pointElements))
     $target.value.removeEventListener('click', updateTargetPointTo)
+    stopListen()
   })
 
   function readyMagicDrag() {
@@ -100,6 +103,10 @@ function useMagicDragAPI (
   function initContainer () {
     saveContainerEl()
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
+    insertResizeTask(listenContainerSize)
+    function listenContainerSize() {
+      saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
+    }
     function saveContainerEl() {
       elementParameter.privateContainer = $container.value = getElement(containerSelector)
       allContainer.push(elementParameter.privateContainer)

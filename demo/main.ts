@@ -58,7 +58,7 @@ const App = {
       }
     )
 
-    useMagicDrag('.box1', { containerSelector: '.wrap' })
+    useMagicDrag('.box1', { containerSelector: 'body' })
 
     // useMagicDrag('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {

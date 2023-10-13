@@ -1,3 +1,5 @@
+export { insertResizeTask, stopListen } from './browserBehavier.ts'
+
 const resolvePromise = Promise.resolve()
 
 export function nextTick(cb) {

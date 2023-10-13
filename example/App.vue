@@ -14,7 +14,7 @@ const state = useMagicDrag(
   {
     skill: {
       resize: false, // 禁用放大缩小功能
-      limitDragDirection: 'X' // 禁止X轴方向拖拽
+      limitDragDirection: '' // 禁止X轴方向拖拽
     },
     callbacks: {
       dragCallback(dragAction, movement) {
