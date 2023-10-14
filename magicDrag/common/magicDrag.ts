@@ -5,7 +5,6 @@ import {reactive} from '@vue/reactivity'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {getTargetZIndex, TargetStatus} from "../style/className";
 import {executePluginDrag, executePluginResize} from "../plugins";
-import {MagicDragOptions} from "./magicDragAssist.ts";
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
