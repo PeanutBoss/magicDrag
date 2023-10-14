@@ -1,4 +1,5 @@
-import {Direction} from '../utils/magicDrag'
+/* Global variable correlation - 全局变量相关 */
+import {Direction} from './magicDrag.ts'
 import {ClassName} from '../style/className'
 import {Ref, reactive, ref} from '@vue/reactivity'
 import {deepClone} from "../utils/tools";
@@ -122,17 +123,4 @@ export interface MagicDragState {
 	targetIsPress: Ref<boolean>
 	pointIsPress: Ref<boolean>
 	direction: Ref<string | null>
-}
-
-
-
-export function composeParameter(
-  { ...stateParameter },
-  { ...elementParameter },
-  { ...globalDataParameter },
-  optionParameter
-) {
-  return {
-    stateParameter, elementParameter, globalDataParameter, optionParameter
-  }
 }

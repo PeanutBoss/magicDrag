@@ -1,4 +1,4 @@
-import useMagicDrag from '../magicDrag/useMagicDrag'
+import { useMagicDrag } from '../magicDrag'
 import { nextTick } from 'vue'
 
 describe("base function", () => {

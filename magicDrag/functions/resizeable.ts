@@ -3,7 +3,7 @@ import { State, PluginManager } from './index'
 import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
-} from '../utils/magicDrag'
+} from '../common/magicDrag'
 import {addClassName, appendChild, createElement, setStyle, transferControl} from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'

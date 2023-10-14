@@ -1,4 +1,6 @@
-import {conditionExecute, getObjectIntValue, setStyle} from './tools'
+/* strong correlation functional - 强相关的功能 */
+
+import {conditionExecute, getObjectIntValue, setStyle} from '../utils/tools.ts'
 import {reactive} from '@vue/reactivity'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {getTargetZIndex, TargetStatus} from "../style/className";

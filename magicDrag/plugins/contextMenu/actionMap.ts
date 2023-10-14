@@ -1,4 +1,4 @@
-import {showOrHideContourPoint, updatePointPosition} from '../../utils/magicDrag'
+import {showOrHideContourPoint, updatePointPosition} from '../../common/magicDrag'
 import { useMagicDrag } from '../../index'
 import ContextMenu, {menuState} from '../contextMenu/index'
 import {getTargetZIndex, TargetStatus} from "../../style/className";
@@ -163,7 +163,7 @@ export const actionMap: ActionMap = {
 			copyTarget.style.top = initialTarget.top + options.offsetY + 'px'
 			parent.appendChild(copyTarget)
 			// TODO 复制目标元素后，需要将target设置为新复制的元素
-			useMagicDrag(`.${newClassName}`, { containerSelector }, [...plugins, new ContextMenu(actionList, options, stateManager)])
+			// useMagicDrag(`.${newClassName}`, { containerSelector }, [...plugins, new ContextMenu(actionList, options, stateManager)])
 		}
 	},
 	delete: {

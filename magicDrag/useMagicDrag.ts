@@ -1,13 +1,14 @@
 import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
 import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
-import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './utils/magicDrag'
 import { MAGIC_DRAG } from './style/className'
 import { usePlugin, setInitialState, pluginManager, stateManager } from './manager'
-import { allElement, defaultOptions, defaultState,
-  storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
 import { insertResizeTask, stopListen } from './helper'
+import { allElement, defaultOptions, defaultState,
+  storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
+import { fixContourExceed } from "./common/functionAssist.ts";
+import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './common/magicDrag'
 
 /*
 * TODO
@@ -27,6 +28,7 @@ import { insertResizeTask, stopListen } from './helper'
 *  14.resize的点可以配置显示隐藏哪几个，与各自的样式
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
 *  16.window触发resize时调整元素位置 可配置
+*  17.如果容器是body元素，需要给body添加 overflow: hidden 禁止出现滚动条
 * MARK 公用的方法组合成一个类
 * */
 
@@ -62,6 +64,7 @@ function useMagicDragAPI (
 
   // 初始化全局数据
   initGlobalData()
+  initGlobalStyle()
   const stateParameter: StateParameter = { pointState, targetState }
   const globalDataParameter: GlobalDataParameter = { initialTarget, containerInfo, downPointPosition }
   const elementParameter: ElementParameter = {
@@ -187,6 +190,9 @@ function useMagicDragAPI (
   }
   function enableResizeFunc() {
     options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager)
+  }
+  function initGlobalStyle() {
+    options.containerSelector === 'body' && fixContourExceed()
   }
 }
 
