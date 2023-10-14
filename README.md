@@ -1,29 +1,5 @@
 ## MagicDrag
 
-该工具暂未提供js版本，使用前请配置ts-loader  
-`npm install ts-loader typescript -D` 或 `yarn add ts-loader typescript -D`  
-并在webpack的配置文件 module.rules 中加入ts-loader配置 [参考链接](https://github.com/PeanutBoss/magicDrag/blob/magic_drag/config/magicDrag.config.js)  
-```js
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        use: [
-          {
-            loader: 'ts-loader',
-            options: {
-              transpileOnly: true
-            }
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-------
-
 ### useMoveElement
 
 接受一个dom元素或一个选择器使其可拖拽，接受可选的两个参数 moveCallback moveOption
@@ -213,6 +189,10 @@ useMagicDrag('.box')
 | minHeight                    | 容器可以缩放的最小高度          | 100    | number           |
 | maxWidth                     | 容器可以放大的最大宽度          | 999999 | number           |
 | maxHeight                    | 容器可以放大的最大高度          | 999999 | number           |
+| initialInfo.width            | 目标元素的初始宽度            | 200    | number           |
+| initialInfo.height           | 目标元素的初始高度            | 200    | number           |
+| initialInfo.left             | 目标元素的初始的X轴定位         | 0      | number           |
+| initialInfo.top              | 目标元素的初始的Y轴定位         | 0      | number           |
 | pointSize                    | 调整大小的轮廓点的尺寸（直径）      | 10     | number           |
 | customClass.customPointClass | 自定义轮廓点的类名            | -      | string           |
 | skill.resize                 | 是否开启调整大小功能           | true   | boolean          |

@@ -5,6 +5,7 @@
     "emitDeclarationOnly": true, // 不生成js文件
     "declaration": true, // 不生成生命文件
     "composite": false,
+    "outDir": "./lib",
 //    "noEmit": false, // 生成js文件
     /* Projects */
     // "incremental": true,                              /* Enable incremental compilation */
