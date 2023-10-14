@@ -11,6 +11,12 @@ export interface MagicDragOptions {
 	maxWidth?: number
 	maxHeight?: number
 	pointSize?: number
+  initialInfo?: {
+    width?: number
+    height?: number
+    left?: number
+    top?: number
+  }
 	containerRange?: {
 		left?: number
 		top?: number
@@ -39,12 +45,18 @@ export interface MagicDragOptions {
 // 默认配置
 const _defaultOptions: MagicDragOptions = {
 	containerSelector: 'body',
-	minWidth: 100, // minimum width - 最小宽度
-	minHeight: 100, // minimum height - 最小高度
+	minWidth: 10, // minimum width - 最小宽度
+	minHeight: 10, // minimum height - 最小高度
 	maxWidth: 999999, // 最大宽度
 	maxHeight: 999999, // 最大高度
 	pointSize: 10, // the size of the contour point - 轮廓点的大小
 	// pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
+  initialInfo: {
+    width: 200,
+    height: 200,
+    left: 0,
+    top: 0
+  },
 	skill: {
 		resize: true, // whether the size adjustment is supported - 是否支持大小调整
 		drag: true, // whether to support dragging - 是否支持拖动

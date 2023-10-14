@@ -1,6 +1,11 @@
 import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
-import { getElement, mergeObject, removeElements, baseErrorTips, checkParameterType } from './utils/tools'
+import {
+  getElement,
+  mergeObject,
+  removeElements,
+  baseErrorTips
+} from './utils/tools'
 import { MAGIC_DRAG } from './style/className'
 import { usePlugin, setInitialState, pluginManager, stateManager } from './manager'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
@@ -8,7 +13,8 @@ import { insertResizeTask, stopListen } from './helper'
 import { allElement, defaultOptions, defaultState,
   storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
 import { fixContourExceed } from "./common/functionAssist.ts";
-import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, initTargetCoordinate } from './common/magicDrag'
+import { checkParameterType, checkParameterValue } from './common/warningAssist'
+import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, saveInitialData } from './common/magicDrag'
 
 /*
 * TODO
@@ -29,6 +35,7 @@ import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateS
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
 *  16.window触发resize时调整元素位置 可配置
 *  17.如果容器是body元素，需要给body添加 overflow: hidden 禁止出现滚动条
+*  18.目标元素的 left、top 应该是相对容器计算
 * MARK 公用的方法组合成一个类
 * */
 
@@ -92,6 +99,7 @@ function useMagicDragAPI (
   })
 
   function readyMagicDrag() {
+    checkParameterValue(options)
     initContainer()
     initTarget()
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
@@ -148,18 +156,28 @@ function useMagicDragAPI (
 
   // initializes the target element - 初始化目标元素
   function initTarget () {
+    // 保存目标元素的引用
     saveTargetEl()
-    saveTargetData()
     baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
-    initTargetStyle($target.value)
-    initTargetCoordinate($target.value, globalDataParameter.initialTarget, TEST)
+    // 保存目标元素的信息和绑定事件
+    saveAndBindTargetData()
+    // 初始化目标元素样式信息
+    initTargetStyle($target.value, posRelativeToContainer().size, posRelativeToContainer().position)
+    // 初始化
+    saveInitialData($target.value, globalDataParameter.initialTarget, TEST)
     // 初始化结束后更新状态
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
+    // 计算相对容器的尺寸信息
+    function posRelativeToContainer() {
+      const left = globalDataParameter.containerInfo.offsetLeft + options.initialInfo.left
+      const top = globalDataParameter.containerInfo.offsetTop + options.initialInfo.top
+      return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
+    }
     function saveTargetEl() {
       elementParameter.privateTarget = $target.value = getElement(targetSelector)
       allTarget.push($target.value)
     }
-    function saveTargetData() {
+    function saveAndBindTargetData() {
       $target.value.addEventListener('click', updateTargetPointTo)
       $target.value.dataset.index = allTarget.length
     }

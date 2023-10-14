@@ -1,10 +1,11 @@
 /* strong correlation functional - 强相关的功能 */
 
-import {conditionExecute, getObjectIntValue, setStyle} from '../utils/tools.ts'
+import {conditionExecute, getObjectIntValue, numberToStringSize, setStyle} from '../utils/tools.ts'
 import {reactive} from '@vue/reactivity'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {getTargetZIndex, TargetStatus} from "../style/className";
 import {executePluginDrag, executePluginResize} from "../plugins";
+import {MagicDragOptions} from "./magicDragAssist.ts";
 
 const dragActions = getActionCallbacks('dragCallbacks')
 const resizeActions = getActionCallbacks('resizeCallbacks')
@@ -410,11 +411,7 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
     top: 0,
     width: 0,
     height: 0,
-    originWidth: 0,
-    originHeight: 0,
-		isLock: false,
-		rotate: 0,
-		zIndex: null
+		// zIndex: null
   })
 }
 
@@ -426,15 +423,23 @@ export function saveDownPointPosition({ downPointPosition, pointElements }) {
 	}
 }
 
-export function initTargetStyle (target) {
+export function initTargetStyle (target, size, position) {
   // ensure element absolute positioning
   // 确保元素绝对定位
   setStyle(target, 'position', 'absolute')
+  setStyle(target, numberToStringSize(position))
+  initDescribe().needInitSize && setStyle(target, numberToStringSize(size))
+  function initDescribe() {
+    return {
+      needInitSize: target.offsetWidth === 0 || target.offsetHeight === 0,
+      needInitPosition: getComputedStyle(target).position !== 'absolute'
+    }
+  }
 }
 
-// initializes the target element coordinates
-// 初始化目标元素的坐标
-export function initTargetCoordinate (target, initialTarget, isTest) {
+// Saves the initial data of the target element
+// 保存目标元素的初始化数据
+export function saveInitialData (target, initialTarget, isTest) {
 	// 直接获取相对于父元素的坐标
 	const rect = {
 		left: isTest ? parseInt(target.style.left) : target.offsetLeft,
@@ -445,9 +450,6 @@ export function initTargetCoordinate (target, initialTarget, isTest) {
 	for (const rectKey in initialTarget) {
 		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]
 	}
-	// 放大缩小是需要用到原始尺寸
-	initialTarget.originWidth = target.offsetWidth
-	initialTarget.originHeight = target.offsetHeight
 }
 
 export function todoUnMount(cb) {

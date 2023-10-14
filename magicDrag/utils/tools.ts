@@ -44,7 +44,7 @@ export function isNullOrUndefined (val: unknown): boolean {
 }
 
 export function conditionExecute (condition, task1, task2?) {
-	if (!task2) return condition && task1()
+	if (isNullOrUndefined(task2)) return condition && task1
 	return condition ? task1 : task2
 }
 
@@ -75,22 +75,6 @@ export const setStyle: SetStyle = (target: HTMLElement, styleKey: string | objec
     return
   }
   target.style[styleKey] = styleValue
-}
-
-
-// check that the type of options passed in is correct
-// 检查传入的选项类型是否正确
-export function checkParameterType (defaultOptions, options = {}) {
-  for (const key in defaultOptions) {
-    const value = options[key]
-    if (isNullOrUndefined(value)) continue
-    const originType = typeof defaultOptions[key]
-    const paramsType = typeof value
-    baseErrorTips(
-      originType !== paramsType,
-      `The type of options.${key} should be ${originType}, But the ${paramsType} type is passed in.`
-    )
-  }
 }
 
 // 将defaultAction的控制权交给callback
@@ -183,4 +167,13 @@ export function deepClone(obj: object, clones = new WeakMap()) {
 	clones.set(obj, result)
 
 	return result
+}
+
+// 将number类型的尺寸信息改为以 px 为单位的字符串尺寸信息
+export function numberToStringSize(size: Record<string, number>): Record<string, string> {
+  const result = {}
+  for (const key in size) {
+    result[key] = size[key] + 'px'
+  }
+  return result
 }

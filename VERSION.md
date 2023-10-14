@@ -21,4 +21,7 @@
 > 
 > feature
 >  - 如果容器是body元素，需要给body添加 overflow: hidden 禁止出现滚动条
+>  - 设置初始尺寸
+>  - 检查配置参数是否合法
+>  - todo 更新文档
 > 

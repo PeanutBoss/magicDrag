@@ -26,7 +26,7 @@ const App = {
           {{ state.targetIsLock }}
           <hr>
           <img :src="imgSource" class="box">
-          <div class="box1" style="width: 100px;height: 100px;background-color: aqua;"></div>
+          <div class="box1" style="background-color: aqua;"></div>
           <!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
         </div>
       </div>
@@ -58,7 +58,14 @@ const App = {
       }
     )
 
-    useMagicDrag('.box1', { containerSelector: 'body' })
+    useMagicDrag('.box1',
+      {
+        containerSelector: 'body',
+        initialInfo: {
+          width: 50,
+          height: 50
+        },
+      })
 
     // useMagicDrag('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {
