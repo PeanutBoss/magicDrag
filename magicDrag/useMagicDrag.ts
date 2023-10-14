@@ -184,8 +184,8 @@ function useMagicDragAPI (
   }
 
   return {
-    targetLeft: toRef(stateParameter.targetState, 'left'),
-    targetTop: toRef(stateParameter.targetState, 'top'),
+    targetLeft: computed(() => stateParameter.targetState.left - stateManager.containerLeft),
+    targetTop: computed(() => stateParameter.targetState.top - stateManager.containerTop),
     targetWidth: toRef(stateParameter.targetState, 'width'),
     targetHeight: toRef(stateParameter.targetState, 'height'),
     targetIsPress: toRef(stateParameter.targetState, 'isPress'),

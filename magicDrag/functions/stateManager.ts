@@ -175,6 +175,13 @@ class StateManager {
 		}
 	}
 
+  get containerLeft() {
+    return this.currentState?.globalDataParameter?.containerInfo?.offsetLeft || 0
+  }
+  get containerTop() {
+    return this.currentState?.globalDataParameter?.containerInfo?.offsetTop || 0
+  }
+
   static COORDINATE_KEY = ['left', 'top', 'width', 'height']
 }
 
