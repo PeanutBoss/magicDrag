@@ -48,7 +48,7 @@ const App = {
         // maxWidth: 600,
         // maxHeight: 400,
         // pageHasScrollBar: true,
-        containerSelector: '.wrap',
+        containerSelector: 'body',
         callbacks: {
           // dragCallback (moveAction) {
           //   pressShift && moveAction()
@@ -58,14 +58,16 @@ const App = {
       }
     )
 
-    useMagicDrag('.box1',
-      {
-        containerSelector: 'body',
-        initialInfo: {
-          width: 100,
-          height: 100
-        },
-      })
+    // useMagicDrag('.box1',
+    //   {
+    //     containerSelector: 'body',
+    //     initialInfo: {
+    //       width: 100,
+    //       height: 100,
+    //       left: 100,
+    //       top: 200
+    //     },
+    //   })
 
     // useMagicDrag('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
     return {

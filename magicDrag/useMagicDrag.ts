@@ -4,7 +4,8 @@ import {
   getElement,
   mergeObject,
   removeElements,
-  baseErrorTips
+  baseErrorTips,
+  setStyle, numberToStringSize
 } from './utils/tools'
 import { MAGIC_DRAG } from './style/className'
 import { usePlugin, setInitialState, pluginManager, stateManager } from './manager'
@@ -14,7 +15,15 @@ import { allElement, defaultOptions, defaultState,
   storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
 import { fixContourExceed } from "./common/functionAssist.ts";
 import { checkParameterType, checkParameterValue } from './common/warningAssist'
-import { todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle, updateState, saveInitialData } from './common/magicDrag'
+import {
+  todoUnMount,
+  blurOrFocus,
+  updateInitialTarget,
+  initTargetStyle,
+  updateState,
+  saveInitialData,
+  updateContourPointPosition, showOrHideContourPoint
+} from './common/magicDrag'
 
 /*
 * TODO
@@ -116,7 +125,30 @@ function useMagicDragAPI (
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
     insertResizeTask(listenContainerSize)
     function listenContainerSize() {
+      const oldTargetLeft = stateManager.currentState.globalDataParameter.initialTarget.left
       saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
+      // resize后更新轮廓点位置 TODO 计算所有元素信息
+      needUpdateTargetPos(stateManager.currentState.globalDataParameter.containerInfo.width) && updateTargetPos()
+
+      function needUpdateTargetPos(newContainerWidth) {
+        const targetRightSide = oldTargetLeft + stateManager.currentState.globalDataParameter.initialTarget.width
+        // resize后目标元素如果会被遮挡就需要更新位置
+        return targetRightSide > newContainerWidth
+      }
+      function newLeft(newContainerWidth) {
+        // resize后的容器尺寸 - 目标元素宽度
+        const resizeAfterLeft = newContainerWidth - stateManager.currentState.globalDataParameter.initialTarget.width
+        return resizeAfterLeft >= 0 ? resizeAfterLeft : 0
+      }
+      function updateTargetPos() {
+        updateInitialTarget(
+          stateManager.currentState.globalDataParameter.initialTarget,
+          { ...stateManager.currentState.globalDataParameter.initialTarget, left: newLeft(stateManager.currentState.globalDataParameter.containerInfo.width) }
+        )
+        setStyle(stateManager.currentElement, numberToStringSize(stateManager.currentState.globalDataParameter.initialTarget))
+        // 隐藏轮廓点
+        showOrHideContourPoint(stateManager.currentState.elementParameter.pointElements, false)
+      }
     }
     function saveContainerEl() {
       elementParameter.privateContainer = $container.value = getElement(containerSelector)

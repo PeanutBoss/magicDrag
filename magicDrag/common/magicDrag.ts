@@ -451,6 +451,4 @@ export function saveInitialData (target, initialTarget, isTest) {
 	}
 }
 
-export function todoUnMount(cb) {
-  console.info('待实现')
-}
+export function todoUnMount(cb) {}
