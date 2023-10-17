@@ -22,7 +22,7 @@ import {
   initTargetStyle,
   updateState,
   saveInitialData,
-  updateContourPointPosition, showOrHideContourPoint
+  showOrHideContourPoint
 } from './common/magicDrag'
 
 /*
