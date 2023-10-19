@@ -52,6 +52,22 @@ function getLines () {
 	return lines
 }
 
+interface RefLineOptions {
+	gap?: number,
+	adsorbAfterStopDiff?: boolean
+	showRefLine?: boolean
+	adsorb?: boolean
+	showDistance?: boolean
+	showShadow?: boolean
+}
+const defaultOptions = {
+	gap: 3,
+	adsorbAfterStopDiff: false,
+	showRefLine: true,
+	adsorb: true,
+	showDistance: true,
+	showShadow: true
+}
 export default class RefLine implements Plugin {
 	name: string
 	private lines
@@ -59,9 +75,10 @@ export default class RefLine implements Plugin {
 	private isHasAdsorbElementY = false
 	private isCenterX = false
 	private isCenterY = false
-	constructor(private readonly options: { gap?: number, adsorbAfterStopDiff?: boolean, showRefLine?: boolean, adsorb?: boolean } = {}) {
+	private rectManager: MagicRect
+	constructor(private readonly options: RefLineOptions = defaultOptions) {
 		this.name = 'refLine'
-		this.options = mergeObject({ gap: 3, adsorbAfterStopDiff: false, showRefLine: true, adsorb: false }, this.options)
+		this.options = mergeObject(defaultOptions, this.options)
 	}
 	init() {
 		this.lines = getLines()
@@ -132,6 +149,7 @@ export default class RefLine implements Plugin {
 			}
 		})
 	}
+	// 将所有有关Rect的操作全部抽成另一个类
 	executeCheck({ conditions, way, dragRect, anotherRect }, needShowRef) {
 		for (let key in conditions) {
 			conditions[key].forEach((condition) => {
@@ -142,6 +160,12 @@ export default class RefLine implements Plugin {
 				// 设置线的位置（top/left）
 				condition.lineNode.style[key] = `${condition.lineValue}px`
 
+				const showSituation = {}
+				function buildSituation({ key, lineNode }) {
+					if (!showSituation[key]) showSituation[key] = new WeakSet()
+					showSituation[key].add(lineNode)
+				}
+				// TODO 将显示参考线的操作抽离出来，检查操作完成后，组合一个描述显示情况的数据，根据数据显示参考线
 				if (way === 'drag') {
 					// 显示达到吸附条件的线，如果一个方向已经有一条线满足吸附条件了，那么必须宽高相等才能显示其他线
 					if ((!this.isHasAdsorbElementX && key === 'left') || (!this.isHasAdsorbElementY && key === 'top')) {
@@ -333,3 +357,167 @@ export default class RefLine implements Plugin {
 	}
 }
 
+
+class MagicRect {
+	private _dragRects: DragDOMRect[] = [] // 描述所有元素的尺寸信息
+	private _showSituation: Record<string, WeakSet<HTMLElement>> = {} // 描述辅助线的显示情况
+	constructor(private allEle: HTMLElement[]) {
+		this.push(
+			...allEle
+				.map(ele => this.sizeDescribe(ele))
+		)
+	}
+	push(...rest) {
+		this._dragRects.push(...rest)
+	}
+	sizeDescribe(element: HTMLElement): DragDOMRect {
+		const rect = element.getBoundingClientRect()
+		return {
+			width: rect.width,
+			height: rect.height,
+			left: rect.left,
+			top: rect.top,
+			right: rect.right,
+			bottom: rect.bottom,
+			el: element,
+			halfHeight: rect.height / 2,
+			halfWidth: rect.width / 2
+		}
+	}
+	// 除当前拖拽元素外其余元素的 DragDOMRect 信息
+	excludeDragRect(dragEle: HTMLElement) {
+		return this._dragRects.filter(
+			rect => rect.el !== dragEle
+		)
+	}
+	buildConditions(dragRect: DragDOMRect, anotherRect: DragDOMRect, lines) {
+		const { halfWidth: dragWidthHalf, halfHeight: dragHeightHalf } = dragRect
+		const { top, height, bottom, left, width, right, halfHeight: itemHeightHalf, halfWidth: itemWidthHalf } = anotherRect
+		/*
+		* eg：this._isNearly(dragRect.bottom, top)
+		* 如果被拖拽元素的底边与参考元素的顶边达到吸附条件时
+		* 那么标线需要显示的位置就是，lineValue： 参考元素的顶部top
+		* 被拖拽元素需要显示的位置就是 dragValue：参考元素的top - 拖拽元素的高度
+		* 画图看更直观一些
+		* */
+		return {
+			top: [
+				// xt-top 被拖拽元素的顶边与参考元素的顶边达到吸附条件
+				{
+					isNearly: this._isNearly(dragRect.top, top), // 是否达到吸附条件
+					lineNode: lines.xt, // 对应的真实DOM
+					lineValue: top, // x轴上面那条线的的top（相对视口顶部的距离）
+					dragValue: top,
+					distance: dragRect.top - top,
+					equality: height === dragRect.height
+				},
+				// xt-bottom 被拖拽元素的底边与参考元素的顶边达到吸附条件
+				{
+					isNearly: this._isNearly(dragRect.bottom, top),
+					lineNode: lines.xt,
+					lineValue: top, // x轴上面那条线的的top
+					dragValue: top - dragRect.height,
+					distance: dragRect.bottom - top,
+					equality: height === dragRect.height
+				},
+				// xc 被拖拽元素的x轴中心与参考元素的x轴中心达到吸附条件
+				{
+					isNearly: this._isNearly(dragRect.top + dragHeightHalf, top + itemHeightHalf),
+					lineNode: lines.xc,
+					lineValue: top + itemHeightHalf,
+					dragValue: top + itemHeightHalf - dragHeightHalf, // 如果这个值 <= gap，说明达到吸附条件
+					distance: dragRect.top + dragHeightHalf - (top + itemHeightHalf),
+					equality: height === dragRect.height,
+					isCenter: true
+				},
+				// xb-bottom 被拖拽元素的底边与参考元素的底边达到吸附条件
+				{
+					isNearly: this._isNearly(dragRect.bottom, bottom),
+					lineNode: lines.xb,
+					lineValue: bottom,
+					dragValue: bottom - dragRect.height,
+					distance: dragRect.bottom - bottom,
+					equality: height === dragRect.height
+				},
+				// xb-top 被拖拽元素的顶边与参考元素的底边达到吸附条件
+				{
+					isNearly: this._isNearly(dragRect.top, bottom),
+					lineNode: lines.xb,
+					lineValue: bottom,
+					dragValue: bottom,
+					distance: dragRect.top - bottom,
+					equality: height === dragRect.height
+				}
+			],
+
+			left: [
+				// yl-left
+				{
+					isNearly: this._isNearly(dragRect.left, left),
+					lineNode: lines.yl,
+					lineValue: left,
+					dragValue: left,
+					distance: dragRect.left - left,
+					equality: width === dragRect.width
+				},
+				// yl-right
+				{
+					isNearly: this._isNearly(dragRect.right, left),
+					lineNode: lines.yl,
+					lineValue: left,
+					dragValue: left - dragRect.width,
+					distance: dragRect.right - left,
+					equality: width === dragRect.width
+				},
+				// yc
+				{
+					isNearly: this._isNearly(dragRect.left + dragWidthHalf, left + itemWidthHalf),
+					lineNode: lines.yc,
+					lineValue: left + itemWidthHalf,
+					dragValue: left + itemWidthHalf - dragWidthHalf,
+					distance: dragRect.left + dragWidthHalf - (left + itemWidthHalf),
+					equality: width === dragRect.width,
+					isCenter: true
+				},
+				// yr-left
+				{
+					isNearly: this._isNearly(dragRect.right, right),
+					lineNode: lines.yr,
+					lineValue: right,
+					dragValue: right - dragRect.width,
+					distance: dragRect.right - right,
+					equality: width === dragRect.width
+				},
+				// yr-right
+				{
+					isNearly: this._isNearly(dragRect.left, right),
+					lineNode: lines.yr,
+					lineValue: right,
+					dragValue: right,
+					distance: dragRect.left - right,
+					equality: width === dragRect.width
+				}
+			]
+		}
+	}
+	_isNearly(dragValue, targetValue, opt = {}) {
+		const { isStrict = false, gap = 10 } = opt
+		return isStrict
+			? dragValue === targetValue
+			: Math.abs(dragValue - targetValue) <= gap
+	}
+
+	buildSituation(condition, key) {
+		if (!this._showSituation[key]) this._showSituation[key] = new WeakSet()
+		this._showSituation[key].add(condition.lineNode)
+	}
+	resetSituation() {
+		this._showSituation = {}
+	}
+	get dragRects() {
+		return this._dragRects.slice()
+	}
+	get showSituation() {
+		return { ...this._showSituation }
+	}
+}
