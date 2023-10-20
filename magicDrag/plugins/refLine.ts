@@ -3,7 +3,8 @@ import {mergeObject} from "../utils/tools";
 
 declare global {
   interface HTMLElement {
-    show: () => void
+		pos: any
+    show: (coordinate) => void
     hide: () => void
     isShow: () => boolean
     // 在这里可以添加其他自定义方法
@@ -37,7 +38,13 @@ function getLines () {
 			node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;z-index: 99999;${key[0] === 'x' ? 'width:100%;height:1px;left:0;' : 'width:1px;height:100%;top:0;'}`
 
 			// 挂上一些辅助方法
-			node.show = function () {
+			node.show = function (coordinate) {
+				if (coordinate) {
+					this.style.width = coordinate.width + 'px'
+					this.style.height = coordinate.height + 'px'
+					this.style.left = coordinate.left + 'px'
+					this.style.top = coordinate.top + 'px'
+				}
 				this.style.display = 'block'
 			}
 			node.hide = function () {
@@ -199,7 +206,7 @@ export default class RefLine implements Plugin {
 	// 显示参考线操作
 	executeShow() {
 		for (const key in this.rectManager.showSituation) {
-			[...this.rectManager.showSituation[key]].forEach(item => item.show())
+			[...this.rectManager.showSituation[key]].forEach(item => item.show(item.pos))
 		}
 	}
 	// 吸附操作
@@ -268,17 +275,90 @@ class MagicRect {
 			rect => rect.el !== dragEle
 		)
 	}
-	// 选中元素的DragDomRect信息
-	get selectedRect() {
-		return this._selectedRect
+	getNearlyRect(direction, refValue) {
+		const _this = this
+		const nearlyRect = []
+		this.excludeDragRect(this.selectedRect.el).forEach(rect => {
+			if (direction === 'top' && topIsNear(rect, refValue)) {
+				nearlyRect.push(rect)
+			} else if (direction === 'left' && leftIsNear(rect, refValue)) {
+				nearlyRect.push(rect)
+			}
+		})
+		return nearlyRect
+		function topIsNear(rect, refValue) {
+			const nearTop = _this._isNearly(rect.top, refValue)
+			const nearTopCenter = _this._isNearly(rect.bottom, refValue)
+			const nearBottom = _this._isNearly(rect.top + rect.halfHeight, refValue)
+			return nearBottom || nearTopCenter || nearTop
+		}
+		function leftIsNear(rect, refValue) {
+			const nearLeft = _this._isNearly(rect.left, refValue)
+			const nearRight = _this._isNearly(rect.right, refValue)
+			const nearLeftCenter = _this._isNearly(rect.left + rect.halfWidth, refValue)
+			return nearRight || nearLeftCenter || nearLeft
+		}
+	}
+	getRefLineCoordinate(
+		{ otherRects, dragRect },
+		{ direction, directionValue }
+	) {
+		const pos = {} as any
+		const { leftList, topList, rightList, bottomList } = wholeDirectionValue(otherRects)
+		if (direction === 'top') {
+			const { max, min } = getMaxAndMin(...leftList, ...rightList, dragRect.left, dragRect.right)
+			pos.width = max - min
+			pos.height = 1
+			pos.left = Math.min(...leftList, dragRect.left)
+			pos.top = directionValue
+		} else {
+			const { max, min } = getMaxAndMin(...topList, ...bottomList, dragRect.top, dragRect.bottom)
+			pos.width = 1
+			pos.height = max - min
+			pos.left = directionValue
+			pos.top = Math.min(...topList, dragRect.top)
+		}
+		return pos
+		function wholeDirectionValue(rectList) {
+			const leftList = []
+			const topList = []
+			const rightList = []
+			const bottomList = []
+			rectList.forEach(rect => {
+				leftList.push(rect.left)
+				topList.push(rect.top)
+				rightList.push(rect.right)
+				bottomList.push(rect.bottom)
+			})
+			return {
+				leftList, topList, rightList, bottomList
+			}
+		}
+		function getMaxAndMin(...rest) {
+			const min = Math.min(...rest)
+			const max = Math.max(...rest)
+			return {
+				min,
+				max
+			}
+		}
 	}
 
 	buildSituation(condition, key) {
 		if (!this._showSituation[key]) this._showSituation[key] = new Set()
 		this._showSituation[key].add(condition.lineNode)
+		const nearlyRect = this.getNearlyRect(key, condition.lineValue)
+		condition.lineNode.pos = this.getRefLineCoordinate(
+			{ otherRects: nearlyRect, dragRect: this.selectedRect },
+			{ direction: key, directionValue: condition.lineValue }
+		)
 	}
 	resetSituation() {
 		this._showSituation = {}
+	}
+	// 选中元素的DragDomRect信息
+	get selectedRect() {
+		return this._selectedRect
 	}
 	get rectList() {
 		return this._domRects.slice()
