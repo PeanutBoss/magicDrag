@@ -121,12 +121,11 @@ export default class RefLine implements Plugin {
 
 	// 检查是否有达到吸附条件的元素
 	checkAdsorb({ elementParameter }, way, adsorbCallback?) {
-		const { privateTarget: dragNode, allTarget } = elementParameter
 
-		this.rectManager.setElement(allTarget, dragNode)
+		this.rectManager.setElement(elementParameter.allTarget, elementParameter.privateTarget)
 
 		// 获取被拖拽元素相对视口的位置
-		const checkDragRect = this.rectManager.excludeDragRect(dragNode)
+		const checkDragRect = this.rectManager.excludeDragRect(elementParameter.privateTarget)
 
 		// 开始下一次 check 的重置操作
 		this.checkEnd()
@@ -140,7 +139,7 @@ export default class RefLine implements Plugin {
 			// 为每个元素都删除 ref-line-active 这个类名
 			item.el.classList.remove('ref-line-active')
 
-			if (item === dragNode) return
+			if (item === elementParameter.privateTarget) return
 
 			const conditions = this.rectManager.buildAdsorbConditions(this.rectManager.selectedRect, item, this.lines)
 
