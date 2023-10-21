@@ -4,7 +4,6 @@
   "description": "A simple drag and resizing tool",
   "main": "lib/magic_drag.cjs.js",
   "module": "lib/magic_drag-esm.js",
-  "type": "module",
   "scripts": {
     "build": "webpack --config ./config/magicDrag.config.js",
     "serve": "webpack serve --config ./config/magicDrag.config.js",

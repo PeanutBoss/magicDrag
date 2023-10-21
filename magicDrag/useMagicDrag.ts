@@ -22,7 +22,7 @@ import {
   initTargetStyle,
   updateState,
   saveInitialData,
-  updateContourPointPosition, showOrHideContourPoint
+  showOrHideContourPoint
 } from './common/magicDrag'
 
 /*
@@ -71,6 +71,7 @@ function getPointValue(obj, key) {
 }
 
 usePlugin(defaultOptions().skill)
+
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
