@@ -120,7 +120,7 @@ export default class Resizeable {
     return isPress
   }
 
-  movePointCallback (stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
+  movePointCallback(stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
     const { moveAction, target, direction, movementX, movementY } = runTimeParameter
 
     const parameter = this.stateManager.getElementState(target)

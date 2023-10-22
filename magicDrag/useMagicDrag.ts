@@ -45,6 +45,7 @@ import {
 *  16.window触发resize时调整元素位置 可配置
 *  17.如果容器是body元素，需要给body添加 overflow: hidden 禁止出现滚动条
 *  18.目标元素的 left、top 应该是相对容器计算
+*  19.一个元素未失焦的情况下，直接取拖拽另一个元素（鼠标按下不抬起），然后resize该元素，修改的还是原来的元素尺寸
 * MARK 公用的方法组合成一个类
 * */
 
@@ -104,7 +105,7 @@ function useMagicDragAPI (
     // the dom element is destroyed when the page is uninstalled
     // 页面卸载时销毁 dom 元素
     removeElements(Object.values(elementParameter.pointElements))
-    $target.value.removeEventListener('click', updateTargetPointTo)
+    $target.value.removeEventListener('mousedown', updateTargetPointTo)
     stopListen()
   })
 
@@ -211,7 +212,7 @@ function useMagicDragAPI (
       allTarget.push($target.value)
     }
     function saveAndBindTargetData() {
-      $target.value.addEventListener('click', updateTargetPointTo)
+      $target.value.addEventListener('mousedown', updateTargetPointTo)
       $target.value.dataset.index = allTarget.length
     }
   }
@@ -230,7 +231,7 @@ function useMagicDragAPI (
     pointMovementX: toRef(stateParameter.pointState, 'movementX'),
     pointMovementY: toRef(stateParameter.pointState, 'movementY')
   }
-  function updateTargetPointTo (event) {
+  function updateTargetPointTo(event) {
     $target.value = event.target
   }
   function initialState(): State {
