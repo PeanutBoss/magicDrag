@@ -183,36 +183,36 @@ export default class RefLine implements Plugin {
 	}
 	// 将所有有关Rect的操作全部抽成另一个类
 	executeCheck({ conditions, way, dragRect, anotherRect }) {
-		for (let key in conditions) {
-			conditions[key].forEach((condition) => {
+		for (let adsorbKey in conditions) {
+			conditions[adsorbKey].forEach((condition) => {
 				if (!condition.isNearly) return
 
 				// TODO 没有用的代码
 				anotherRect.el.classList.add('ref-line-active')
 
 				// 设置线的位置（top/left）
-				condition.lineNode.style[key] = `${condition.lineValue}px`
+				condition.lineNode.style[adsorbKey] = `${condition.lineValue}px`
 
 				// TODO 将显示参考线的操作抽离出来，检查操作完成后，组合一个描述显示情况的数据，根据数据显示参考线
 				if (way === 'drag') {
 					// 显示达到吸附条件的线，如果一个方向已经有一条线满足吸附条件了，那么必须宽高相等才能显示其他线
-					if ((!this.isHasAdsorbElementX && key === 'left') || (!this.isHasAdsorbElementY && key === 'top')) {
-						this.rectManager.appendCondition(condition, key, anotherRect)
+					if ((!this.isHasAdsorbElementX && adsorbKey === 'left') || (!this.isHasAdsorbElementY && adsorbKey === 'top')) {
+						this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
 					} else {
-						this.rectManager.appendCondition(condition, key, anotherRect)
+						this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
 					}
 				} else if (way === 'resize') {
 					// 如果不是中间的线直接显示
-					!condition.isCenter && this.rectManager.appendCondition(condition, key, anotherRect)
+					!condition.isCenter && this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
 					// MARK 某一个轴，如果是中间的线达到吸附条件，其他两条线必须也达到吸附条件才显示
-					if (condition.isCenter && key === 'top' && this.rectManager._isNearly(anotherRect.height, dragRect.height)) {
-						this.rectManager.appendCondition(condition, key, anotherRect)
-					} else if (condition.isCenter && key === 'left' && this.rectManager._isNearly(anotherRect.width, dragRect.width)) {
-						this.rectManager.appendCondition(condition, key, anotherRect)
+					if (condition.isCenter && adsorbKey === 'top' && this.rectManager._isNearly(anotherRect.height, dragRect.height)) {
+						this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
+					} else if (condition.isCenter && adsorbKey === 'left' && this.rectManager._isNearly(anotherRect.width, dragRect.width)) {
+						this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
 					}
 				}
 
-				if (key === 'top') {
+				if (adsorbKey === 'top') {
 					this.isHasAdsorbElementY = true
 					this.isCenterY = this.isCenterY || condition.isCenter
 				} else {
@@ -224,8 +224,8 @@ export default class RefLine implements Plugin {
 	}
 	// 显示参考线操作
 	executeShow({ showSituation }) {
-		for (const key in showSituation) {
-			[...this.rectManager.showSituation[key]].forEach(item => item.show(item.pos))
+		for (const adsorbKey in showSituation) {
+			[...this.rectManager.showSituation[adsorbKey]].forEach(item => item.show(item.pos))
 		}
 	}
 	// 吸附操作
@@ -368,15 +368,15 @@ class MagicRect {
 	}
 
 	// 添加需要显示参考线对应的条件信息和显示方向
-	appendCondition(condition, key, anotherRect) {
-		if (!this._showSituation[key]) this._showSituation[key] = new Set()
-		this._showSituation[key].add(condition.lineNode)
-		const nearlyRect = this.getNearlyRect(key, condition.lineValue)
+	appendCondition(condition, adsorbKey, anotherRect) {
+		if (!this._showSituation[adsorbKey]) this._showSituation[adsorbKey] = new Set()
+		this._showSituation[adsorbKey].add(condition.lineNode)
+		const nearlyRect = this.getNearlyRect(adsorbKey, condition.lineValue)
 		condition.lineNode.pos = this.getRefLineCoordinate(
 			{ otherRects: nearlyRect, dragRect: this.selectedRect },
-			{ direction: key, directionValue: condition.lineValue }
+			{ direction: adsorbKey, directionValue: condition.lineValue }
 		)
-		this.calculateDistance(key, this.selectedRect, anotherRect)
+		this.calculateDistance(adsorbKey, this.selectedRect, anotherRect)
 	}
 	calculateDistance(adsorbKey, dragRect, anotherRect) {
 		// Y轴方向对齐, 计算X轴方向距离
