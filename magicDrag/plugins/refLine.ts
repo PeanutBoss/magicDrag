@@ -19,44 +19,22 @@ declare global {
 	type DragDOMRect = Partial<DOMRect>
 }
 
-/*
-* TODO 多个元素对比
-*  YR吸附之后YL没反应
-*  YL吸附之后YR可以继续吸附但YR吸附后YL不显示了
-* */
-
-let lines = null
-
-function getLines () {
-	if (!lines) {
-		lines = { xt: null, xc: null, xb: null, yl: null, yc: null, yr: null }
-		for (const key in lines) {
-			let node = lines[key] = document.createElement('div')  as HTMLElement
-
-			node.classList.add('ref-line', key)
-			// 以x/y开头，说明是与x/y轴平行的线
-			node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;z-index: 99999;${key[0] === 'x' ? 'width:100%;height:1px;left:0;' : 'width:1px;height:100%;top:0;'}`
-
-			// 挂上一些辅助方法
-			node.show = function (coordinate) {
-				if (coordinate) {
-					this.style.width = coordinate.width + 'px'
-					this.style.height = coordinate.height + 'px'
-					this.style.left = coordinate.left + 'px'
-					this.style.top = coordinate.top + 'px'
-				}
-				this.style.display = 'block'
-			}
-			node.hide = function () {
-				this.style.display = 'none'
-			}
-			node.isShow = function () {
-				return this.style.display !== 'none'
-			}
-			document.body.appendChild(node)
+function mountAssistMethod(element: HTMLElement) {
+	element.show = function(coordinate) {
+		if (coordinate) {
+			this.style.width = coordinate.width + 'px'
+			this.style.height = coordinate.height + 'px'
+			this.style.left = coordinate.left + 'px'
+			this.style.top = coordinate.top + 'px'
 		}
+		this.style.display = 'block'
 	}
-	return lines
+	element.hide = function() {
+		this.style.display = 'none'
+	}
+	element.isShow = function() {
+		return this.style.display !== 'none'
+	}
 }
 
 interface RefLineOptions {
@@ -77,7 +55,8 @@ const defaultOptions = {
 }
 export default class RefLine implements Plugin {
 	name: string
-	private lines
+	private lines: Record<string, HTMLElement>
+	private tipEl: HTMLElement
 	private isHasAdsorbElementX = false
 	private isHasAdsorbElementY = false
 	private isCenterX = false
@@ -88,8 +67,36 @@ export default class RefLine implements Plugin {
 		this.options = mergeObject(defaultOptions, this.options)
 	}
 	init() {
-		this.lines = getLines()
+		this.createLines()
+		this.createTipEl()
 		this.rectManager = new MagicRect(this.options)
+	}
+	createLines() {
+		const lines = { xt: null, xc: null, xb: null, yl: null, yc: null, yr: null }
+		if (!this.lines) {
+			for (const key in lines) {
+				let node = lines[key] = document.createElement('div')  as HTMLElement
+
+				node.classList.add('ref-line', key)
+				// 以x/y开头，说明是与x/y轴平行的线
+				node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;
+				z-index: 99999;${key[0] === 'x' ? 'width:100%;height:1px;left:0;' : 'width:1px;height:100%;top:0;'}`
+
+				// 挂载一些辅助方法
+				mountAssistMethod(node)
+				document.body.appendChild(node)
+			}
+		}
+		this.lines = lines
+	}
+	createTipEl() {
+		this.tipEl = document.createElement('div')
+		this.tipEl.style.cssText = `position: absolute;padding: 2px 5px;font-size: 12px;background: #0086FF;
+		z-index: 20001106;border-radius: 7px;width: 24px;height: 14px;color: #fff;
+		text-align: center;line-height: 14px;display: none;`
+		mountAssistMethod(this.tipEl)
+		this.tipEl.innerText = '0'
+		document.body.appendChild(this.tipEl)
 	}
 	unbind() {
 		for (const lineKey in this.lines) {
@@ -140,8 +147,8 @@ export default class RefLine implements Plugin {
 
 		// 遍历nodeList
 		Array.from(checkDragRect).forEach((item: DragDOMRect) => {
-			// 如果已经有元素执行吸附操作，就停止与其他元素对比
-			if (this.whetherStop) return
+			// 如果已经有元素执行吸附操作，是否停止与其他元素对比
+			// if (this.whetherStop) return
 
 			// 为每个元素都删除 ref-line-active 这个类名
 			item.el.classList.remove('ref-line-active')
@@ -164,10 +171,11 @@ export default class RefLine implements Plugin {
 				}
 			}
 		})
+		this.executeShowDistanceTip()
 	}
-	checkEnd() {
-		this.hideRefLine()
-		this.rectManager.resetSituation()
+	// 显示距离提示
+	executeShowDistanceTip() {
+		// this.rectManager.conditionCache
 	}
 	// 构建对比情况
 	buildConditions(item) {
@@ -179,6 +187,7 @@ export default class RefLine implements Plugin {
 			conditions[key].forEach((condition) => {
 				if (!condition.isNearly) return
 
+				// TODO 没有用的代码
 				anotherRect.el.classList.add('ref-line-active')
 
 				// 设置线的位置（top/left）
@@ -188,18 +197,18 @@ export default class RefLine implements Plugin {
 				if (way === 'drag') {
 					// 显示达到吸附条件的线，如果一个方向已经有一条线满足吸附条件了，那么必须宽高相等才能显示其他线
 					if ((!this.isHasAdsorbElementX && key === 'left') || (!this.isHasAdsorbElementY && key === 'top')) {
-						this.rectManager.appendCondition(condition, key)
+						this.rectManager.appendCondition(condition, key, anotherRect)
 					} else {
-						this.rectManager.appendCondition(condition, key)
+						this.rectManager.appendCondition(condition, key, anotherRect)
 					}
 				} else if (way === 'resize') {
 					// 如果不是中间的线直接显示
-					!condition.isCenter && this.rectManager.appendCondition(condition, key)
+					!condition.isCenter && this.rectManager.appendCondition(condition, key, anotherRect)
 					// MARK 某一个轴，如果是中间的线达到吸附条件，其他两条线必须也达到吸附条件才显示
 					if (condition.isCenter && key === 'top' && this.rectManager._isNearly(anotherRect.height, dragRect.height)) {
-						this.rectManager.appendCondition(condition, key)
+						this.rectManager.appendCondition(condition, key, anotherRect)
 					} else if (condition.isCenter && key === 'left' && this.rectManager._isNearly(anotherRect.width, dragRect.width)) {
-						this.rectManager.appendCondition(condition, key)
+						this.rectManager.appendCondition(condition, key, anotherRect)
 					}
 				}
 
@@ -239,6 +248,11 @@ export default class RefLine implements Plugin {
 		}
 	}
 
+	checkEnd() {
+		this.hideRefLine()
+		this.rectManager.resetSituation()
+		this.rectManager.resetConditionCache()
+	}
 	hideRefLine() {
 		this.isHasAdsorbElementY = false
 		this.isHasAdsorbElementX = false
@@ -261,6 +275,7 @@ class MagicRect {
 	private _domRects: DragDOMRect[] = [] // 描述所有元素的尺寸信息
 	private _showSituation: Record<string, Set<HTMLElement>> = {} // 描述辅助线的显示情况
 	private _compareConditions
+	private _conditionCache = []
 	constructor(private options) {}
 	setElement(allEle: HTMLElement[], dragEle: HTMLElement) {
 		this._domRects = allEle.map(ele => this.sizeDescribe(ele))
@@ -331,10 +346,7 @@ class MagicRect {
 		}
 		return pos
 		function wholeDirectionValue(rectList) {
-			const leftList = []
-			const topList = []
-			const rightList = []
-			const bottomList = []
+			const leftList = [], topList = [], rightList = [], bottomList = []
 			rectList.forEach(rect => {
 				leftList.push(rect.left)
 				topList.push(rect.top)
@@ -356,7 +368,7 @@ class MagicRect {
 	}
 
 	// 添加需要显示参考线对应的条件信息和显示方向
-	appendCondition(condition, key) {
+	appendCondition(condition, key, anotherRect) {
 		if (!this._showSituation[key]) this._showSituation[key] = new Set()
 		this._showSituation[key].add(condition.lineNode)
 		const nearlyRect = this.getNearlyRect(key, condition.lineValue)
@@ -364,6 +376,13 @@ class MagicRect {
 			{ otherRects: nearlyRect, dragRect: this.selectedRect },
 			{ direction: key, directionValue: condition.lineValue }
 		)
+		this.calculateDistance(key, this.selectedRect, anotherRect)
+	}
+	calculateDistance(adsorbKey, dragRect, anotherRect) {
+		// Y轴方向对齐, 计算X轴方向距离
+		// MARK 1.元素未相交 2.元素相交
+		if (adsorbKey === 'left') {
+		} else {}
 	}
 	resetSituation() {
 		this._showSituation = {}
@@ -381,6 +400,9 @@ class MagicRect {
 	get compareConditions() {
 		return this._compareConditions
 	}
+	get conditionCache() {
+		return this._conditionCache
+	}
 
 	buildCompareConditions(anotherRect: DragDOMRect, lines) {
 		const { halfWidth: dragWidthHalf, halfHeight: dragHeightHalf } = this.selectedRect
@@ -393,6 +415,7 @@ class MagicRect {
 		* 画图看更直观一些
 		* */
 		this._compareConditions = {
+			// 对比top - 检查X轴
 			top: [
 				// xt-top 被拖拽元素的顶边与参考元素的顶边达到吸附条件
 				{
@@ -441,7 +464,7 @@ class MagicRect {
 					equality: height === this.selectedRect.height
 				}
 			],
-
+			// 对比left - 检查Y轴
 			left: [
 				// yl-left
 				{
@@ -491,6 +514,10 @@ class MagicRect {
 				}
 			]
 		}
+		this._conditionCache.push(this._compareConditions)
+	}
+	resetConditionCache() {
+		this._conditionCache = []
 	}
 	_isNearly(dragValue, targetValue, isStrict = false) {
 		return isStrict

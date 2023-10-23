@@ -27,7 +27,7 @@ const App = {
           <hr>
           <img :src="imgSource" class="box">
           <div class="box1" style="background-color: aqua;"></div>
-          <!--      <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>-->
+          <div class="box2" style="width: 100px;height: 100px;background-color: orange;"></div>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@ const App = {
         },
       })
 
-    // useMagicDrag('.box2', { pageHasScrollBar: true, skill: { limitDragDirection: 'Y' } })
+    useMagicDrag('.box2', { containerSelector: '.wrap' })
     return {
       state,
       imgSource

@@ -1,5 +1,5 @@
 import { baseErrorTips, isNullOrUndefined } from "../utils/tools";
-import { State } from '../functions/stateManager'
+import { State } from '../functions'
 
 export interface Plugin {
 	name: string
