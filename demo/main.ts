@@ -54,6 +54,7 @@ const App = {
           //   pressShift && moveAction()
           // }
         },
+        initialInfo: { left: 300, top: 500 },
         customClass: {}
       }
     )
@@ -64,12 +65,12 @@ const App = {
         initialInfo: {
           width: 100,
           height: 100,
-          left: 100,
+          left: 200,
           top: 200
         },
       })
 
-    useMagicDrag('.box2', { containerSelector: '.wrap' })
+    useMagicDrag('.box2', { containerSelector: '.wrap', initialInfo: { top: 700, left: 700 } })
     return {
       state,
       imgSource

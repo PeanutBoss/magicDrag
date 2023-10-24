@@ -5,7 +5,6 @@ const tipWidth = 24, tipHeight = 14
 
 declare global {
   interface HTMLElement {
-		pos: any
     show: (coordinate) => void
     hide: () => void
     isShow: () => boolean
@@ -131,7 +130,7 @@ export default class RefLine implements Plugin {
 	pointPressChange(isPress: boolean, elementParameter) {
 		isPress
 			? this.startCheck({ elementParameter }, 'drag')
-			: this.hideRefLine()
+			: this.checkEnd()
 	}
 
 	// 检查是否有达到吸附条件的元素
@@ -158,7 +157,7 @@ export default class RefLine implements Plugin {
 
 			this.buildConditions(item)
 			this.executeCheck(checkParameter())
-			this.options.showRefLine && this.executeShow(checkParameter())
+			this.options.showRefLine && this.executeShowRefLine(checkParameter())
 			this.options.adsorb && this.executeAdsorb(checkParameter())
 
 			function checkParameter() {
@@ -172,13 +171,27 @@ export default class RefLine implements Plugin {
 				}
 			}
 		})
+		this.calculateDistance()
 		this.executeShowDistanceTip()
+	}
+	calculateDistance() {
+		for (const adsorbKey in this.rectManager.showSituation) {
+			const dragState = [...this.rectManager.showSituation[adsorbKey]][0]
+			const dragRect = this.rectManager.sizeDescribe(this.rectManager.selectedRect.el)
+			this.rectManager.calculateDistance(adsorbKey, dragRect, dragState.anotherRect, dragState)
+		}
 	}
 	// 显示距离提示
 	executeShowDistanceTip() {
 		for (const tipKey in this.rectManager.tipDistance) {
-			this.tipEls[tipKey].show(this.rectManager.tipDistance[tipKey].position)
-			this.tipEls[tipKey].innerText = this.rectManager.tipDistance[tipKey].value
+			needShow(this.rectManager.tipDistance[tipKey].value, this.options.gap)
+			&& this.tipEls[tipKey].show(this.rectManager.tipDistance[tipKey].position)
+
+			needShow(this.rectManager.tipDistance[tipKey].value, this.options.gap)
+			&& (this.tipEls[tipKey].innerText = this.rectManager.tipDistance[tipKey].value)
+		}
+		function needShow(distance, gap) {
+			return distance > gap
 		}
 	}
 	// 构建对比情况
@@ -226,9 +239,9 @@ export default class RefLine implements Plugin {
 		}
 	}
 	// 显示参考线操作
-	executeShow({ showSituation }) {
+	executeShowRefLine({ showSituation }) {
 		for (const adsorbKey in showSituation) {
-			[...this.rectManager.showSituation[adsorbKey]].forEach(item => item.show(item.pos))
+			[...this.rectManager.showSituation[adsorbKey]].forEach(item => item.lineNode.show(item.position))
 		}
 	}
 	// 吸附操作
@@ -269,7 +282,6 @@ export default class RefLine implements Plugin {
 			.forEach((item) => item.classList.remove('ref-line-active'))
 	}
 	hideTip() {
-		console.log('hide')
 		for (const elKey in this.tipEls) {
 			this.tipEls[elKey].hide()
 		}
@@ -283,7 +295,7 @@ export default class RefLine implements Plugin {
 class MagicRect {
 	private _selectedRect: DragDOMRect
 	private _domRects: DragDOMRect[] = [] // 描述所有元素的尺寸信息
-	private _showSituation: Record<string, Set<HTMLElement>> = {} // 描述辅助线的显示情况
+	private _showSituation: Record<string, Set<any>> = {} // 描述辅助线的显示情况
 	private _tipDistance: Record<string, any> = {}
 	private _compareConditions
 	constructor(private options) {}
@@ -380,15 +392,26 @@ class MagicRect {
 	// 添加需要显示参考线对应的条件信息和显示方向
 	appendCondition(condition, adsorbKey, anotherRect) {
 		if (!this._showSituation[adsorbKey]) this._showSituation[adsorbKey] = new Set()
-		this._showSituation[adsorbKey].add(condition.lineNode)
-		const nearlyRect = this.getNearlyRect(adsorbKey, condition.lineValue)
-		condition.lineNode.pos = this.getRefLineCoordinate(
-			{ otherRects: nearlyRect, dragRect: this.selectedRect },
-			{ direction: adsorbKey, directionValue: condition.lineValue }
-		)
-		this.calculateDistance(adsorbKey, this.selectedRect, anotherRect, condition)
+
+		const self = this
+		const state = recomposeCondition(condition, adsorbKey, anotherRect)
+		this._showSituation[adsorbKey].add(state)
+		// TODO 尝试将 distanceTip 的计算放到check的最后执行
+		// this.calculateDistance(adsorbKey, this.selectedRect, anotherRect, state)
+		function recomposeCondition(condition, adsorbKey, anotherRect) {
+			const state: any = {}
+			state.lineValue = condition.lineValue
+			state.anotherRect = anotherRect
+			state.lineNode = condition.lineNode
+			state.nearlyRect = self.getNearlyRect(adsorbKey, condition.lineValue)
+			state.position = self.getRefLineCoordinate(
+				{ otherRects: state.nearlyRect, dragRect: self.selectedRect },
+				{ direction: adsorbKey, directionValue: condition.lineValue }
+			)
+			return state
+		}
 	}
-	calculateDistance(adsorbKey, dragRect, anotherRect, condition) {
+	calculateDistance(adsorbKey, dragRect, anotherRect, newCondition) {
 		const distance = { value: 0, position: { left: 0, top: 0 } }
 		// MARK 1.元素未相交 2.元素相交
 		// MARK 吸附后distance = 0
@@ -401,13 +424,13 @@ class MagicRect {
 			if (dragRect.bottom < anotherRect.top) {
 				distance.value = anotherRect.top - dragRect.bottom
 				distance.position.top = dragRect.bottom + distance.value / 2 - tipHeight / 2
-				distance.position.left = condition.lineValue - tipWidth / 2
+				distance.position.left = newCondition.lineValue - tipWidth / 2
 			}
 			// 未相交 - dragRect 在下面
 			if (dragRect.top > anotherRect.bottom) {
 				distance.value = dragRect.top - anotherRect.bottom
 				distance.position.top = anotherRect.bottom + distance.value / 2 - tipHeight / 2
-				distance.position.left = condition.lineValue - tipWidth / 2
+				distance.position.left = newCondition.lineValue - tipWidth / 2
 			}
 		}
 		function calculateXDistance() {
@@ -415,13 +438,13 @@ class MagicRect {
 			if (dragRect.right < anotherRect.left) {
 				distance.value = anotherRect.left - dragRect.right
 				distance.position.left = dragRect.right + distance.value / 2 - tipWidth / 2
-				distance.position.top = condition.lineValue - tipHeight / 2
+				distance.position.top = newCondition.lineValue - tipHeight / 2
 			}
 			// 未相交 - dragRect 在右边
 			if (dragRect.left > anotherRect.right) {
 				distance.value = dragRect.left - anotherRect.right
 				distance.position.left = anotherRect.right + distance.value / 2 - tipWidth / 2
-				distance.position.top = condition.lineValue - tipHeight / 2
+				distance.position.top = newCondition.lineValue - tipHeight / 2
 			}
 		}
 
