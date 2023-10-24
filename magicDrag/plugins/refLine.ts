@@ -1,6 +1,8 @@
 import { Plugin, State } from '../functions'
 import {mergeObject} from "../utils/tools";
 
+const tipWidth = 24, tipHeight = 14
+
 declare global {
   interface HTMLElement {
 		pos: any
@@ -18,6 +20,7 @@ declare global {
 
 	type DragDOMRect = Partial<DOMRect>
 }
+type AdsorbKey = 'left' | 'top'
 
 function mountAssistMethod(element: HTMLElement) {
 	element.show = function(coordinate) {
@@ -55,8 +58,8 @@ const defaultOptions = {
 }
 export default class RefLine implements Plugin {
 	name: string
-	private lines: Record<string, HTMLElement>
-	private tipEl: HTMLElement
+	private lines: Record<string, HTMLElement> = { xt: null, xc: null, xb: null, yl: null, yc: null, yr: null }
+	private tipEls: Record<string, HTMLElement> = { X: null, Y: null }
 	private isHasAdsorbElementX = false
 	private isHasAdsorbElementY = false
 	private isCenterX = false
@@ -72,31 +75,29 @@ export default class RefLine implements Plugin {
 		this.rectManager = new MagicRect(this.options)
 	}
 	createLines() {
-		const lines = { xt: null, xc: null, xb: null, yl: null, yc: null, yr: null }
-		if (!this.lines) {
-			for (const key in lines) {
-				let node = lines[key] = document.createElement('div')  as HTMLElement
+		for (const key in this.lines) {
+			const node = this.lines[key] = document.createElement('div')  as HTMLElement
 
-				node.classList.add('ref-line', key)
-				// 以x/y开头，说明是与x/y轴平行的线
-				node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;
+			node.classList.add('ref-line', key)
+			// 以x/y开头，说明是与x/y轴平行的线
+			node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;
 				z-index: 99999;${key[0] === 'x' ? 'width:100%;height:1px;left:0;' : 'width:1px;height:100%;top:0;'}`
 
-				// 挂载一些辅助方法
-				mountAssistMethod(node)
-				document.body.appendChild(node)
-			}
+			// 挂载一些辅助方法
+			mountAssistMethod(node)
+			document.body.appendChild(node)
 		}
-		this.lines = lines
 	}
 	createTipEl() {
-		this.tipEl = document.createElement('div')
-		this.tipEl.style.cssText = `position: absolute;padding: 2px 5px;font-size: 12px;background: #0086FF;
-		z-index: 20001106;border-radius: 7px;width: 24px;height: 14px;color: #fff;
-		text-align: center;line-height: 14px;display: none;`
-		mountAssistMethod(this.tipEl)
-		this.tipEl.innerText = '0'
-		document.body.appendChild(this.tipEl)
+		for (const elKey in this.tipEls) {
+			const el = document.createElement('div')
+			el.style.cssText = `position: absolute;padding: 2px 5px;font-size: 12px;background: #0086FF;
+				z-index: 20001106;border-radius: 7px;width: ${tipWidth}px;height: ${tipHeight}px;color: #fff;
+				text-align: center;line-height: 14px;display: none;`
+			mountAssistMethod(el)
+			document.body.appendChild(el)
+			this.tipEls[elKey] = el
+		}
 	}
 	unbind() {
 		for (const lineKey in this.lines) {
@@ -111,7 +112,7 @@ export default class RefLine implements Plugin {
 			_updateContourPointPosition(movement)
 			_updateState(movement)
 		}
-		this.checkAdsorb({ elementParameter }, 'drag', adsorbCallback)
+		this.startCheck({ elementParameter }, 'drag', adsorbCallback)
 	}
 	resize({ elementParameter }: State, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {
 		const adsorbCallback = ({ top, left }) => {
@@ -120,21 +121,21 @@ export default class RefLine implements Plugin {
 			_updateTargetStyle({ movementX, movementY })
 			_updatePointPosition({ movementX, movementY })
 		}
-		this.checkAdsorb({ elementParameter }, 'resize', adsorbCallback)
+		this.startCheck({ elementParameter }, 'resize', adsorbCallback)
 	}
 	targetPressChange(isPress: boolean, elementParameter) {
 		isPress
-			? this.checkAdsorb({ elementParameter }, 'drag')
-			: this.hideRefLine()
+			? this.startCheck({ elementParameter }, 'drag')
+			: this.checkEnd()
 	}
 	pointPressChange(isPress: boolean, elementParameter) {
 		isPress
-			? this.checkAdsorb({ elementParameter }, 'drag')
+			? this.startCheck({ elementParameter }, 'drag')
 			: this.hideRefLine()
 	}
 
 	// 检查是否有达到吸附条件的元素
-	checkAdsorb({ elementParameter }, way, adsorbCallback?) {
+	startCheck({ elementParameter }, way, adsorbCallback?) {
 
 		this.rectManager.setElement(elementParameter.allTarget, elementParameter.privateTarget)
 
@@ -175,7 +176,10 @@ export default class RefLine implements Plugin {
 	}
 	// 显示距离提示
 	executeShowDistanceTip() {
-		// this.rectManager.conditionCache
+		for (const tipKey in this.rectManager.tipDistance) {
+			this.tipEls[tipKey].show(this.rectManager.tipDistance[tipKey].position)
+			this.tipEls[tipKey].innerText = this.rectManager.tipDistance[tipKey].value
+		}
 	}
 	// 构建对比情况
 	buildConditions(item) {
@@ -193,7 +197,6 @@ export default class RefLine implements Plugin {
 				// 设置线的位置（top/left）
 				condition.lineNode.style[adsorbKey] = `${condition.lineValue}px`
 
-				// TODO 将显示参考线的操作抽离出来，检查操作完成后，组合一个描述显示情况的数据，根据数据显示参考线
 				if (way === 'drag') {
 					// 显示达到吸附条件的线，如果一个方向已经有一条线满足吸附条件了，那么必须宽高相等才能显示其他线
 					if ((!this.isHasAdsorbElementX && adsorbKey === 'left') || (!this.isHasAdsorbElementY && adsorbKey === 'top')) {
@@ -250,8 +253,9 @@ export default class RefLine implements Plugin {
 
 	checkEnd() {
 		this.hideRefLine()
+		this.hideTip()
 		this.rectManager.resetSituation()
-		this.rectManager.resetConditionCache()
+		this.rectManager.resetTipDistance()
 	}
 	hideRefLine() {
 		this.isHasAdsorbElementY = false
@@ -264,6 +268,12 @@ export default class RefLine implements Plugin {
 		Array.from(document.querySelectorAll('.ref-line-active'))
 			.forEach((item) => item.classList.remove('ref-line-active'))
 	}
+	hideTip() {
+		console.log('hide')
+		for (const elKey in this.tipEls) {
+			this.tipEls[elKey].hide()
+		}
+	}
 	get whetherStop() {
 		return this.isHasAdsorbElementX || this.isHasAdsorbElementY && this.options.adsorbAfterStopDiff
 	}
@@ -274,8 +284,8 @@ class MagicRect {
 	private _selectedRect: DragDOMRect
 	private _domRects: DragDOMRect[] = [] // 描述所有元素的尺寸信息
 	private _showSituation: Record<string, Set<HTMLElement>> = {} // 描述辅助线的显示情况
+	private _tipDistance: Record<string, any> = {}
 	private _compareConditions
-	private _conditionCache = []
 	constructor(private options) {}
 	setElement(allEle: HTMLElement[], dragEle: HTMLElement) {
 		this._domRects = allEle.map(ele => this.sizeDescribe(ele))
@@ -376,20 +386,82 @@ class MagicRect {
 			{ otherRects: nearlyRect, dragRect: this.selectedRect },
 			{ direction: adsorbKey, directionValue: condition.lineValue }
 		)
-		this.calculateDistance(adsorbKey, this.selectedRect, anotherRect)
+		this.calculateDistance(adsorbKey, this.selectedRect, anotherRect, condition)
 	}
-	calculateDistance(adsorbKey, dragRect, anotherRect) {
-		// Y轴方向对齐, 计算X轴方向距离
+	calculateDistance(adsorbKey, dragRect, anotherRect, condition) {
+		const distance = { value: 0, position: { left: 0, top: 0 } }
 		// MARK 1.元素未相交 2.元素相交
+		// MARK 吸附后distance = 0
+		// // Y轴方向对齐, 计算X轴方向距离
+		if (adsorbKey === 'left') calculateYDistance()
+		// X轴方向对齐, 计算Y轴方向距离
+		if (adsorbKey === 'top') calculateXDistance()
+		function calculateYDistance() {
+			// 未相交 - dragRect 在上面
+			if (dragRect.bottom < anotherRect.top) {
+				distance.value = anotherRect.top - dragRect.bottom
+				distance.position.top = dragRect.bottom + distance.value / 2 - tipHeight / 2
+				distance.position.left = condition.lineValue - tipWidth / 2
+			}
+			// 未相交 - dragRect 在下面
+			if (dragRect.top > anotherRect.bottom) {
+				distance.value = dragRect.top - anotherRect.bottom
+				distance.position.top = anotherRect.bottom + distance.value / 2 - tipHeight / 2
+				distance.position.left = condition.lineValue - tipWidth / 2
+			}
+		}
+		function calculateXDistance() {
+			// 未相交 - dragRect 在左边
+			if (dragRect.right < anotherRect.left) {
+				distance.value = anotherRect.left - dragRect.right
+				distance.position.left = dragRect.right + distance.value / 2 - tipWidth / 2
+				distance.position.top = condition.lineValue - tipHeight / 2
+			}
+			// 未相交 - dragRect 在右边
+			if (dragRect.left > anotherRect.right) {
+				distance.value = dragRect.left - anotherRect.right
+				distance.position.left = anotherRect.right + distance.value / 2 - tipWidth / 2
+				distance.position.top = condition.lineValue - tipHeight / 2
+			}
+		}
+
+		this._tipDistance[revertKey(adsorbKey)] = distance
+		function revertKey(adsorbKey) {
+			return adsorbKey === 'left' ? 'Y' : 'X'
+		}
+	}
+	// 检查两个元素是否相交
+	isIntersect(adsorbKey, dragRect, anotherRect) {
+		const intersectSituation: any = {}
 		if (adsorbKey === 'left') {
-		} else {}
+			if (isBelow()) intersectSituation.dragRectIsBelow = true
+			if (onTop()) intersectSituation.dragRectOnTop = true
+			if (dragIncluded()) intersectSituation.dragRectIsIncluded = true
+			if (anotherIncluded()) intersectSituation.anotherRectIsIncluded = true
+		}
+		function isBelow() {
+			return dragRect.top > anotherRect.top && dragRect.top < anotherRect.bottom
+		}
+		function onTop() {
+			return dragRect.top < anotherRect.top && dragRect.bottom > anotherRect.top
+		}
+		function dragIncluded() {
+			return dragRect.top > anotherRect.top && dragRect.bottom < anotherRect.bottom
+		}
+		function anotherIncluded() {
+			return dragRect.top < anotherRect.top && dragRect.bottom > anotherRect.bottom
+		}
+		return intersectSituation
 	}
 	resetSituation() {
 		this._showSituation = {}
 	}
+	resetTipDistance() {
+		this._tipDistance = {}
+	}
 	// 选中元素的DragDomRect信息
 	get selectedRect() {
-		return this._selectedRect
+		return { ...this._selectedRect }
 	}
 	get rectList() {
 		return this._domRects.slice()
@@ -398,10 +470,10 @@ class MagicRect {
 		return { ...this._showSituation }
 	}
 	get compareConditions() {
-		return this._compareConditions
+		return { ...this._compareConditions }
 	}
-	get conditionCache() {
-		return this._conditionCache
+	get tipDistance() {
+		return { ...this._tipDistance }
 	}
 
 	buildCompareConditions(anotherRect: DragDOMRect, lines) {
@@ -514,10 +586,6 @@ class MagicRect {
 				}
 			]
 		}
-		this._conditionCache.push(this._compareConditions)
-	}
-	resetConditionCache() {
-		this._conditionCache = []
 	}
 	_isNearly(dragValue, targetValue, isStrict = false) {
 		return isStrict
