@@ -1,7 +1,7 @@
 import { Plugin, State } from '../functions'
 import {mergeObject} from "../utils/tools";
 
-const tipWidth = 24, tipHeight = 14
+const tipWidth = 34, tipHeight = 18
 
 declare global {
   interface HTMLElement {
@@ -59,8 +59,8 @@ export default class RefLine implements Plugin {
 	name: string
 	private lines: Record<string, HTMLElement> = { xt: null, xc: null, xb: null, yl: null, yc: null, yr: null }
 	private tipEls: Record<string, HTMLElement> = { X: null, Y: null }
-	private isHasAdsorbElementX = false
 	private isHasAdsorbElementY = false
+	private isHasAdsorbElementX = false
 	private isCenterX = false
 	private isCenterY = false
 	private rectManager: MagicRect
@@ -92,7 +92,7 @@ export default class RefLine implements Plugin {
 			const el = document.createElement('div')
 			el.style.cssText = `position: absolute;padding: 2px 5px;font-size: 12px;background: #0086FF;
 				z-index: 20001106;border-radius: 7px;width: ${tipWidth}px;height: ${tipHeight}px;color: #fff;
-				text-align: center;line-height: 14px;display: none;`
+				text-align: center;line-height: 14px;display: none;box-sizing: border-box;`
 			mountAssistMethod(el)
 			document.body.appendChild(el)
 			this.tipEls[elKey] = el
@@ -150,13 +150,12 @@ export default class RefLine implements Plugin {
 			// 如果已经有元素执行吸附操作，是否停止与其他元素对比
 			// if (this.whetherStop) return
 
-			// 为每个元素都删除 ref-line-active 这个类名
-			item.el.classList.remove('ref-line-active')
-
 			if (item === elementParameter.privateTarget) return
 
+			// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
 			this.buildConditions(item)
-			this.executeCheck(checkParameter())
+			// 通过上一步构建的conditions进行检查并记录
+			this.executeCheckByConditions(checkParameter())
 			this.options.showRefLine && this.executeShowRefLine(checkParameter())
 			this.options.adsorb && this.executeAdsorb(checkParameter())
 
@@ -171,7 +170,9 @@ export default class RefLine implements Plugin {
 				}
 			}
 		})
+		// 计算距离信息
 		this.calculateDistance()
+		// 显示距离
 		this.executeShowDistanceTip()
 	}
 	calculateDistance() {
@@ -199,20 +200,14 @@ export default class RefLine implements Plugin {
 		this.rectManager.buildCompareConditions(item, this.lines)
 	}
 	// 将所有有关Rect的操作全部抽成另一个类
-	executeCheck({ conditions, way, dragRect, anotherRect }) {
+	executeCheckByConditions({ conditions, way, dragRect, anotherRect }) {
 		for (let adsorbKey in conditions) {
 			conditions[adsorbKey].forEach((condition) => {
 				if (!condition.isNearly) return
 
-				// TODO 没有用的代码
-				anotherRect.el.classList.add('ref-line-active')
-
-				// 设置线的位置（top/left）
-				condition.lineNode.style[adsorbKey] = `${condition.lineValue}px`
-
 				if (way === 'drag') {
 					// 显示达到吸附条件的线，如果一个方向已经有一条线满足吸附条件了，那么必须宽高相等才能显示其他线
-					if ((!this.isHasAdsorbElementX && adsorbKey === 'left') || (!this.isHasAdsorbElementY && adsorbKey === 'top')) {
+					if ((!this.isHasAdsorbElementY && adsorbKey === 'left') || (!this.isHasAdsorbElementX && adsorbKey === 'top')) {
 						this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
 					} else {
 						this.rectManager.appendCondition(condition, adsorbKey, anotherRect)
@@ -229,11 +224,12 @@ export default class RefLine implements Plugin {
 				}
 
 				if (adsorbKey === 'top') {
-					this.isHasAdsorbElementY = true
-					this.isCenterY = this.isCenterY || condition.isCenter
-				} else {
+					console.log('top')
 					this.isHasAdsorbElementX = true
 					this.isCenterX = this.isCenterX || condition.isCenter
+				} else {
+					this.isHasAdsorbElementY = true
+					this.isCenterY = this.isCenterY || condition.isCenter
 				}
 			})
 		}
@@ -249,11 +245,11 @@ export default class RefLine implements Plugin {
 		let topList = conditions.top, leftList = conditions.left
 		if (way === 'resize') {
 			// MARK X轴有满足吸附条件的元素 而且 X轴的是中间的线则过滤掉中间的线（即resize时中间的线不吸附）
-			(this.isHasAdsorbElementX && this.isCenterX) && (leftList = leftList.filter((item: any) => !item.isCenter));
-			(this.isHasAdsorbElementY && this.isCenterY) && (topList = topList.filter((item: any) => !item.isCenter))
+			(this.isHasAdsorbElementY && this.isCenterY) && (leftList = leftList.filter((item: any) => !item.isCenter));
+			(this.isHasAdsorbElementX && this.isCenterX) && (topList = topList.filter((item: any) => !item.isCenter))
 		}
 
-		if (this.isHasAdsorbElementX || this.isHasAdsorbElementY) adsorbCallback?.({
+		if (this.isHasAdsorbElementY || this.isHasAdsorbElementX) adsorbCallback?.({
 			top: nearestInstance(topList, this.options.gap) || 0,
 			left: nearestInstance(leftList, this.options.gap) || 0
 		})
@@ -271,15 +267,12 @@ export default class RefLine implements Plugin {
 		this.rectManager.resetTipDistance()
 	}
 	hideRefLine() {
-		this.isHasAdsorbElementY = false
 		this.isHasAdsorbElementX = false
-		this.isCenterY = false
+		this.isHasAdsorbElementY = false
 		this.isCenterX = false
+		this.isCenterY = false
 		// 隐藏所有标线
 		Object.values(this.lines).forEach((item: HTMLElement) => item.hide())
-		// 获取所有类名包含 ref-line-active 的元素，然后为这些元素删除 ref-line-active 这个类名
-		Array.from(document.querySelectorAll('.ref-line-active'))
-			.forEach((item) => item.classList.remove('ref-line-active'))
 	}
 	hideTip() {
 		for (const elKey in this.tipEls) {
@@ -287,7 +280,7 @@ export default class RefLine implements Plugin {
 		}
 	}
 	get whetherStop() {
-		return this.isHasAdsorbElementX || this.isHasAdsorbElementY && this.options.adsorbAfterStopDiff
+		return this.isHasAdsorbElementY || this.isHasAdsorbElementX && this.options.adsorbAfterStopDiff
 	}
 }
 
@@ -442,6 +435,7 @@ class MagicRect {
 			}
 			// 未相交 - dragRect 在右边
 			if (dragRect.left > anotherRect.right) {
+				console.log(dragRect, anotherRect, 'dragRect, anotherRect')
 				distance.value = dragRect.left - anotherRect.right
 				distance.position.left = anotherRect.right + distance.value / 2 - tipWidth / 2
 				distance.position.top = newCondition.lineValue - tipHeight / 2
