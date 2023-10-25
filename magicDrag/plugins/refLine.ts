@@ -152,12 +152,16 @@ export default class RefLine implements Plugin {
 
 			if (item === elementParameter.privateTarget) return
 
+			/*
+			* MARK
+			*  1.构建dragRect与其他rect对象的对比情况 - conditions
+			*  2.通过构架的conditions进行检查，将符合吸附条件的信息保存起来 - showSituation
+			*  3.通过showSituation显示参考线
+			* */
 			// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
 			this.buildConditions(item)
 			// 通过上一步构建的conditions进行检查并记录
 			this.executeCheckByConditions(checkParameter())
-			this.options.showRefLine && this.executeShowRefLine(checkParameter())
-			this.options.adsorb && this.executeAdsorb(checkParameter())
 
 			function checkParameter() {
 				return {
@@ -170,6 +174,8 @@ export default class RefLine implements Plugin {
 				}
 			}
 		})
+		this.options.showRefLine && this.executeShowRefLine()
+		this.options.adsorb && this.executeAdsorb({ way, adsorbCallback, showSituation: this.rectManager.showSituation })
 		// 计算距离信息
 		this.calculateDistance()
 		// 显示距离
@@ -224,7 +230,6 @@ export default class RefLine implements Plugin {
 				}
 
 				if (adsorbKey === 'top') {
-					console.log('top')
 					this.isHasAdsorbElementX = true
 					this.isCenterX = this.isCenterX || condition.isCenter
 				} else {
@@ -235,14 +240,15 @@ export default class RefLine implements Plugin {
 		}
 	}
 	// 显示参考线操作
-	executeShowRefLine({ showSituation }) {
-		for (const adsorbKey in showSituation) {
+	executeShowRefLine() {
+		for (const adsorbKey in this.rectManager.showSituation) {
 			[...this.rectManager.showSituation[adsorbKey]].forEach(item => item.lineNode.show(item.position))
 		}
 	}
 	// 吸附操作
-	executeAdsorb({ conditions, way, adsorbCallback }) {
-		let topList = conditions.top, leftList = conditions.left
+	executeAdsorb({ showSituation, way, adsorbCallback }) {
+		let topList = Array.from(showSituation.top || []),
+			leftList = Array.from(showSituation.left || [])
 		if (way === 'resize') {
 			// MARK X轴有满足吸附条件的元素 而且 X轴的是中间的线则过滤掉中间的线（即resize时中间的线不吸附）
 			(this.isHasAdsorbElementY && this.isCenterY) && (leftList = leftList.filter((item: any) => !item.isCenter));
@@ -286,11 +292,11 @@ export default class RefLine implements Plugin {
 
 
 class MagicRect {
-	private _selectedRect: DragDOMRect
+	private _selectedRect: DragDOMRect // 拖拽（选中）元素的DragDOMRect描述对象
 	private _domRects: DragDOMRect[] = [] // 描述所有元素的尺寸信息
-	private _showSituation: Record<string, Set<any>> = {} // 描述辅助线的显示情况
-	private _tipDistance: Record<string, any> = {}
-	private _compareConditions
+	private _showSituation: Record<string, Set<any>> = {} // 描述辅助线显示情况的信息
+	private _tipDistance: Record<string, any> = {} // 描述距离提示的信息
+	private _compareConditions // 拖拽元素与其他元素的对比情况
 	constructor(private options) {}
 	setElement(allEle: HTMLElement[], dragEle: HTMLElement) {
 		this._domRects = allEle.map(ele => this.sizeDescribe(ele))
@@ -389,14 +395,15 @@ class MagicRect {
 		const self = this
 		const state = recomposeCondition(condition, adsorbKey, anotherRect)
 		this._showSituation[adsorbKey].add(state)
-		// TODO 尝试将 distanceTip 的计算放到check的最后执行
-		// this.calculateDistance(adsorbKey, this.selectedRect, anotherRect, state)
+
 		function recomposeCondition(condition, adsorbKey, anotherRect) {
 			const state: any = {}
 			state.lineValue = condition.lineValue
 			state.anotherRect = anotherRect
 			state.lineNode = condition.lineNode
 			state.nearlyRect = self.getNearlyRect(adsorbKey, condition.lineValue)
+			state.isCenter = condition.isCenter
+			state.distance = condition.distance
 			state.position = self.getRefLineCoordinate(
 				{ otherRects: state.nearlyRect, dragRect: self.selectedRect },
 				{ direction: adsorbKey, directionValue: condition.lineValue }
@@ -435,7 +442,6 @@ class MagicRect {
 			}
 			// 未相交 - dragRect 在右边
 			if (dragRect.left > anotherRect.right) {
-				console.log(dragRect, anotherRect, 'dragRect, anotherRect')
 				distance.value = dragRect.left - anotherRect.right
 				distance.position.left = anotherRect.right + distance.value / 2 - tipWidth / 2
 				distance.position.top = newCondition.lineValue - tipHeight / 2
