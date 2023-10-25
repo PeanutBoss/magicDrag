@@ -1,5 +1,6 @@
 import { Plugin, State } from '../functions'
-import {mergeObject} from "../utils/tools";
+import { mergeObject } from '../utils/tools'
+import { mountAssistMethod } from '../common/functionAssist'
 
 const tipWidth = 34, tipHeight = 18
 
@@ -21,27 +22,8 @@ declare global {
 }
 type AdsorbKey = 'left' | 'top'
 
-function mountAssistMethod(element: HTMLElement) {
-	element.show = function(coordinate) {
-		if (coordinate) {
-			this.style.width = coordinate.width + 'px'
-			this.style.height = coordinate.height + 'px'
-			this.style.left = coordinate.left + 'px'
-			this.style.top = coordinate.top + 'px'
-		}
-		this.style.display = 'block'
-	}
-	element.hide = function() {
-		this.style.display = 'none'
-	}
-	element.isShow = function() {
-		return this.style.display !== 'none'
-	}
-}
-
 interface RefLineOptions {
 	gap?: number,
-	adsorbAfterStopDiff?: boolean
 	showRefLine?: boolean
 	adsorb?: boolean
 	showDistance?: boolean
@@ -49,7 +31,6 @@ interface RefLineOptions {
 }
 const defaultOptions = {
 	gap: 3,
-	adsorbAfterStopDiff: false,
 	showRefLine: true,
 	adsorb: true,
 	showDistance: true,
@@ -135,57 +116,52 @@ export default class RefLine implements Plugin {
 
 	// 检查是否有达到吸附条件的元素
 	startCheck({ elementParameter }, way, adsorbCallback?) {
-
-		this.rectManager.setElement(elementParameter.allTarget, elementParameter.privateTarget)
-
-		// 获取被拖拽元素相对视口的位置
-		const checkDragRect = this.rectManager.excludeDragRect(elementParameter.privateTarget)
-
-		// 开始下一次 check 的重置操作
-		this.checkEnd()
 		const self = this
+		// 记录参与本次操作的所有元素
+		this.rectManager.setElement(elementParameter.allTarget, elementParameter.privateTarget)
+		// 获取要与dragRect对比的rect对象
+		const checkDragRect = this.rectManager.excludeDragRect(elementParameter.privateTarget)
+		// 开始新一轮的check需要重置上一次check的数据
+		this.checkEnd()
+		// 创建参考线的描述数据
+		createRefLineDescribeData()
+		// 显示参考线
+		this.options.showRefLine && this.executeShowRefLine()
+		// 执行吸附操作
+		this.options.adsorb && this.executeAdsorb({ way, adsorbCallback })
+		this.options.showDistance && showDistanceTip()
+		function showDistanceTip() {
+			// 计算距离信息
+			self.calculateDistance()
+			// 显示距离
+			self.executeShowDistanceTip()
+		}
+		function createRefLineDescribeData() {
+			// 遍历nodeList
+			Array.from(checkDragRect).forEach((item: DragDOMRect) => {
+				if (item === elementParameter.privateTarget) return
 
-		// 遍历nodeList
-		Array.from(checkDragRect).forEach((item: DragDOMRect) => {
-			// 如果已经有元素执行吸附操作，是否停止与其他元素对比
-			// if (this.whetherStop) return
-
-			if (item === elementParameter.privateTarget) return
-
-			/*
-			* MARK
-			*  1.构建dragRect与其他rect对象的对比情况 - conditions
-			*  2.通过构架的conditions进行检查，将符合吸附条件的信息保存起来 - showSituation
-			*  3.通过showSituation显示参考线
-			* */
-			// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
-			this.buildConditions(item)
-			// 通过上一步构建的conditions进行检查并记录
-			this.executeCheckByConditions(checkParameter())
-
-			function checkParameter() {
-				return {
+				// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
+				self.buildConditions(item)
+				// 通过上一步构建的conditions进行检查并记录
+				self.executeCheckByConditions({
 					way,
-					adsorbCallback,
 					anotherRect: item,
 					dragRect: self.rectManager.selectedRect,
-					showSituation: self.rectManager.showSituation,
 					conditions: self.rectManager.compareConditions
-				}
-			}
-		})
-		this.options.showRefLine && this.executeShowRefLine()
-		this.options.adsorb && this.executeAdsorb({ way, adsorbCallback, showSituation: this.rectManager.showSituation })
-		// 计算距离信息
-		this.calculateDistance()
-		// 显示距离
-		this.executeShowDistanceTip()
+				})
+			})
+		}
 	}
 	calculateDistance() {
 		for (const adsorbKey in this.rectManager.showSituation) {
-			const dragState = [...this.rectManager.showSituation[adsorbKey]][0]
+			const dragState = priorityCenterState(this.rectManager.showSituation[adsorbKey])
 			const dragRect = this.rectManager.sizeDescribe(this.rectManager.selectedRect.el)
 			this.rectManager.calculateDistance(adsorbKey, dragRect, dragState.anotherRect, dragState)
+		}
+		// 优先获取中间的参考线对应的condition信息
+		function priorityCenterState(arrayLike) {
+			return [...arrayLike].find(item => item.isCenter) || [...arrayLike][0]
 		}
 	}
 	// 显示距离提示
@@ -205,7 +181,6 @@ export default class RefLine implements Plugin {
 	buildConditions(item) {
 		this.rectManager.buildCompareConditions(item, this.lines)
 	}
-	// 将所有有关Rect的操作全部抽成另一个类
 	executeCheckByConditions({ conditions, way, dragRect, anotherRect }) {
 		for (let adsorbKey in conditions) {
 			conditions[adsorbKey].forEach((condition) => {
@@ -246,9 +221,9 @@ export default class RefLine implements Plugin {
 		}
 	}
 	// 吸附操作
-	executeAdsorb({ showSituation, way, adsorbCallback }) {
-		let topList = Array.from(showSituation.top || []),
-			leftList = Array.from(showSituation.left || [])
+	executeAdsorb({ way, adsorbCallback }) {
+		let topList = Array.from(this.rectManager.showSituation.top || []),
+			leftList = Array.from(this.rectManager.showSituation.left || [])
 		if (way === 'resize') {
 			// MARK X轴有满足吸附条件的元素 而且 X轴的是中间的线则过滤掉中间的线（即resize时中间的线不吸附）
 			(this.isHasAdsorbElementY && this.isCenterY) && (leftList = leftList.filter((item: any) => !item.isCenter));
@@ -284,9 +259,6 @@ export default class RefLine implements Plugin {
 		for (const elKey in this.tipEls) {
 			this.tipEls[elKey].hide()
 		}
-	}
-	get whetherStop() {
-		return this.isHasAdsorbElementY || this.isHasAdsorbElementX && this.options.adsorbAfterStopDiff
 	}
 }
 
