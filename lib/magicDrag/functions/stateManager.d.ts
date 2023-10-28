@@ -85,6 +85,8 @@ declare class StateManager {
     subscribe(key: string, callback: Callback): void;
     unsubscribe(key: string, callback: Callback): void;
     private notifySubscribers;
+    get containerLeft(): any;
+    get containerTop(): any;
     static COORDINATE_KEY: string[];
 }
 export default StateManager;

@@ -1,4 +1,4 @@
-import { State } from '../functions/stateManager';
+import { State } from '../functions';
 export interface Plugin {
     name: string;
     init(parameter: State): void;
