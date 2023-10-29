@@ -61,7 +61,7 @@ export default class RefLine implements Plugin {
 			node.classList.add('ref-line', key)
 			// 以x/y开头，说明是与x/y轴平行的线
 			node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;
-				z-index: 99999;${key[0] === 'x' ? 'width:100%;height:1px;left:0;' : 'width:1px;height:100%;top:0;'}`
+				z-index: 99999;`
 
 			// 挂载一些辅助方法
 			mountAssistMethod(node)

@@ -182,24 +182,27 @@ useMagicDrag('.box')
 
  - options
 
-| 属性                           | 描述                   | 默认值    | 可选值/类型           |
-|------------------------------|----------------------|--------|------------------|
-| containerSelector            | 容器元素的选择器，元素只能在该容器内移动 | body   | 容器元素的选择器         |
-| minWidth                     | 容器可以缩放的最小宽度          | 100    | number           |
-| minHeight                    | 容器可以缩放的最小高度          | 100    | number           |
-| maxWidth                     | 容器可以放大的最大宽度          | 999999 | number           |
-| maxHeight                    | 容器可以放大的最大高度          | 999999 | number           |
-| initialInfo.width            | 目标元素的初始宽度            | 200    | number           |
-| initialInfo.height           | 目标元素的初始高度            | 200    | number           |
-| initialInfo.left             | 目标元素的初始的X轴定位         | 0      | number           |
-| initialInfo.top              | 目标元素的初始的Y轴定位         | 0      | number           |
-| pointSize                    | 调整大小的轮廓点的尺寸（直径）      | 10     | number           |
-| customClass.customPointClass | 自定义轮廓点的类名            | -      | string           |
-| skill.resize                 | 是否开启调整大小功能           | true   | boolean          |
-| skill.drag                   | 是否开启拖拽功能             | true   | boolean          |
-| skill.limitDragDirection     | 限制目标元素拖拽方向           | null   | 'X', 'Y'         |
-| callbacks.dragCallback       | 拖拽的回调                | -      | (dragAction, movement) => void |
-| callbacks.resizeCallback     | 调整大小的回调              | -      | (resizeAction, movement) => void |
+| 属性                           | 描述                   | 默认值    | 可选值/类型                           | 备注   |
+|------------------------------|----------------------|--------|----------------------------------------|------|
+| containerSelector            | 容器元素的选择器，元素只能在该容器内移动 | body   | 容器元素的选择器             |      |
+| minWidth                     | 容器可以缩放的最小宽度          | 100    | number                           |      |
+| minHeight                    | 容器可以缩放的最小高度          | 100    | number                           |      |
+| maxWidth                     | 容器可以放大的最大宽度          | 999999 | number                           |      |
+| maxHeight                    | 容器可以放大的最大高度          | 999999 | number                           |      |
+| initialInfo.width            | 目标元素的初始宽度            | 200    | number                           |      |
+| initialInfo.height           | 目标元素的初始高度            | 200    | number                           |      |
+| initialInfo.left             | 目标元素的初始的X轴定位         | 0      | number                           |      |
+| initialInfo.top              | 目标元素的初始的Y轴定位         | 0      | number                           |      |
+| pointSize                    | 调整大小的轮廓点的尺寸（直径）      | 10     | number                           | 即将废弃 |
+| customClass.customPointClass | 自定义轮廓点的类名            | -      | string                           | 即将废弃 |
+| skill.resize                 | 是否开启调整大小功能           | true   | boolean                          |      |
+| skill.drag                   | 是否开启拖拽功能             | true   | boolean                          |      |
+| skill.limitDragDirection     | 限制目标元素拖拽方向           | null   | 'X', 'Y'                         |      |
+| callbacks.dragCallback       | 拖拽的回调                | -      | (dragAction, movement) => void   |      |
+| callbacks.resizeCallback     | 调整大小的回调              | -      | (resizeAction, movement) => void |      |
+| customStyle.pointStyle       | 轮廓点的样式               | -      | object                           |      |
+| customStyle.tipStyle         | 距离提示的样式              | -      | object                           |      |
+| customStyle.refLineStyle     | 参考线的样式               | -      | object                           |      |
 
  - options.callbacks.dragCallback(options.callbacks.resizeCallback同理)
 > 目标元素被拖拽移动时执行的回调，参数为dragAction和movement，dragAction是执行移动操作的方法，在dragCallback中必须执行。

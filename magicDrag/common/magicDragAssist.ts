@@ -1,8 +1,8 @@
 /* Global variable correlation - 全局变量相关 */
-import {Direction} from './magicDrag.ts'
-import {ClassName} from '../style/className'
-import {Ref, reactive, ref} from '@vue/reactivity'
-import {deepClone} from "../utils/tools";
+import { Direction } from './magicDrag.ts'
+import { ClassName } from '../style/className'
+import { Ref, reactive, ref } from '@vue/reactivity'
+import { deepClone } from '../utils/tools'
 
 export interface MagicDragOptions {
 	containerSelector: string
@@ -38,7 +38,12 @@ export interface MagicDragOptions {
 	}
 	customClass?: {
 		customPointClass?: string
-	}
+	},
+  customStyle?: {
+    tipStyle?: Partial<CSSStyleDeclaration>
+    pointStyle?: Partial<CSSStyleDeclaration>
+    refLineStyle?: Partial<CSSStyleDeclaration>
+  }
 }
 
 // default configuration
@@ -67,7 +72,39 @@ const _defaultOptions: MagicDragOptions = {
 	customClass: {
 		customPointClass: ClassName.OutlinePoint, // 自定义轮廓点的类名
 	},
-	callbacks: {}
+	callbacks: {},
+  customStyle: {
+    pointStyle: {
+      zIndex: '88888',
+      position: 'absolute',
+      boxSizing: 'border-box',
+      border: '1px solid #999',
+      borderRadius: '50%',
+      display: 'none'
+    },
+    tipStyle: {
+      position: 'absolute',
+      padding: '2px 5px',
+      fontSize: '12px',
+      background: '#0086FF',
+      zIndex: '88888',
+      borderRadius: '7px',
+      // width: `${tipWidth}px`,
+      // height: `${tipHeight}px`,
+      color: '#fff',
+      textAlign: 'center',
+      lineHeight: '14px',
+      display: 'none',
+      boxSizing: 'border-box'
+    },
+    refLineStyle: {
+      display: 'none',
+      opacity: '0.7',
+      position: 'absolute',
+      background: '#4DAEFF',
+      zIndex: '88888'
+    }
+  }
 }
 
 export function defaultOptions(): MagicDragOptions {
