@@ -85,8 +85,6 @@ function getPointValue(obj, key) {
   return obj[key]
 }
 
-usePlugin(defaultOptions())
-
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
@@ -124,6 +122,7 @@ function useMagicDragAPI (
   })
 
   function readyMagicDrag() {
+    checkParameterType(defaultOptions(), options)
     checkParameterValue(options)
     initContainer()
     initTarget()
@@ -271,8 +270,9 @@ export function useMagicDrag (
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
-  checkParameterType(defaultOptions(), options)
   options = tidyOptions(mergeObject(defaultOptions(), options))
+  // TODO usePlugin应该提到API外面，但需要用处理后的options参数
+  usePlugin(options)
   baseErrorTips(
     options.customClass.customPointClass.startsWith(MAGIC_DRAG),
     `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`
@@ -291,7 +291,6 @@ export function testMagicDrag (
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
-  checkParameterType(defaultOptions(), options)
   options = mergeObject(defaultOptions(), options)
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)

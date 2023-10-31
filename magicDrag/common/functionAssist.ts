@@ -29,6 +29,6 @@ export function mountAssistMethod(element: HTMLElement) {
 // 整理参数
 export function tidyOptions(options: MagicDragOptions) {
   // pointSize的优先级高于pointStyle.width
-  options.pointSize = options.pointSize || Number(options.customStyle.pointStyle.width)
+  options.pointSize = options.pointSize || parseInt(options.customStyle.pointStyle.width) || parseInt(options.customStyle.pointStyle.height)
   return options
 }

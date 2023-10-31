@@ -41,7 +41,6 @@ export default class Resizeable {
     const { pointPosition } = runtimeParameter
     const { pointSize, customClass: { customPointClass }, customStyle: { pointStyle } } = options
     const { initialTarget } = globalDataParameter
-
     for (const direction in pointPosition) {
       const point = this.createContourPoint(pointElements, { direction })
       this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointStyle)

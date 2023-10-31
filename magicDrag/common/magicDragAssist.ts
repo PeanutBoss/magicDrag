@@ -54,7 +54,7 @@ const _defaultOptions: MagicDragOptions = {
 	minHeight: 10, // minimum height - 最小高度
 	maxWidth: 999999, // 最大宽度
 	maxHeight: 999999, // 最大高度
-	pointSize: 10, // the size of the contour point - 轮廓点的大小
+	// pointSize: 10, // the size of the contour point - 轮廓点的大小
 	// pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
   initialInfo: {
     width: 200,
@@ -75,32 +75,34 @@ const _defaultOptions: MagicDragOptions = {
 	callbacks: {},
   customStyle: {
     pointStyle: {
+			position: 'absolute',
+			display: 'none',
+			boxSizing: 'border-box',
+			width: '10px',
+			height: '10px',
       zIndex: '88888',
-      position: 'absolute',
-      boxSizing: 'border-box',
       border: '1px solid #999',
-      borderRadius: '50%',
-      display: 'none'
+      borderRadius: '50%'
     },
     tipStyle: {
       position: 'absolute',
+			display: 'none',
+			boxSizing: 'border-box',
+			width: '34px',
+			height: '18px',
+			zIndex: '99999',
       padding: '2px 5px',
       fontSize: '12px',
       background: '#0086FF',
-      zIndex: '99999',
       borderRadius: '7px',
-      width: '34px',
-      height: '18px',
       color: '#fff',
       textAlign: 'center',
-      lineHeight: '14px',
-      display: 'none',
-      boxSizing: 'border-box'
+      lineHeight: '14px'
     },
     refLineStyle: {
+			position: 'absolute',
       display: 'none',
       opacity: '0.7',
-      position: 'absolute',
       background: '#4DAEFF',
       zIndex: '88888'
     }

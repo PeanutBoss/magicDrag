@@ -22,6 +22,7 @@ export function checkParameterType (defaultOptions, options = {}) {
 export function checkParameterValue(options: MagicDragOptions) {
   checkOptionPosition(options.initialInfo)
   checkOptionSize(options)
+  checkCustomStyle(options.customStyle)
 }
 function checkOptionSize(options: MagicDragOptions) {
   baseErrorTips(errorSize(), 'The minimum cannot be greater than the maximum')
@@ -42,5 +43,42 @@ function checkOptionPosition(initialInfo: MagicDragOptions['initialInfo']) {
 
   function posBeNegative() {
     return initialInfo.left < 0 || initialInfo.top < 0
+  }
+}
+function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
+  checkPointStyle(styles.pointStyle)
+  checkRefLineStyle(styles.refLineStyle)
+  checkTipStyle(styles.tipStyle)
+  function checkPointStyle(pointStyle: MagicDragOptions['customStyle']['pointStyle']) {
+    baseErrorTips(!/^\d+px$/.test(pointStyle.width),
+      'The dimensions of the outline points are supported only in px units')
+    baseErrorTips(!/^\d+px$/.test(pointStyle.height),
+      'The dimensions of the outline points are supported only in px units')
+    baseErrorTips(pointStyle.position !== 'absolute',
+      'Contour points must have absolute positioning turned on')
+    baseWarnTips(pointStyle.display !== 'none',
+      `If you do not set the display property of the outline point to none,
+      redundant elements may be displayed after the initial rendering is complete`)
+    baseWarnTips(pointStyle.boxSizing !== 'border-box',
+      'If the contour point box-sizing property is not set to border-box, the contour point position may be shifted')
+    baseWarnTips(!pointStyle.width && !pointStyle.height,
+      `It is recommended to use the width and height properties of
+      pointStyle to set the size of the contour point. pointSize will soon be deprecated`)
+  }
+  function checkRefLineStyle(refLineStyle: MagicDragOptions['customStyle']['refLineStyle']) {
+    baseErrorTips(refLineStyle.position !== 'absolute',
+      'Contour points must have absolute positioning turned on')
+    baseWarnTips(refLineStyle.display !== 'none',
+      `If you do not set the display property of the outline point to none,
+      redundant elements may be displayed after the initial rendering is complete`)
+  }
+  function checkTipStyle(tipStyle: MagicDragOptions['customStyle']['tipStyle']) {
+    baseErrorTips(tipStyle.position !== 'absolute',
+      'Contour points must have absolute positioning turned on')
+    baseWarnTips(tipStyle.display !== 'none',
+      `If you do not set the display property of the outline point to none,
+      redundant elements may be displayed after the initial rendering is complete`)
+    baseWarnTips(tipStyle.boxSizing !== 'border-box',
+      'If the contour point box-sizing property is not set to border-box, the contour point position may be shifted')
   }
 }

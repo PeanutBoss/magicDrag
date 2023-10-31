@@ -55,7 +55,12 @@ const App = {
           // }
         },
         initialInfo: { left: 300, top: 500 },
-        customClass: {}
+        customClass: {},
+        customStyle: {
+          tipStyle: {
+            width: '50px'
+          }
+        }
       }
     )
 
@@ -68,9 +73,21 @@ const App = {
           left: 200,
           top: 100
         },
+        customStyle: {
+          tipStyle: {
+            width: '50px'
+          }
+        }
       })
 
-    useMagicDrag('.box2', { containerSelector: '.wrap', initialInfo: { top: 700, left: 700 } })
+    // useMagicDrag(
+    //   '.box2',
+    //   {
+    //     containerSelector: '.wrap',
+    //     initialInfo: { top: 700, left: 700 },
+    //     customStyle: {}
+    //   }
+    // )
     return {
       state,
       imgSource

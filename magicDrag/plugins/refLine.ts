@@ -3,8 +3,6 @@ import {mergeObject, setStyle} from '../utils/tools'
 import { mountAssistMethod } from '../common/functionAssist'
 import { MagicDragOptions } from '../common/magicDragAssist'
 
-const tipWidth = 34, tipHeight = 18
-
 declare global {
   interface HTMLElement {
     show: (coordinate) => void
@@ -46,6 +44,7 @@ export default class RefLine implements Plugin {
 	private isCenterX = false
 	private isCenterY = false
 	private rectManager: MagicRect
+	private tipSize: { width: number, height: number }
 	constructor(private readonly options: RefLineOptions = defaultOptions, private magicOptions: MagicDragOptions) {
 		this.name = 'refLine'
 		this.options = mergeObject(defaultOptions, this.options)
@@ -53,7 +52,7 @@ export default class RefLine implements Plugin {
 	init() {
 		this.createLines()
 		this.createTipEl()
-		this.rectManager = new MagicRect(this.options)
+		this.rectManager = new MagicRect(this.options, this.magicOptions.customStyle.tipStyle)
 	}
 	createLines() {
 		for (const key in this.lines) {
@@ -263,7 +262,7 @@ class MagicRect {
 	private _showSituation: Record<string, Set<any>> = {} // 描述辅助线显示情况的信息
 	private _tipDistance: Record<string, any> = {} // 描述距离提示的信息
 	private _compareConditions // 拖拽元素与其他元素的对比情况
-	constructor(private options) {}
+	constructor(private options, private tipStyle) {}
 	setElement(allEle: HTMLElement[], dragEle: HTMLElement) {
 		this._domRects = allEle.map(ele => this.sizeDescribe(ele))
 		this._selectedRect = this.sizeDescribe(dragEle)
@@ -379,6 +378,8 @@ class MagicRect {
 	}
 	calculateDistance(adsorbKey, dragRect, anotherRect, newCondition) {
 		const distance = { value: 0, position: { left: 0, top: 0 } }
+		const tipWidth = parseInt(this.tipStyle.width)
+		const tipHeight = parseInt(this.tipStyle.height)
 		// MARK 1.元素未相交 2.元素相交
 		// MARK 吸附后distance = 0
 		// // Y轴方向对齐, 计算X轴方向距离
