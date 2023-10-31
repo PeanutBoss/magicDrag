@@ -12,30 +12,12 @@ const resizeActions = getActionCallbacks('resizeCallbacks')
 
 export default class Resizeable {
   constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
-    this.setPointStyle()
     this.init(stateManager.currentState)
   }
 
   init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
     const pointPosition = this.createParentPosition(globalDataParameter.initialTarget, optionParameter.pointSize)
     this.initContourPoints(elementParameter, stateParameter, globalDataParameter, optionParameter, { pointPosition })
-  }
-
-  // TODO style类控制
-  setPointStyle() {
-    const styleEl = document.createElement('style')
-    const cssText = `
-      .magic_drag-outline_point {
-        position: absolute;
-        box-sizing: border-box;
-        border: 1px solid #999;
-        border-radius: 50%;
-        display: none;
-        z-index: 88888;
-      }
-    `
-    styleEl.appendChild(document.createTextNode(cssText))
-    document.body.appendChild(styleEl)
   }
 
   createParentPosition ({ left, top, width, height }, pointSize: number): PointPosition {
@@ -57,12 +39,12 @@ export default class Resizeable {
     const { target, pointElements } = elementParameter
     const { pointState } = stateParameter
     const { pointPosition } = runtimeParameter
-    const { pointSize, customClass: { customPointClass } } = options
+    const { pointSize, customClass: { customPointClass }, customStyle: { pointStyle } } = options
     const { initialTarget } = globalDataParameter
 
     for (const direction in pointPosition) {
       const point = this.createContourPoint(pointElements, { direction })
-      this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize })
+      this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointStyle)
       // addClassName(point, ClassName.OutlinePoint)
       addClassName(point, customPointClass)
       appendChild(target.value.parentNode, point)

@@ -14,7 +14,7 @@ import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable,
 import { insertResizeTask, stopListen } from './helper'
 import { allElement, defaultOptions, defaultState,
   storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
-import { fixContourExceed, processOption } from './common/functionAssist.ts'
+import { fixContourExceed, tidyOptions } from './common/functionAssist.ts'
 import { checkParameterType, checkParameterValue } from './common/warningAssist'
 import {
   todoUnMount,
@@ -50,6 +50,7 @@ import {
 *  20.自定义样式 tipStyle pointStyle refLineStyle
 *  21.单独处理公共属性
 *  22.统一处理所有元素
+*  23.等比缩放
 * */
 
 /*
@@ -57,7 +58,9 @@ import {
 *  1.pointSize设置的尺寸
 *  2.插入的 magic_drag-outline_point 的样式
 *  3.customClass.pointStyle 的样式
-*  4.将默认参数加入到customClass中，customClass.pointStyle =  { width: '34px' }
+*  4.将默认参数加入到customStyle中，customStyle.pointStyle =  { width: '34px' }
+*  5.style类控制样式
+*  6.检查style宽高的类型
 * */
 
 // default configuration
@@ -82,7 +85,7 @@ function getPointValue(obj, key) {
   return obj[key]
 }
 
-usePlugin(defaultOptions().skill)
+usePlugin(defaultOptions())
 
 function useMagicDragAPI (
   targetSelector: string | HTMLElement,
@@ -269,7 +272,7 @@ export function useMagicDrag (
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
   checkParameterType(defaultOptions(), options)
-  options = processOption(mergeObject(defaultOptions(), options))
+  options = tidyOptions(mergeObject(defaultOptions(), options))
   baseErrorTips(
     options.customClass.customPointClass.startsWith(MAGIC_DRAG),
     `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`

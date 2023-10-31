@@ -1,6 +1,7 @@
 import { Plugin, State } from '../functions'
-import { mergeObject } from '../utils/tools'
+import {mergeObject, setStyle} from '../utils/tools'
 import { mountAssistMethod } from '../common/functionAssist'
+import { MagicDragOptions } from '../common/magicDragAssist'
 
 const tipWidth = 34, tipHeight = 18
 
@@ -45,7 +46,7 @@ export default class RefLine implements Plugin {
 	private isCenterX = false
 	private isCenterY = false
 	private rectManager: MagicRect
-	constructor(private readonly options: RefLineOptions = defaultOptions) {
+	constructor(private readonly options: RefLineOptions = defaultOptions, private magicOptions: MagicDragOptions) {
 		this.name = 'refLine'
 		this.options = mergeObject(defaultOptions, this.options)
 	}
@@ -57,12 +58,7 @@ export default class RefLine implements Plugin {
 	createLines() {
 		for (const key in this.lines) {
 			const node = this.lines[key] = document.createElement('div')  as HTMLElement
-
-			node.classList.add('ref-line', key)
-			// 以x/y开头，说明是与x/y轴平行的线
-			node.style.cssText = `display:none;opacity:0.7;position:absolute;background:#4DAEFF;
-				z-index: 99999;`
-
+			setStyle(node, this.magicOptions.customStyle.refLineStyle as Record<string, string>)
 			// 挂载一些辅助方法
 			mountAssistMethod(node)
 			document.body.appendChild(node)
@@ -71,9 +67,7 @@ export default class RefLine implements Plugin {
 	createTipEl() {
 		for (const elKey in this.tipEls) {
 			const el = document.createElement('div')
-			el.style.cssText = `position: absolute;padding: 2px 5px;font-size: 12px;background: #0086FF;
-				z-index: 20001106;border-radius: 7px;width: ${tipWidth}px;height: ${tipHeight}px;color: #fff;
-				text-align: center;line-height: 14px;display: none;box-sizing: border-box;`
+			setStyle(el, this.magicOptions.customStyle.tipStyle as Record<string, string>)
 			mountAssistMethod(el)
 			document.body.appendChild(el)
 			this.tipEls[elKey] = el

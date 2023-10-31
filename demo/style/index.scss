@@ -72,14 +72,14 @@ $MenuContainerZIndex: 99999;
 }
 
 /* 轮廓点 */
-.magic_drag-outline_point {
-  z-index: $OutlinePointZIndex;
-  position: absolute;
-  box-sizing: border-box;
-  border: 1px solid #999;
-  border-radius: 50%;
-  display: none;
-}
+//.magic_drag-outline_point {
+//  z-index: $OutlinePointZIndex;
+//  position: absolute;
+//  box-sizing: border-box;
+//  border: 1px solid #999;
+//  border-radius: 50%;
+//  display: none;
+//}
 
 .custom-point {
   border-color: black;

@@ -5,14 +5,14 @@ import { MagicDragOptions } from '../common/magicDragAssist'
 
 export const pluginManager = new PluginManager()
 
-export function usePlugin(skill: MagicDragOptions['skill']) {
-	skill.refLine && enableRefLine()
-	skill.keymap && enableShortcut()
+export function usePlugin(options: MagicDragOptions) {
+	options.skill.refLine && enableRefLine(options)
+	options.skill.keymap && enableShortcut()
 	pluginManager.installPlugin()
 }
 
-function enableRefLine() {
-	const refLine = new RefLine({ gap: 10 })
+function enableRefLine(options: MagicDragOptions) {
+	const refLine = new RefLine({ gap: 10 }, options)
 	pluginManager.registerPlugin(refLine.name, refLine)
 }
 
