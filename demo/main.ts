@@ -53,7 +53,7 @@ const App = {
           height: '30px',
           lineHeight: '30px',
           fontSize: '18px',
-          padding: 0,
+          padding: '0',
           textAlign: 'center'
         },
         pointStyle: {
