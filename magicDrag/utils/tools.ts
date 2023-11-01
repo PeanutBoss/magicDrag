@@ -22,15 +22,16 @@ export function getElement (ele: string | HTMLElement): HTMLElement {
 	return ele
 }
 
+// 合并对象，优先使用source的字段
 export function mergeObject (target, source) {
 	if (!source) return { ...target }
 	const mergedObject = {}
 	for (const key in { ...target, ...source }) {
 		const curVal = source[key]
 		const originVal = target[key]
-		isNullOrUndefined(curVal) ?
-			mergedObject[key] = originVal :
-			mergedObject[key] = curVal
+		isNullOrUndefined(curVal)
+			? mergedObject[key] = originVal
+			: mergedObject[key] = curVal
 
 		if (typeof curVal === 'object' && !(curVal instanceof HTMLElement) && !Array.isArray(curVal)) {
 			mergedObject[key] = mergeObject(originVal, curVal)

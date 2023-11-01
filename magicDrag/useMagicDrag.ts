@@ -115,8 +115,6 @@ function useMagicDragAPI (
   })
 
   function readyMagicDrag() {
-    checkParameterType(defaultOptions(), options)
-    checkParameterValue(options)
     initContainer()
     initTarget()
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
@@ -254,7 +252,7 @@ function useMagicDragAPI (
   }
 }
 
-export function useMagicDrag (
+export function useMagicDrag(
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions
 ) {
@@ -263,8 +261,10 @@ export function useMagicDrag (
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
+  checkParameterType(defaultOptions(), options)
+  checkParameterValue(options)
+
   options = tidyOptions(mergeObject(defaultOptions(), options))
-  console.log({ ...options }, 'options')
   // TODO usePlugin应该提到API外面，但需要用处理后的options参数
   usePlugin(options)
   baseErrorTips(
