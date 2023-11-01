@@ -51,16 +51,9 @@ import {
 *  21.单独处理公共属性
 *  22.统一处理所有元素
 *  23.等比缩放
-* */
-
-/*
-* MARK customClass
-*  1.pointSize设置的尺寸
-*  2.插入的 magic_drag-outline_point 的样式
-*  3.customClass.pointStyle 的样式
-*  4.将默认参数加入到customStyle中，customStyle.pointStyle =  { width: '34px' }
-*  5.style类控制样式
-*  6.检查style宽高的类型
+*  24.将用户传入的不支持使用的值修改为默认值并警告
+*  25.创建接收多个元素的API，usePlugin就不需要重复调用
+*  26.style类控制样式
 * */
 
 // default configuration
@@ -271,6 +264,7 @@ export function useMagicDrag (
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
   options = tidyOptions(mergeObject(defaultOptions(), options))
+  console.log({ ...options }, 'options')
   // TODO usePlugin应该提到API外面，但需要用处理后的options参数
   usePlugin(options)
   baseErrorTips(

@@ -11,6 +11,11 @@ export interface MagicDragOptions {
 	maxWidth?: number
 	maxHeight?: number
 	pointSize?: number
+	gap?: number
+	adsorb?: boolean
+	showShadow?: boolean
+	showRefLine?: boolean
+	showDistance?: boolean
   initialInfo?: {
     width?: number
     height?: number
@@ -54,6 +59,10 @@ const _defaultOptions: MagicDragOptions = {
 	minHeight: 10, // minimum height - 最小高度
 	maxWidth: 999999, // 最大宽度
 	maxHeight: 999999, // 最大高度
+	gap: 3, // 吸附的最小间距
+	showRefLine: true, // 显示参考线
+	adsorb: true, // 开启吸附功能
+	showDistance: true, // 显示组件间距
 	// pointSize: 10, // the size of the contour point - 轮廓点的大小
 	// pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
   initialInfo: {

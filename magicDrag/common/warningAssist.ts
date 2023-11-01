@@ -50,9 +50,7 @@ function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
   checkRefLineStyle(styles.refLineStyle)
   checkTipStyle(styles.tipStyle)
   function checkPointStyle(pointStyle: MagicDragOptions['customStyle']['pointStyle']) {
-    baseErrorTips(!/^\d+px$/.test(pointStyle.width),
-      'The dimensions of the outline points are supported only in px units')
-    baseErrorTips(!/^\d+px$/.test(pointStyle.height),
+    baseErrorTips(!/^\d+px$/.test(pointStyle.width) || !/^\d+px$/.test(pointStyle.height),
       'The dimensions of the outline points are supported only in px units')
     baseErrorTips(pointStyle.position !== 'absolute',
       'Contour points must have absolute positioning turned on')
@@ -68,6 +66,8 @@ function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
   function checkRefLineStyle(refLineStyle: MagicDragOptions['customStyle']['refLineStyle']) {
     baseErrorTips(refLineStyle.position !== 'absolute',
       'Contour points must have absolute positioning turned on')
+    baseErrorTips(!isNullOrUndefined(refLineStyle.width) || !isNullOrUndefined(refLineStyle.height),
+      'Setting the guide size is not supported')
     baseWarnTips(refLineStyle.display !== 'none',
       `If you do not set the display property of the outline point to none,
       redundant elements may be displayed after the initial rendering is complete`)

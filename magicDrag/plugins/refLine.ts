@@ -21,19 +21,12 @@ declare global {
 }
 type AdsorbKey = 'left' | 'top'
 
-interface RefLineOptions {
+export interface RefLineOptions {
 	gap?: number,
 	showRefLine?: boolean
 	adsorb?: boolean
 	showDistance?: boolean
-	showShadow?: boolean
-}
-const defaultOptions = {
-	gap: 3,
-	showRefLine: true,
-	adsorb: true,
-	showDistance: true,
-	showShadow: true
+	customStyle?: MagicDragOptions['customStyle']
 }
 export default class RefLine implements Plugin {
 	name: string
@@ -45,19 +38,18 @@ export default class RefLine implements Plugin {
 	private isCenterY = false
 	private rectManager: MagicRect
 	private tipSize: { width: number, height: number }
-	constructor(private readonly options: RefLineOptions = defaultOptions, private magicOptions: MagicDragOptions) {
+	constructor(private readonly options: RefLineOptions) {
 		this.name = 'refLine'
-		this.options = mergeObject(defaultOptions, this.options)
 	}
 	init() {
 		this.createLines()
 		this.createTipEl()
-		this.rectManager = new MagicRect(this.options, this.magicOptions.customStyle.tipStyle)
+		this.rectManager = new MagicRect(this.options)
 	}
 	createLines() {
 		for (const key in this.lines) {
 			const node = this.lines[key] = document.createElement('div')  as HTMLElement
-			setStyle(node, this.magicOptions.customStyle.refLineStyle as Record<string, string>)
+			setStyle(node, this.options.customStyle.refLineStyle as Record<string, string>)
 			// 挂载一些辅助方法
 			mountAssistMethod(node)
 			document.body.appendChild(node)
@@ -66,7 +58,7 @@ export default class RefLine implements Plugin {
 	createTipEl() {
 		for (const elKey in this.tipEls) {
 			const el = document.createElement('div')
-			setStyle(el, this.magicOptions.customStyle.tipStyle as Record<string, string>)
+			setStyle(el, this.options.customStyle.tipStyle as Record<string, string>)
 			mountAssistMethod(el)
 			document.body.appendChild(el)
 			this.tipEls[elKey] = el
@@ -262,7 +254,7 @@ class MagicRect {
 	private _showSituation: Record<string, Set<any>> = {} // 描述辅助线显示情况的信息
 	private _tipDistance: Record<string, any> = {} // 描述距离提示的信息
 	private _compareConditions // 拖拽元素与其他元素的对比情况
-	constructor(private options, private tipStyle) {}
+	constructor(private options) {}
 	setElement(allEle: HTMLElement[], dragEle: HTMLElement) {
 		this._domRects = allEle.map(ele => this.sizeDescribe(ele))
 		this._selectedRect = this.sizeDescribe(dragEle)
@@ -378,8 +370,8 @@ class MagicRect {
 	}
 	calculateDistance(adsorbKey, dragRect, anotherRect, newCondition) {
 		const distance = { value: 0, position: { left: 0, top: 0 } }
-		const tipWidth = parseInt(this.tipStyle.width)
-		const tipHeight = parseInt(this.tipStyle.height)
+		const tipWidth = parseInt(this.options.customStyle.tipStyle.width)
+		const tipHeight = parseInt(this.options.customStyle.tipStyle.height)
 		// MARK 1.元素未相交 2.元素相交
 		// MARK 吸附后distance = 0
 		// // Y轴方向对齐, 计算X轴方向距离

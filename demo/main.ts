@@ -40,45 +40,44 @@ const App = {
     window.addEventListener('keyup', () => {
       pressShift = false
     })
-    const state = useMagicDrag(
-      '.box',
-      {
-        minHeight: 200,
-        minWidth: 200,
-        // maxWidth: 600,
-        // maxHeight: 400,
-        // pageHasScrollBar: true,
-        containerSelector: '.wrap',
-        callbacks: {
-          // dragCallback (moveAction) {
-          //   pressShift && moveAction()
-          // }
+    const options1 = {
+      minHeight: 200,
+      minWidth: 200,
+      containerSelector: '.wrap',
+      initialInfo: { left: 300, top: 500 },
+      customClass: {},
+      gap: 10,
+      customStyle: {
+        tipStyle: {
+          width: '50px',
+          height: '30px',
+          lineHeight: '30px',
+          fontSize: '18px',
+          padding: 0,
+          textAlign: 'center'
         },
-        initialInfo: { left: 300, top: 500 },
-        customClass: {},
-        customStyle: {
-          tipStyle: {
-            width: '50px'
-          }
+        pointStyle: {
+          width: '6px'
         }
       }
-    )
-
-    useMagicDrag('.box1',
-      {
-        containerSelector: 'body',
-        initialInfo: {
-          width: 100,
-          height: 100,
-          left: 200,
-          top: 100
-        },
-        customStyle: {
-          tipStyle: {
-            width: '50px'
-          }
+    }
+    const options2 = {
+      containerSelector: 'body',
+      initialInfo: {
+        width: 100,
+        height: 100,
+        left: 200,
+        top: 100
+      },
+      customStyle: {
+        tipStyle: {
+          width: '50px'
         }
-      })
+      }
+    }
+    const state = useMagicDrag('.box', options1)
+
+    useMagicDrag('.box1', options1)
 
     // useMagicDrag(
     //   '.box2',
