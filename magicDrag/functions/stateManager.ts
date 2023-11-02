@@ -1,5 +1,5 @@
 import { Ref } from 'vue'
-import { MagicDragOptions } from '../common/magicDragAssist'
+import { MagicDragOptions } from '../common/globalData'
 
 type DomElementState = {
 	element: HTMLElement

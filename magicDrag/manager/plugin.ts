@@ -1,7 +1,7 @@
 import PluginManager from '../functions/pluginManager'
 import RefLine, { RefLineOptions } from '../plugins/refLine'
 import Keymap from '../plugins/keymap'
-import { MagicDragOptions } from '../common/magicDragAssist'
+import { MagicDragOptions } from '../common/globalData'
 
 export const pluginManager = new PluginManager()
 

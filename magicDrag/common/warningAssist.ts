@@ -2,7 +2,7 @@
 // check that the type of options passed in is correct
 // 检查传入的选项类型是否正确
 import {baseErrorTips, baseWarnTips, isNullOrUndefined} from '../utils/tools'
-import {MagicDragOptions} from './magicDragAssist'
+import {MagicDragOptions} from './globalData'
 
 export function checkParameterType (defaultOptions, options = {}) {
   for (const key in defaultOptions) {

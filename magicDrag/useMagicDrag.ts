@@ -1,29 +1,16 @@
 import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
-import {
-  getElement,
-  mergeObject,
-  removeElements,
-  baseErrorTips,
-  setStyle,
-  numberToStringSize
-} from './utils/tools'
+import { getElement, mergeObject, removeElements, baseErrorTips, setStyle, numberToStringSize } from './utils/tools'
 import { MAGIC_DRAG } from './style/className'
 import { usePlugin, setInitialState, pluginManager, stateManager } from './manager'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
 import { insertResizeTask, stopListen } from './helper'
-import { allElement, defaultOptions, defaultState,
-  storingDataContainer,MagicDragOptions, MagicDragState } from './common/magicDragAssist'
-import { fixContourExceed, tidyOptions } from './common/functionAssist.ts'
+import globalData, { MagicDragOptions, MagicDragState } from './common/globalData'
+import { fixContourExceed, tidyOptions } from './common/functionAssist'
 import { checkParameterType, checkParameterValue } from './common/warningAssist'
 import {
-  todoUnMount,
-  blurOrFocus,
-  updateInitialTarget,
-  initTargetStyle,
-  updateState,
-  saveInitialData,
-  showOrHideContourPoint
+  todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle,
+  updateState, saveInitialData, showOrHideContourPoint, getPointValue
 } from './common/magicDrag'
 
 /*
@@ -53,16 +40,16 @@ import {
 *  23.等比缩放
 *  24.将用户传入的不支持使用的值修改为默认值并警告
 *  25.创建接收多个元素的API，usePlugin就不需要重复调用
-*  26.style类控制样式
+*  26.通过调用API的方式来处理配置信息
+*  27.style类控制样式
 * */
 
 // default configuration
 // 默认配置
-const { allTarget, allContainer } = allElement()
-let { $target, $container, initialTarget, pointElements, containerInfo, downPointPosition } = storingDataContainer()
+const { allTarget, allContainer } = globalData.allElement()
+let { $target, $container, initialTarget, pointElements, containerInfo, downPointPosition } = globalData.storingDataContainer()
 // 目标元素的状态和轮廓点的状态
-const { targetState, pointState } = defaultState()
-
+const { targetState, pointState } = globalData.defaultState
 function initGlobalData () {
   $target.value = null
   $container.value = null
@@ -72,10 +59,6 @@ function initGlobalData () {
   downPointPosition = {}
   Object.assign(targetState, { left: 0, top: 0, height: 0, width: 0, isPress: false, isLock: false })
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
-}
-function getPointValue(obj, key) {
-  if (!obj.direction) return null
-  return obj[key]
 }
 
 function useMagicDragAPI (
@@ -261,10 +244,10 @@ export function useMagicDrag(
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
-  checkParameterType(defaultOptions(), options)
+  checkParameterType(globalData.defaultOptions, options)
   checkParameterValue(options)
 
-  options = tidyOptions(mergeObject(defaultOptions(), options))
+  options = tidyOptions(mergeObject(globalData.defaultOptions, options))
   // TODO usePlugin应该提到API外面，但需要用处理后的options参数
   usePlugin(options)
   baseErrorTips(
@@ -285,7 +268,7 @@ export function testMagicDrag (
   const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
   baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
-  options = mergeObject(defaultOptions(), options)
+  options = mergeObject(globalData.defaultOptions, options)
   const { customPointClass } = options.customClass
   baseErrorTips(customPointClass.startsWith(MAGIC_DRAG), `custom class names cannot start with ${MAGIC_DRAG}, please change your class name`)
 

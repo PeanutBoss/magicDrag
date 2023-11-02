@@ -452,3 +452,8 @@ export function saveInitialData (target, initialTarget, isTest) {
 }
 
 export function todoUnMount(cb) {}
+
+export function getPointValue(obj, key) {
+	if (!obj.direction) return null
+	return obj[key]
+}

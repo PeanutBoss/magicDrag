@@ -49,15 +49,16 @@ const App = {
       gap: 10,
       customStyle: {
         tipStyle: {
-          width: '50px',
-          height: '30px',
-          lineHeight: '30px',
-          fontSize: '18px',
-          padding: '0',
-          textAlign: 'center'
+          width: '34px',
+          height: '18px',
+          backgroundColor: 'skyblue',
+          color: 'purple'
         },
         pointStyle: {
           width: '6px'
+        },
+        refLineStyle: {
+          backgroundColor: 'yellowgreen'
         }
       }
     }
