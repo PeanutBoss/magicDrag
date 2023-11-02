@@ -214,7 +214,13 @@ export function useMagicDragAPI (
     direction: toRef(stateParameter.pointState, 'direction'),
     pointIsPress: toRef(stateParameter.pointState, 'isPress'),
     pointMovementX: toRef(stateParameter.pointState, 'movementX'),
-    pointMovementY: toRef(stateParameter.pointState, 'movementY')
+    pointMovementY: toRef(stateParameter.pointState, 'movementY'),
+    getStateList() {
+      return stateManager.elementStates
+    },
+    getTargetState() {
+      return stateManager.currentState
+    }
   }
   function updateTargetPointTo(event) {
     $target.value = event.target

@@ -1,7 +1,7 @@
 import { Ref } from 'vue'
 import { MagicDragOptions } from '../common/globalData'
 
-type DomElementState = {
+export type DomElementState = {
 	element: HTMLElement
 	state: State
 }
@@ -76,9 +76,9 @@ export type State = {
 type Callback = (element: HTMLElement, state: any) => void
 
 class StateManager {
-	private elementStates: DomElementState[] = []
+	private _elementStates: DomElementState[] = []
 	private selectedElement: HTMLElement | null = null
-	private selectedState: any = null
+	private selectedState: DomElementState['state'] = null
 	private subscriptions: Record<string, Callback[]> = {}
 
 	/**
@@ -88,28 +88,31 @@ class StateManager {
 	 * @param isSetSelected 是否设置为选中状态
 	 */
 	registerElementState(element: HTMLElement, initialState: any, isSetSelected = true) {
-		this.elementStates.push({ element, state: initialState })
+		this._elementStates.push({ element, state: initialState })
 		isSetSelected && this.setCurrentElement(element)
 	}
 
 	// 获取 DOM 元素的状态
 	getElementState(element: HTMLElement) {
-		const elementState = this.elementStates.find((es) => es.element === element)
+		const elementState = this._elementStates.find((es) => es.element === element)
 		if (!elementState) throw Error('元素未注册')
 		return elementState ? elementState.state : null
 	}
 
 	// 更新 DOM 元素的状态
 	updateElementState(element: HTMLElement, newState: any) {
-		const elementState = this.elementStates.find((es) => es.element === element)
+		const elementState = this._elementStates.find((es) => es.element === element)
 		if (elementState) {
 			elementState.state = newState
 			this.notifySubscribers(element, newState)
 		}
 	}
 
+	get elementStates() {
+		return this._elementStates.slice()
+	}
   get targetState() {
-    return this.currentState.targetState
+    return this.currentState.stateParameter.targetState
   }
 
 	// 获取当前选中的 DOM 元素
@@ -123,11 +126,11 @@ class StateManager {
 	}
 
 	get size() {
-		return this.elementStates.length
+		return this._elementStates.length
 	}
 
 	get notLockState() {
-		return this.elementStates.filter(item => !item.state.globalDataParameter.initialTarget.isLock)
+		return this._elementStates.filter(item => !item.state.globalDataParameter.initialTarget.isLock)
 			.filter(item => item.state.elementParameter.privateTarget !== this.currentElement)
 			.map(m => ({ target: m.element, zIndex: m.state.globalDataParameter.initialTarget.zIndex }))
 	}

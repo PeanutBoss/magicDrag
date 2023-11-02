@@ -3,6 +3,7 @@ import { Direction } from './magicDrag'
 import { ClassName } from '../style/className'
 import { Ref, reactive, ref } from '@vue/reactivity'
 import { deepClone } from '../utils/tools'
+import { DomElementState } from "../functions/stateManager";
 
 export interface MagicDragOptions {
 	containerSelector: string
@@ -64,6 +65,8 @@ export interface MagicDragState {
 	targetIsPress: Ref<boolean>
 	pointIsPress: Ref<boolean>
 	direction: Ref<string | null>
+	getStateList: () => DomElementState[]
+	getTargetState: () => DomElementState['state']
 }
 class GlobalData {
 	private allTarget = []

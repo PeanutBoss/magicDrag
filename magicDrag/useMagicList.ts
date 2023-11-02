@@ -6,10 +6,33 @@ import { tidyOptions } from './common/functionAssist'
 import { checkParameterType, checkParameterValue } from './common/warningAssist'
 import { useMagicDragAPI } from './core'
 
+interface SelectDescribe {
+	selector: string
+	initialPosition: Record<'left' | 'top', number>
+	initialSize: Record<'width' | 'height', number>
+}
+type MagicSelector = string | HTMLElement | SelectDescribe
+
+function formatSelectors(targetSelectors: MagicSelector[]) {
+	const selectors = []
+	const initInfos = []
+	targetSelectors.forEach(magicSel => {
+		if (typeof magicSel === 'object') {
+			selectors.push((magicSel as SelectDescribe).selector)
+			initInfos.push(mergeObject(mergeObject({}, magicSel.initialPosition), magicSel.initialSize))
+			return
+		}
+		selectors.push(magicSel)
+		initInfos.push({})
+	})
+}
+
 export function useMagicList(
-	targetSelectors: string[] | HTMLElement[],
+	targetSelectors: MagicSelector[],
 	options?: MagicDragOptions
 ) {
+	// formatSelectors(targetSelectors)
+
 	const hasCorrectType = targetSelectors.some(selector => notSelectorAndHTML(selector))
 	baseErrorTips(hasCorrectType,
 		`targetSelectors receive an array of tag selectors or HTML elements,
