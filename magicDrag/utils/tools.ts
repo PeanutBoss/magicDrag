@@ -15,6 +15,10 @@ export function throttle (fn: any, delay: number, options: any = {}) {
 	}
 }
 
+export function notSelectorAndHTML(value) {
+	return typeof value !== 'string' && !(value instanceof HTMLElement)
+}
+
 export function getElement (ele: string | HTMLElement): HTMLElement {
 	if (typeof ele === 'string') {
 		return document.querySelector(ele)

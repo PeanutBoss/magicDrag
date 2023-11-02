@@ -158,7 +158,7 @@ onBeforeUnmount(state.destroy)
 
 ------
 
-### useMagicDrag
+### core
 
 接受一个dom元素或一个选择器使其可拖拽和调整大小
 
@@ -173,9 +173,9 @@ onBeforeUnmount(state.destroy)
 </template>
 
 <script setup>
-import { useMagicDrag } from 'magicDrag'
+import { core } from 'magicDrag'
 
-useMagicDrag('.box')
+core('.box')
 
 </script>
  ```
@@ -244,9 +244,9 @@ useMagicDrag('.box')
 </template>
 
 <script setup>
-import { useMagicDrag } from 'magicDrag'
+import { core } from 'magicDrag'
 
-const state = useMagicDrag(
+const state = core(
   '.box',
   {
     skill: {

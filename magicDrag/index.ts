@@ -1,2 +1,3 @@
 export { useMagicDrag } from './useMagicDrag'
-export { useMoveElement } from './useMoveElement.ts'
+export { useMoveElement } from './useMoveElement'
+export { useMagicList } from './useMagicList'

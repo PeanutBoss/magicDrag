@@ -4,9 +4,9 @@ const mergeConfig = require('webpack-merge').default
 const path = require('path')
 
 const defaultConfig = createDefaultConfig(
-  path.resolve(__dirname, '../moveExample/main.ts'),
+  path.resolve(__dirname, '../exampleMove/main.ts'),
   { path: path.resolve(__dirname, '../exampleDist') },
-  path.resolve(__dirname, '../moveExample/index.html')
+  path.resolve(__dirname, '../exampleMove/index.html')
 )
 
 module.exports = mergeConfig(defaultConfig, vueTemplateConfig)

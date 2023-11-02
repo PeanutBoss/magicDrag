@@ -9,6 +9,7 @@
     "serve": "webpack serve --config ./config/magicDrag.config.js",
     "serve:example": "webpack serve --config ./config/example.config.js",
     "serve:move": "webpack serve --config ./config/move.config.js",
+    "serve:list": "webpack serve --config ./config/list.config.js",
     "build:drag": "rollup -c rollup.config.js",
     "build:move": "webpack --config ./config/moveProduct.config.js",
     "test": "jest test"

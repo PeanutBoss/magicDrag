@@ -1,4 +1,4 @@
-import { useMagicDrag } from '../magicDrag'
+import { core } from '../magicDrag'
 import { nextTick } from 'vue'
 
 describe("base function", () => {
@@ -32,7 +32,7 @@ describe("base function", () => {
 
     element = document.getElementById('element')
 
-    targetState = useMagicDrag(element)
+    targetState = core(element)
   })
 
   it('is the mouse press down', async () => {
