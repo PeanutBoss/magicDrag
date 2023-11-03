@@ -27,7 +27,7 @@ export function getElement (ele: string | HTMLElement): HTMLElement {
 }
 
 // 合并对象，优先使用source的字段
-export function mergeObject (target, source) {
+export function mergeObject (target, source, ...rest) {
 	if (!source) return { ...target }
 	const mergedObject = {}
 	for (const key in { ...target, ...source }) {

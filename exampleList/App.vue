@@ -8,9 +8,6 @@
       <div class="box4"></div>
       <div class="box5"></div>
     </div>
-
-    <button @click="stateList">获取状态</button>
-    {{ state.targetIsPress }}
   </div>
 </template>
 
@@ -22,11 +19,14 @@ const targetSelectors = [
     initialPosition: { width: 200, height: 200 },
     initialSize: { left: 0, top: 0 }
   },
-  '.box1', '.box2', '.box3', '.box4', '.box5'
+  {
+    selector: '.box1'
+  },
+  '.box2', '.box3', '.box4', '.box5'
 ]
 
 const state = useMagicList(
-  ['.box', '.box1', '.box2', '.box3', '.box4', '.box5'],
+  targetSelectors,
   {
     minHeight: 200,
     minWidth: 200,
@@ -51,10 +51,6 @@ const state = useMagicList(
   }
 )
 
-function stateList() {
-  console.log(state.getStateList().map(m => m.state.globalDataParameter.initialTarget))
-}
-
 </script>
 
 <style scoped>
@@ -65,6 +61,7 @@ function stateList() {
 }
 .wrap {
   margin-left: 100px;
+  margin-top: 100px;
   width: 800px;
   height: 800px;
   background-color: #cccccc;

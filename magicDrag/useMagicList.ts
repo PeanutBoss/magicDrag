@@ -6,34 +6,47 @@ import { tidyOptions } from './common/functionAssist'
 import { checkParameterType, checkParameterValue } from './common/warningAssist'
 import { useMagicDragAPI } from './core'
 
-interface SelectDescribe {
+export interface SelectDescribe {
 	selector: string
 	initialPosition: Record<'left' | 'top', number>
 	initialSize: Record<'width' | 'height', number>
 }
 type MagicSelector = string | HTMLElement | SelectDescribe
 
+function preventMistakeParameter(parameter: MagicSelector[]) {
+	parameter.forEach(item => {
+		if (!notSelectorAndHTML(item)) return
+		// @ts-ignore
+		item.initialSize = item.initialSize || {}
+		// @ts-ignore
+		item.initialPosition = item.initialPosition || {}
+	})
+}
+
 function formatSelectors(targetSelectors: MagicSelector[]) {
 	const selectors = []
-	const initInfos = []
+	const initialInfos = []
 	targetSelectors.forEach(magicSel => {
 		if (typeof magicSel === 'object') {
 			selectors.push((magicSel as SelectDescribe).selector)
-			initInfos.push(mergeObject(mergeObject({}, magicSel.initialPosition), magicSel.initialSize))
+			// @ts-ignore
+			initialInfos.push(mergeObject({}, { ...magicSel.initialPosition, ...magicSel.initialSize }))
 			return
 		}
 		selectors.push(magicSel)
-		initInfos.push({})
+		initialInfos.push({})
 	})
+	return { selectors, initialInfos }
 }
 
 export function useMagicList(
 	targetSelectors: MagicSelector[],
 	options?: MagicDragOptions
 ) {
-	// formatSelectors(targetSelectors)
+	preventMistakeParameter(targetSelectors)
+	const { selectors, initialInfos } = formatSelectors(targetSelectors)
 
-	const hasCorrectType = targetSelectors.some(selector => notSelectorAndHTML(selector))
+	const hasCorrectType = selectors.some(selector => notSelectorAndHTML(selector))
 	baseErrorTips(hasCorrectType,
 		`targetSelectors receive an array of tag selectors or HTML elements,
 		but the passed targetSelectors contain the value of the unexpected type`)
@@ -47,9 +60,11 @@ export function useMagicList(
 		`custom class names cannot start with ${MAGIC_DRAG}, please change your class name`
 	)
 
+	console.log(selectors, 'selectors')
+	console.log(initialInfos, 'initialInfos')
 	let state
-	targetSelectors.forEach(selector => {
-		state = useMagicDragAPI(selector, options)
+	selectors.forEach((selector, index) => {
+		state = useMagicDragAPI(selector, mergeObject(options, { initialInfo: initialInfos[index] }))
 	})
 	return state
 }
