@@ -60,12 +60,9 @@ export function useMagicList(
 		`custom class names cannot start with ${MAGIC_DRAG}, please change your class name`
 	)
 
-	console.log(selectors, 'selectors')
-	console.log(initialInfos, 'initialInfos')
 	let state
 	selectors.forEach((selector, index) => {
 		state = useMagicDragAPI(selector, mergeObject(options, { initialInfo: initialInfos[index] }))
 	})
 	return state
 }
-

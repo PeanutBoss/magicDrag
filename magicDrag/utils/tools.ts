@@ -10,7 +10,7 @@ export function throttle (fn: any, delay: number, options: any = {}) {
 		flag = false
 		setTimeout(() => {
 			fn(...rest)
-			flag = true // 核心
+			flag = true
 		}, delay)
 	}
 }

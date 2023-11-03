@@ -7,9 +7,9 @@
 </template>
 
 <script setup>
-import { core } from "../magicDrag";
+import { useMagicDrag } from "../magicDrag";
 
-const state = core(
+const state = useMagicDrag(
   '.box',
   {
     skill: {

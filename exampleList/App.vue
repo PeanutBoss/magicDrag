@@ -16,13 +16,18 @@ import { useMagicList } from '../magicDrag'
 const targetSelectors = [
   {
     selector: '.box',
-    initialPosition: { width: 200, height: 200 },
-    initialSize: { left: 0, top: 0 }
+    initialPosition: { left: 0, top: 0 },
+    initialSize: { width: 200, height: 200 }
   },
   {
-    selector: '.box1'
+    selector: '.box1',
+    initialPosition: { left: 700, top: 0 },
+    initialSize: { width: 100, height: 100 }
   },
-  '.box2', '.box3', '.box4', '.box5'
+  {
+    selector: '.box2'
+  },
+  '.box3', '.box4', '.box5'
 ]
 
 const state = useMagicList(

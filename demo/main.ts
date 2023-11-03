@@ -1,5 +1,5 @@
 import { createApp, ref } from 'vue/dist/vue.esm-bundler.js'
-import { core } from '../magicDrag'
+import { useMagicDrag } from '../magicDrag'
 import "./style/index.scss"
 
 const imgSource = ref(null)
@@ -76,9 +76,9 @@ const App = {
         }
       }
     }
-    const state = core('.box', options1)
+    const state = useMagicDrag('.box', options1)
 
-    core('.box1', options1)
+    useMagicDrag('.box1', options1)
 
     // useMagicDrag(
     //   '.box2',
