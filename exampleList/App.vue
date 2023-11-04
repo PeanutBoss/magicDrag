@@ -17,7 +17,7 @@ const targetSelectors = [
   {
     selector: '.box',
     initialPosition: { left: 0, top: 0 },
-    initialSize: { width: 200, height: 200 }
+    initialSize: { width: 100, height: 100 }
   },
   {
     selector: '.box1',
@@ -25,9 +25,16 @@ const targetSelectors = [
     initialSize: { width: 100, height: 100 }
   },
   {
-    selector: '.box2'
+    selector: '.box2',
+    initialSize: { width: 100, height: 100 },
+    initialPosition: { left: 0, top: 700 }
   },
-  '.box3', '.box4', '.box5'
+  {
+    selector: '.box3',
+    initialPosition: { left: 700, top: 700 },
+    initialSize: { width: 100, height: 100 }
+  },
+  '.box4', '.box5'
 ]
 
 const state = useMagicList(
@@ -36,7 +43,7 @@ const state = useMagicList(
     minHeight: 200,
     minWidth: 200,
     containerSelector: '.wrap',
-    initialInfo: { left: 300, top: 500 },
+    initialInfo: { left: 300, top: 300 },
     customClass: {},
     gap: 10,
     customStyle: {
@@ -60,8 +67,6 @@ const state = useMagicList(
 
 <style scoped>
 .box {
-  width: 200px;
-  height: 200px;
   background-color: greenyellow;
 }
 .wrap {

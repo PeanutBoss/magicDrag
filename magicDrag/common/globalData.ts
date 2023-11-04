@@ -17,6 +17,7 @@ export interface MagicDragOptions {
 	showShadow?: boolean
 	showRefLine?: boolean
 	showDistance?: boolean
+	ratio?: [number, number]
   initialInfo?: {
     width?: number
     height?: number
@@ -83,8 +84,8 @@ class GlobalData {
 		showRefLine: true, // 显示参考线
 		adsorb: true, // 开启吸附功能
 		showDistance: true, // 显示组件间距
-		// pointSize: 10, // the size of the contour point - 轮廓点的大小
 		// pageHasScrollBar: false, // whether the page has a scroll bar - 页面是否有滚动条
+		ratio: [3, 4],
 		initialInfo: {
 			width: 200,
 			height: 200,

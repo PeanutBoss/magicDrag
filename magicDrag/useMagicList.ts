@@ -3,7 +3,7 @@ import { MAGIC_DRAG } from './style/className'
 import { usePlugin } from './manager'
 import globalData, { MagicDragOptions } from './common/globalData'
 import { tidyOptions } from './common/functionAssist'
-import { checkParameterType, checkParameterValue } from './common/warningAssist'
+import { checkParameterType, checkParameterValue, checkOptionSize } from './common/warningAssist'
 import { useMagicDragAPI } from './core'
 
 export interface SelectDescribe {
@@ -45,6 +45,14 @@ export function useMagicList(
 ) {
 	preventMistakeParameter(targetSelectors)
 	const { selectors, initialInfos } = formatSelectors(targetSelectors)
+
+	initialInfos.forEach(initialInfo => checkOptionSize({
+		initialInfo,
+		maxHeight: options.maxHeight,
+		minHeight: options.minHeight,
+		maxWidth: options.maxWidth,
+		minWidth: options.minWidth
+	}))
 
 	const hasCorrectType = selectors.some(selector => notSelectorAndHTML(selector))
 	baseErrorTips(hasCorrectType,

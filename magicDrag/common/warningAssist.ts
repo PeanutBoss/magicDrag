@@ -24,7 +24,7 @@ export function checkParameterValue(options: MagicDragOptions) {
   checkOptionSize(options)
   checkCustomStyle(options.customStyle)
 }
-function checkOptionSize(options: MagicDragOptions) {
+export function checkOptionSize(options: Partial<MagicDragOptions>) {
   baseErrorTips(errorSize(), 'The minimum cannot be greater than the maximum')
   baseWarnTips(lessThanMinimum(), 'The initial size cannot be less than the minimum size')
   baseWarnTips(greaterThanMaximum(), 'The initial size cannot be greater than the maximum size')

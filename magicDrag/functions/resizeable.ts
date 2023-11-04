@@ -4,7 +4,7 @@ import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
 } from '../common/magicDrag'
-import {addClassName, appendChild, createElement, setStyle, transferControl} from '../utils/tools'
+import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
 
@@ -42,7 +42,7 @@ export default class Resizeable {
     const { pointSize, customClass: { customPointClass }, customStyle: { pointStyle } } = options
     const { initialTarget } = globalDataParameter
     for (const direction in pointPosition) {
-      const point = this.createContourPoint(pointElements, { direction })
+      const point = this.createContourPoint(pointElements, direction)
       this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointStyle)
       // addClassName(point, ClassName.OutlinePoint)
       addClassName(point, customPointClass)
@@ -133,7 +133,7 @@ export default class Resizeable {
     this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
   }
 
-  createContourPoint (pointElements, { direction }) {
+  createContourPoint (pointElements, direction) {
     return pointElements[direction] || (pointElements[direction] = document.createElement('div'))
   }
 }

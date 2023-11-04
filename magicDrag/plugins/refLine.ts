@@ -1,5 +1,5 @@
 import { Plugin, State } from '../functions'
-import {mergeObject, setStyle} from '../utils/tools'
+import { setStyle } from '../utils/tools'
 import { mountAssistMethod } from '../common/functionAssist'
 import { MagicDragOptions } from '../common/globalData'
 
