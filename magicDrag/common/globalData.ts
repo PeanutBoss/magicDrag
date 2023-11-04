@@ -96,7 +96,7 @@ class GlobalData {
 			resize: true, // whether the size adjustment is supported - 是否支持大小调整
 			drag: true, // whether to support dragging - 是否支持拖动
 			refLine: true, // whether to support refLine - 是否支持参考线
-			keymap: false, // whether to support shortcut - 是否支持快捷键
+			keymap: true, // whether to support shortcut - 是否支持快捷键
 			limitDragDirection: null // restricted direction of movement - 限制移动方向
 		},
 		customClass: {

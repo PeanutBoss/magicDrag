@@ -13,6 +13,14 @@
 
 <script setup>
 import { useMagicList } from '../magicDrag'
+import { useSpecialKey } from "../magicDrag/plugins/keymap";
+
+const { shiftIsPress } = useSpecialKey()
+
+window.addEventListener('click', () => {
+  console.log(shiftIsPress.value, 'shiftIsPress')
+})
+
 const targetSelectors = [
   {
     selector: '.box',

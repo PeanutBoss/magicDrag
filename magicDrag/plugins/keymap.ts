@@ -1,4 +1,9 @@
-import { Plugin } from '../functions/pluginManager'
+import { Plugin } from '../functions'
+import { ref } from '@vue/reactivity'
+
+const shiftIsPress = ref(false)
+const altIsPress = ref(false)
+const ctrlIsPress = ref(false)
 
 const defaultShortcut = {
 	'ctrl + a': event => {
@@ -41,6 +46,7 @@ class Keymap implements Plugin {
 	}
 	init() {
 		window.addEventListener('keydown', this.bindTriggerShortcut)
+		window.addEventListener('keyup', this.getDescribeFromEvent)
 	}
 	unbind() {
 		window.removeEventListener('keydown', this.bindTriggerShortcut)
@@ -85,12 +91,19 @@ class Keymap implements Plugin {
 	}
 	// 获取键盘事件的快捷键描述
 	getDescribeFromEvent(event: KeyboardEvent) {
+		listenSpecialKey()
+
 		const describe = []
 		if (event.ctrlKey) describe.push(Keymap.CTRL)
 		if (event.shiftKey) describe.push(Keymap.SHIFT)
 		if (event.altKey) describe.push(Keymap.ALT)
 		describe.push(event.key.toUpperCase())
 		return describe.join('+')
+		function listenSpecialKey() {
+			if (event.key === 'Control') ctrlIsPress.value = event.type === 'keydown'
+			if (event.key === 'Shift') shiftIsPress.value = event.type === 'keydown'
+			if (event.key === 'Alt') altIsPress.value = event.type === 'keydown'
+		}
 	}
 	// 配置默认快捷键
 	configureShortcuts(shortcuts) {
@@ -106,3 +119,7 @@ class Keymap implements Plugin {
 }
 
 export default Keymap
+
+export function useSpecialKey() {
+	return { ctrlIsPress, shiftIsPress, altIsPress }
+}
