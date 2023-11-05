@@ -8,9 +8,9 @@ class RegionalSelection implements Plugin {
   }
   init() {
     console.log(this.container, 'this.container')
-    this.container.addEventListener('mousedown', event => {
-      console.log(event, 'event')
-    })
+    // this.container.addEventListener('mousedown', event => {
+    //   console.log(event, 'event')
+    // })
   }
   unbind() {}
 }
