@@ -8,7 +8,6 @@ class MultipleChoice implements Plugin {
   public name: string
   constructor() {
     this.name = 'multipleChecked'
-    this.init()
   }
   init() {
     this._checkedList = []

@@ -12,7 +12,7 @@ export function usePlugin(options: MagicDragOptions) {
 	options.skill.refLine && enableRefLine(tidyRefLineOptions(options))
 	options.skill.shortcut && enableShortcut()
   options.skill.multipleChoice && enableMultipleChoice()
-  options.skill.regionalSelection && enableRegionalSelection(getElement(options.containerSelector))
+  options.skill.regionalSelection && enableRegionalSelection(options.containerSelector)
 	pluginManager.installPlugin()
 }
 
@@ -41,7 +41,7 @@ function enableMultipleChoice() {
   pluginManager.registerPlugin(multipleChoice.name, multipleChoice)
 }
 
-function enableRegionalSelection(container: HTMLElement) {
+function enableRegionalSelection(container: string | HTMLElement) {
   const regionalSelection = new RegionalSelection(container)
   pluginManager.registerPlugin(regionalSelection.name, regionalSelection)
 }

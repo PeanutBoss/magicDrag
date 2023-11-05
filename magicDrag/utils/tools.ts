@@ -182,3 +182,19 @@ export function numberToStringSize(size: Record<string, number>): Record<string,
   }
   return result
 }
+
+function shuffleString(inputString: string): string {
+  const charArray = inputString.split('')
+  for (let i = charArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [charArray[i], charArray[j]] = [charArray[j], charArray[i]]
+  }
+  return charArray.join('')
+}
+
+export function generateID(): string {
+  const timestamp = shuffleString(Date.now().toString(16)) // 获取当前时间戳
+  const randomPart = Math.random() * 100000 // 生成随机数部分
+
+  return `${timestamp}${randomPart.toFixed(0)}`
+}

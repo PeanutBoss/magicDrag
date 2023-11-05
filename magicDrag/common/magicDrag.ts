@@ -1,13 +1,10 @@
 /* strong correlation functional - 强相关的功能 */
 
-import {conditionExecute, getObjectIntValue, numberToStringSize, setStyle} from '../utils/tools.ts'
+import {conditionExecute, generateID, getObjectIntValue, numberToStringSize, setStyle} from '../utils/tools'
 import {reactive} from '@vue/reactivity'
 import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 import {getTargetZIndex, TargetStatus} from "../style/className";
-import {executePluginDrag, executePluginResize} from "../plugins";
 
-const dragActions = getActionCallbacks('dragCallbacks')
-const resizeActions = getActionCallbacks('resizeCallbacks')
 const mousedownActions = getActionCallbacks('mousedownCallbacks')
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
@@ -410,7 +407,7 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
     top: 0,
     width: 0,
     height: 0,
-		// zIndex: null
+    id: generateID()
   })
 }
 

@@ -170,8 +170,7 @@ class GlobalData {
 			top: 0,
 			height: 0,
 			width: 0,
-			isPress: false,
-			isLock: false
+			isPress: false
 		})
 		this._defaultState.pointState = reactive({
 			left: 0,

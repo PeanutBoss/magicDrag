@@ -11,6 +11,9 @@ import {
   updateState, saveInitialData, showOrHideContourPoint, getPointValue
 } from './common/magicDrag'
 
+// @ts-ignore
+window.stateManager = stateManager
+
 /*
 * TODO
 *  14.resize的点可以配置显示隐藏哪几个，与各自的样式
