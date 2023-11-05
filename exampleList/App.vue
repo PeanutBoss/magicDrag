@@ -13,13 +13,13 @@
 
 <script setup>
 import { useMagicList } from '../magicDrag'
-import { useSpecialKey } from "../magicDrag/plugins/keymap";
+// import { useSpecialKey } from "../magicDrag/plugins/shortcut";
 
-const { shiftIsPress } = useSpecialKey()
-
-window.addEventListener('click', () => {
-  console.log(shiftIsPress.value, 'shiftIsPress')
-})
+// const { ctrlIsPress } = useSpecialKey()
+//
+// window.addEventListener('click', () => {
+//   console.log(ctrlIsPress.value, 'ctrlIsPress')
+// })
 
 const targetSelectors = [
   {

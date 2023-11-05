@@ -1,13 +1,15 @@
 import PluginManager from '../functions/pluginManager'
-import RefLine, { RefLineOptions } from '../plugins/refLine'
-import Keymap from '../plugins/keymap'
 import { MagicDragOptions } from '../common/globalData'
+import RefLine, { RefLineOptions } from '../plugins/refLine'
+import Shortcut from '../plugins/shortcut'
+import MultipleChoice from '../plugins/multipleChoice'
 
 export const pluginManager = new PluginManager()
 
 export function usePlugin(options: MagicDragOptions) {
 	options.skill.refLine && enableRefLine(tidyRefLineOptions(options))
-	options.skill.keymap && enableShortcut()
+	options.skill.shortcut && enableShortcut()
+  options.skill.multipleChoice && enableMultipleChoice()
 	pluginManager.installPlugin()
 }
 
@@ -27,7 +29,11 @@ function enableRefLine(options: RefLineOptions) {
 }
 
 function enableShortcut() {
-	const keymap = new Keymap()
-	pluginManager.registerPlugin(keymap.name, keymap)
+	const shortcut = new Shortcut()
+	pluginManager.registerPlugin(shortcut.name, shortcut)
 }
 
+function enableMultipleChoice() {
+  const multipleChoice = new MultipleChoice()
+  pluginManager.registerPlugin(multipleChoice.name, multipleChoice)
+}

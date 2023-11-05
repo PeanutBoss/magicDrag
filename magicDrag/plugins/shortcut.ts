@@ -32,7 +32,7 @@ const defaultShortcut = {
 	}
 }
 
-class Keymap implements Plugin {
+class Shortcut implements Plugin {
 	name: string
 	static CTRL = 'CTRL'
 	static SHIFT = 'SHIFT'
@@ -40,7 +40,7 @@ class Keymap implements Plugin {
 	private enableMap: Record<string, boolean> = {}
 	private shortcuts: Record<string, Array<{ action: (...args: any[]) => void, priority: number }>> = {}
 	constructor() {
-		this.name = 'keymap'
+		this.name = 'shortcut'
 		this.bindTriggerShortcut = this.triggerShortcut.bind(this)
 		this.configureShortcuts(defaultShortcut)
 	}
@@ -50,12 +50,12 @@ class Keymap implements Plugin {
 	}
 	unbind() {
 		window.removeEventListener('keydown', this.bindTriggerShortcut)
+    window.removeEventListener('keyup', this.getDescribeFromEvent)
 	}
 	// 注册快捷键
 	registerShortcut(shortcut: string, action: (...args: any[]) => void, options?: { priority? }) {
 		shortcut = shortcut.replaceAll(' ', '').toUpperCase()
 		shortcut = this.functionOrder(shortcut)
-		console.log(shortcut, 'shortcut')
 
 		this.enableMap[shortcut] = this.enableMap[shortcut] ?? true
 		const { priority = 0 } = options || {}
@@ -72,12 +72,12 @@ class Keymap implements Plugin {
       throw Error('+ 不可以做为快捷键操作的key，如有必要请自行实现')
     }
 		const keyList = []
-		shortcut.indexOf(Keymap.CTRL) > -1 && keyList.push(Keymap.CTRL)
-		shortcut = shortcut.replace(Keymap.CTRL, '')
-		shortcut.indexOf(Keymap.SHIFT) > -1 && keyList.push(Keymap.SHIFT)
-		shortcut = shortcut.replace(Keymap.SHIFT, '')
-		shortcut.indexOf(Keymap.ALT) > -1 && keyList.push(Keymap.ALT)
-		shortcut = shortcut.replace(Keymap.ALT, '')
+		shortcut.indexOf(Shortcut.CTRL) > -1 && keyList.push(Shortcut.CTRL)
+		shortcut = shortcut.replace(Shortcut.CTRL, '')
+		shortcut.indexOf(Shortcut.SHIFT) > -1 && keyList.push(Shortcut.SHIFT)
+		shortcut = shortcut.replace(Shortcut.SHIFT, '')
+		shortcut.indexOf(Shortcut.ALT) > -1 && keyList.push(Shortcut.ALT)
+		shortcut = shortcut.replace(Shortcut.ALT, '')
 		shortcut = shortcut.replaceAll('+', '')
 		keyList.push(shortcut)
 		return keyList.join('+')
@@ -94,9 +94,9 @@ class Keymap implements Plugin {
 		listenSpecialKey()
 
 		const describe = []
-		if (event.ctrlKey) describe.push(Keymap.CTRL)
-		if (event.shiftKey) describe.push(Keymap.SHIFT)
-		if (event.altKey) describe.push(Keymap.ALT)
+		if (event.ctrlKey) describe.push(Shortcut.CTRL)
+		if (event.shiftKey) describe.push(Shortcut.SHIFT)
+		if (event.altKey) describe.push(Shortcut.ALT)
 		describe.push(event.key.toUpperCase())
 		return describe.join('+')
 		function listenSpecialKey() {
@@ -118,7 +118,7 @@ class Keymap implements Plugin {
 	bindTriggerShortcut
 }
 
-export default Keymap
+export default Shortcut
 
 export function useSpecialKey() {
 	return { ctrlIsPress, shiftIsPress, altIsPress }

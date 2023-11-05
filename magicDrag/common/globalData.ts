@@ -36,7 +36,9 @@ export interface MagicDragOptions {
 		resize?: boolean
 		drag?: boolean
 		refLine?: boolean
-		keymap?: boolean
+		shortcut?: boolean
+    multipleChoice?: boolean
+    regionalSelection?: boolean
 		limitDragDirection?: 'X' | 'Y' | null
 	}
 	callbacks?: {
@@ -74,7 +76,7 @@ class GlobalData {
 	private allContainer = []
 	private storingData: any = {}
 	private _defaultState: any = {}
-	private _defaultOptions: any = {
+	private _defaultOptions: MagicDragOptions = {
 		containerSelector: 'body',
 		minWidth: 10, // minimum width - 最小宽度
 		minHeight: 10, // minimum height - 最小高度
@@ -96,7 +98,9 @@ class GlobalData {
 			resize: true, // whether the size adjustment is supported - 是否支持大小调整
 			drag: true, // whether to support dragging - 是否支持拖动
 			refLine: true, // whether to support refLine - 是否支持参考线
-			keymap: true, // whether to support shortcut - 是否支持快捷键
+      shortcut: true, // whether to support shortcut - 是否支持快捷键
+      multipleChoice: false, // whether multiple election is supported - 是否支持多选
+      regionalSelection: true, // whether multiple region selection is supported - 是否支持区域多选
 			limitDragDirection: null // restricted direction of movement - 限制移动方向
 		},
 		customClass: {
