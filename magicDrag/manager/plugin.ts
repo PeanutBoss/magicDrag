@@ -3,6 +3,8 @@ import { MagicDragOptions } from '../common/globalData'
 import RefLine, { RefLineOptions } from '../plugins/refLine'
 import Shortcut from '../plugins/shortcut'
 import MultipleChoice from '../plugins/multipleChoice'
+import RegionalSelection from '../plugins/regionalSelection'
+import { getElement } from '../utils/tools'
 
 export const pluginManager = new PluginManager()
 
@@ -10,6 +12,7 @@ export function usePlugin(options: MagicDragOptions) {
 	options.skill.refLine && enableRefLine(tidyRefLineOptions(options))
 	options.skill.shortcut && enableShortcut()
   options.skill.multipleChoice && enableMultipleChoice()
+  options.skill.regionalSelection && enableRegionalSelection(getElement(options.containerSelector))
 	pluginManager.installPlugin()
 }
 
@@ -36,4 +39,9 @@ function enableShortcut() {
 function enableMultipleChoice() {
   const multipleChoice = new MultipleChoice()
   pluginManager.registerPlugin(multipleChoice.name, multipleChoice)
+}
+
+function enableRegionalSelection(container: HTMLElement) {
+  const regionalSelection = new RegionalSelection(container)
+  pluginManager.registerPlugin(regionalSelection.name, regionalSelection)
 }
