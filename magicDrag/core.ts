@@ -16,7 +16,6 @@ window.stateManager = stateManager
 
 /*
 * TODO
-*  14.resize的点可以配置显示隐藏哪几个，与各自的样式
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
 *  18.目标元素的 left、top 应该是相对容器计算
 *  23.等比缩放

@@ -4,9 +4,9 @@ import {
   Direction, InitPointOption, PointPosition,
   limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
 } from '../common/magicDrag'
-import {addClassName, appendChild, setStyle, transferControl} from '../utils/tools'
+import { addClassName, appendChild, conditionExecute, setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
-import {executeActionCallbacks, getActionCallbacks} from '../plugins/contextMenu/actionMap'
+import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
 
 const resizeActions = getActionCallbacks('resizeCallbacks')
 
@@ -56,8 +56,8 @@ export default class Resizeable {
 
   pointIsPressChangeCallback (target, { initialTarget, pointState, direction }, elementParameter) {
     return newV => {
-      // 与window绑定mousedown同理，取消无用更新
       const currentTarget = this.stateManager.currentElement
+      // 与window绑定mousedown同理，取消无用更新
       if (target !== currentTarget) return
       pointState.isPress = newV
       pointState.direction = direction
@@ -108,7 +108,7 @@ export default class Resizeable {
     const {
       globalDataParameter: { initialTarget, containerInfo },
       stateParameter: { targetState, pointState },
-      optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
+      optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize, ratio },
       elementParameter: { pointElements }
     } = parameter
 
@@ -126,11 +126,47 @@ export default class Resizeable {
 
     limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
 
+    // this.sameRatio({ movementX, movementY, ...initialTarget }, { ratio, direction })
+    // console.log(movementX.value, movementY.value)
+
     _updateTargetStyle({ movementX, movementY })
 
     _updatePointPosition({ movementX, movementY })
 
     this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
+  }
+
+  standardStrategies = {
+    max(...rest) { return Math.max(...rest) },
+    min(...rest) { return Math.min(...rest) }
+  }
+
+  /**
+   * 等比缩放
+   * @param movementX x轴移动的距离
+   * @param movementY y轴移动的距离
+   * @param width resize开始前的宽度
+   * @param height resize开始前的高度
+   * @param ratio 比例
+   * @param direction 轮廓点标识
+   * @param standard 基准模式
+   */
+  sameRatio({ movementX, movementY, width, height }, { ratio, direction }, standard: 'max' | 'min'| 'x' | 'y' = 'max') {
+    const maxV = Math.max(movementX.value, movementY.value)
+    const isX = maxV === movementX.value
+    const singleDireX = ['l', 'r'].includes(direction) // 单方向横向拖动
+    const singleDireY = ['t', 'b'].includes(direction) // 单方向纵向拖动
+    if (singleDireX) {
+      const newHeight = (width + movementX.value) / ratio
+      movementY.value = newHeight - height
+    } else if (singleDireY) {
+      const newWidth = (height + movementY.value) * ratio
+      movementX.value = newWidth - width
+    } else {
+      const newHeight = conditionExecute(isX, (width + movementX.value) / ratio, width + movementX.value)
+      const newWidth = conditionExecute(!isX, (height + movementY.value) * ratio, height + movementY.value)
+      conditionExecute(isX, movementY.value = newHeight - height, movementX.value = newWidth - width)
+    }
   }
 
   createContourPoint (pointElements, direction) {
