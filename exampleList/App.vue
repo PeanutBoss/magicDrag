@@ -71,6 +71,10 @@ const state = useMagicList(
   }
 )
 
+setTimeout(() => {
+  state.todoUnMount()
+}, 3000)
+
 </script>
 
 <style scoped>

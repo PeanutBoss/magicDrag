@@ -209,7 +209,7 @@ export function showOrHideContourPoint (pointElements, isShow) {
   }
 }
 function checkIsContains (target, pointElements, targetState, stateManager, event) {
-
+	console.log(111)
   const {
     globalDataParameter: { initialTarget, downPointPosition },
     stateParameter: { pointState },
@@ -446,8 +446,6 @@ export function saveInitialData (target, initialTarget, isTest) {
 		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]
 	}
 }
-
-export function todoUnMount(cb) {}
 
 export function getPointValue(obj, key) {
 	if (!obj.direction) return null

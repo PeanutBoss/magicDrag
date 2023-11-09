@@ -44,7 +44,6 @@ export default class Resizeable {
     for (const direction in pointPosition) {
       const point = this.createContourPoint(pointElements, direction)
       this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointStyle)
-      // addClassName(point, ClassName.OutlinePoint)
       addClassName(point, customPointClass)
       appendChild(target.value.parentNode, point)
 

@@ -14,7 +14,7 @@ export default class PluginManager {
     })
   }
 
-  uninstallPlugin(name: string) {
+  uninstallPlugin() {
     this.plugins.forEach(plugin => {
       plugin.unbind()
     })

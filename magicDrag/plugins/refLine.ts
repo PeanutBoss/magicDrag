@@ -1,5 +1,5 @@
 import { Plugin, State } from '../functions'
-import { setStyle } from '../utils/tools'
+import {removeElements, setStyle} from '../utils/tools'
 import { mountAssistMethod } from '../common/functionAssist'
 import { MagicDragOptions } from '../common/globalData'
 
@@ -37,7 +37,6 @@ export default class RefLine implements Plugin {
 	private isCenterX = false
 	private isCenterY = false
 	private rectManager: MagicRect
-	private tipSize: { width: number, height: number }
 	constructor(private readonly options: RefLineOptions) {
 		this.name = 'refLine'
 	}
@@ -45,6 +44,10 @@ export default class RefLine implements Plugin {
 		this.createLines()
 		this.createTipEl()
 		this.rectManager = new MagicRect(this.options)
+	}
+	unbind() {
+		removeElements(this.lines)
+		removeElements(this.tipEls)
 	}
 	createLines() {
 		for (const key in this.lines) {
@@ -63,12 +66,6 @@ export default class RefLine implements Plugin {
 			document.body.appendChild(el)
 			this.tipEls[elKey] = el
 		}
-	}
-	unbind() {
-		for (const lineKey in this.lines) {
-			this.lines[lineKey].remove()
-		}
-		this.lines = null
 	}
 	drag({ elementParameter, stateParameter, globalDataParameter, optionParameter }: State, { movement, _updateContourPointPosition, _updateState }) {
 		const adsorbCallback = ({ top, left }) => {

@@ -69,8 +69,8 @@ export interface MagicDragState {
 	targetIsPress: Ref<boolean>
 	pointIsPress: Ref<boolean>
 	direction: Ref<string | null>
-	getStateList: () => DomElementState[]
-	getTargetState: () => DomElementState['state']
+	getStateList: () => DomElementState['state']['globalDataParameter']['initialTarget'][]
+	getTargetState: () => DomElementState['state']['globalDataParameter']['initialTarget']
 }
 class GlobalData {
 	private allTarget = []
@@ -202,3 +202,12 @@ class GlobalData {
 }
 
 export default new GlobalData()
+
+const todoUnmountCbs = []
+export function addGlobalUnmountCb(cb) {
+	todoUnmountCbs.push(cb)
+}
+export function unMountGlobalCb() {
+	todoUnmountCbs.forEach(cb => cb())
+	todoUnmountCbs.length = 0
+}

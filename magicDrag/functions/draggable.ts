@@ -3,6 +3,7 @@ import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../common/magicDrag'
 import {State, PluginManager, splitState} from './index'
+import globalData, {addGlobalUnmountCb} from '../common/globalData'
 
 export default class Draggable {
 	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager) {
@@ -19,13 +20,14 @@ export default class Draggable {
 
 		// modify the icon for the hover state - 修改悬停状态的图标
 		drag && setStyle(target.value, 'cursor', 'all-scroll')
-		const { movementX, movementY, isPress } = useMoveElement(
+		const { movementX, movementY, isPress, destroy } = useMoveElement(
 			target.value,
 			this.moveTargetCallback(dragCallback, {
 				downPointPosition, pointElements, targetState, containerInfo
 			}),
 			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop }
 		)
+		addGlobalUnmountCb(destroy)
 
 		watch(isPress, this.isPressChangeCallback(
       { ...currentState.elementParameter },

@@ -108,6 +108,13 @@ class StateManager {
 		}
 	}
 
+	clear() {
+		this._elementStates = []
+		this.selectedState = null
+		this.selectedElement = null
+		this.subscriptions = {}
+	}
+
 	get elementStates() {
 		return this._elementStates.slice()
 	}

@@ -10,7 +10,7 @@ export function insertResizeTask(task: Function) {
 
 export function stopListen() {
   window.removeEventListener('resize', executeTasks)
-  resizeTasks = null
+  resizeTasks = []
 }
 
 window.addEventListener('resize', executeTasks)

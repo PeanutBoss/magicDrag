@@ -4,7 +4,6 @@ import RefLine, { RefLineOptions } from '../plugins/refLine'
 import Shortcut from '../plugins/shortcut'
 import MultipleChoice from '../plugins/multipleChoice'
 import RegionalSelection from '../plugins/regionalSelection'
-import { getElement } from '../utils/tools'
 
 export const pluginManager = new PluginManager()
 

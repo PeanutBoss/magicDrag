@@ -4,10 +4,15 @@ import { getElement, removeElements, baseErrorTips, setStyle, numberToStringSize
 import { setInitialState, pluginManager, stateManager } from './manager'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
 import { insertResizeTask, stopListen } from './helper'
-import globalData, { MagicDragOptions, MagicDragState } from './common/globalData'
+import globalData, {
+  addGlobalUnmountCb,
+  MagicDragOptions,
+  MagicDragState,
+  unMountGlobalCb
+} from './common/globalData'
 import { fixContourExceed } from './common/functionAssist'
 import {
-  todoUnMount, blurOrFocus, updateInitialTarget, initTargetStyle,
+  blurOrFocus, updateInitialTarget, initTargetStyle,
   updateState, saveInitialData, showOrHideContourPoint, getPointValue
 } from './common/magicDrag'
 
@@ -63,19 +68,10 @@ export function useMagicDragAPI (
 
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState, stateManager)
+  // 每次都是获取到一个新闭包，需要单独保存
+  addGlobalUnmountCb(processBlurOrFocus.bind(null, $target.value, false))
 
 	nextTick(readyMagicDrag)
-
-  todoUnMount(() => {
-    // unbind the mousedown event added for window to handle the target element
-    //  解绑为 window 添加的 mousedown 事件以处理目标元素
-    processBlurOrFocus($target.value, false)
-    // the dom element is destroyed when the page is uninstalled
-    // 页面卸载时销毁 dom 元素
-    removeElements(Object.values(elementParameter.pointElements))
-    $target.value.removeEventListener('mousedown', updateTargetPointTo)
-    stopListen()
-  })
 
   function readyMagicDrag() {
     initContainer()
@@ -208,10 +204,31 @@ export function useMagicDragAPI (
     pointMovementX: toRef(stateParameter.pointState, 'movementX'),
     pointMovementY: toRef(stateParameter.pointState, 'movementY'),
     getStateList() {
-      return stateManager.elementStates
+      return stateManager.elementStates.map(m => m.state.globalDataParameter.initialTarget)
     },
     getTargetState() {
-      return stateManager.currentState
+      return stateManager.currentState.globalDataParameter.initialTarget
+    },
+    todoUnMount
+  }
+
+  function todoUnMount() {
+    // 卸载全局监听等
+    unMountGlobalCb()
+    // 解绑所有插件
+    pluginManager.uninstallPlugin()
+    // 页面卸载时销毁 dom 元素
+    removeElements(elementParameter.pointElements)
+    // 移除全局resize监听
+    stopListen()
+    // 移除所有目标元素的监听事件
+    removeListener()
+    // 清除状态信息
+    stateManager.clear()
+    function removeListener() {
+      stateManager.elementStates
+        .map(m => m.element)
+        .forEach(el => el.removeEventListener('mousedown', updateTargetPointTo))
     }
   }
   function updateTargetPointTo(event) {

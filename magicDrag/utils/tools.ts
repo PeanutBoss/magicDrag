@@ -53,10 +53,17 @@ export function conditionExecute (condition, task1, task2?) {
 	return condition ? task1 : task2
 }
 
-export function removeElements (elements: HTMLElement[]) {
-	elements.forEach(ele => {
-		ele.remove()
-	})
+export function removeElements (elements: HTMLElement[] | Record<string, HTMLElement>) {
+	if (Array.isArray(elements)) {
+		elements.forEach(ele => {
+			ele.remove()
+		})
+	} else {
+		for (const key in elements) {
+			elements[key].remove()
+		}
+	}
+	elements = null
 }
 
 export function baseErrorTips (condition, msg) {

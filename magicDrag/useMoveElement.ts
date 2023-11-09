@@ -87,7 +87,7 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 	}
 	function destroy() {
 		$ele.removeEventListener('mousedown', mouseDown)
-		window.removeEventListener('mousedown', throttleMouseMove)
+		window.removeEventListener('mousemove', throttleMouseMove)
 		window.removeEventListener('mouseup', mouseUp)
 		$ele = null
 	}
