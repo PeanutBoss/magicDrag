@@ -91,6 +91,7 @@ export function useMagicDragAPI (
   // initializes the container element - 初始化容器元素
   function initContainer () {
     saveContainerEl()
+    setContainerGrid()
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
     insertResizeTask(listenContainerSize)
     function listenContainerSize() {
@@ -152,6 +153,15 @@ export function useMagicDragAPI (
       globalDataParameter.containerInfo.height = containerHeight
       globalDataParameter.containerInfo.offsetLeft = offsetLeft
       globalDataParameter.containerInfo.offsetTop = offsetTop
+    }
+    function setContainerGrid() {
+      const gridStyleData = {
+        background: 'white',
+        backgroundImage:`linear-gradient(90deg,rgba(241,243,244,1) 10%,transparent 0),
+        linear-gradient(rgba(241,243,244,1) 10%,transparent 0)`,
+        backgroundSize: '10px 10px'
+      }
+      setStyle($container.value, gridStyleData)
     }
   }
 

@@ -24,22 +24,22 @@ import { useMagicList } from '../magicDrag'
 const targetSelectors = [
   {
     selector: '.box',
-    initialPosition: { left: 0, top: 0 },
+    initialPosition: { left: 200, top: 200 },
     initialSize: { width: 100, height: 100 }
   },
   {
     selector: '.box1',
-    initialPosition: { left: 700, top: 0 },
+    // initialPosition: { left: 700, top: 0 },
     initialSize: { width: 100, height: 100 }
   },
   {
     selector: '.box2',
     initialSize: { width: 100, height: 100 },
-    initialPosition: { left: 0, top: 700 }
+    // initialPosition: { left: 0, top: 700 }
   },
   {
     selector: '.box3',
-    initialPosition: { left: 700, top: 700 },
+    // initialPosition: { left: 700, top: 700 },
     initialSize: { width: 100, height: 100 }
   },
   '.box4', '.box5'
@@ -48,10 +48,10 @@ const targetSelectors = [
 const state = useMagicList(
   targetSelectors,
   {
-    minHeight: 200,
-    minWidth: 200,
+    minHeight: 100,
+    minWidth: 100,
     containerSelector: '.wrap',
-    initialInfo: { left: 300, top: 300 },
+    initialInfo: { left: 0, top: 0 },
     customClass: {},
     gap: 10,
     customStyle: {
@@ -82,6 +82,7 @@ const state = useMagicList(
   margin-top: 100px;
   width: 800px;
   height: 800px;
+  padding: 0 1px 1px 0;
   background-color: #cccccc;
 }
 .box1 {
