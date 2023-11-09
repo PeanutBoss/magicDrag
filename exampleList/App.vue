@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+import { onBeforeUnmount } from 'vue'
 import { useMagicList } from '../magicDrag'
 // import { useSpecialKey } from "../magicDrag/plugins/shortcut";
 
@@ -71,9 +72,7 @@ const state = useMagicList(
   }
 )
 
-setTimeout(() => {
-  state.todoUnMount()
-}, 3000)
+onBeforeUnmount(state.unMount)
 
 </script>
 

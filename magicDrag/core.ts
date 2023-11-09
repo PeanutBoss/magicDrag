@@ -209,10 +209,10 @@ export function useMagicDragAPI (
     getTargetState() {
       return stateManager.currentState.globalDataParameter.initialTarget
     },
-    todoUnMount
+    unMount
   }
 
-  function todoUnMount() {
+  function unMount() {
     // 卸载全局监听等
     unMountGlobalCb()
     // 解绑所有插件

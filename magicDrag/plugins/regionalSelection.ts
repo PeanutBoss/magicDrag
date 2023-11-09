@@ -1,6 +1,6 @@
 import { Plugin } from '../functions'
 import { nextTick } from '@vue/runtime-core'
-import { getElement } from '../utils/tools'
+import {getElement, setStyle} from '../utils/tools'
 
 /*
 * 获取容器元素可以在按下鼠标的时候获取，这个时候DOM必然已经插入完毕
@@ -8,15 +8,24 @@ import { getElement } from '../utils/tools'
 
 class RegionalSelection implements Plugin {
   name: string
+  private regionalEl = null
+  private startCoordinate = { x: 0, y: 0 }
+  private isPress = false
   constructor(private container: string | HTMLElement) {
     this.name = 'regionalSelection'
     this.bindMouseDown = this._mousedown.bind(this)
+    this.bindMouseMove = this._mouseMove.bind(this)
     this.bindMouseUp = this._mouseup.bind(this)
   }
   init() {
     nextTick(this.readyContainer.bind(this))
   }
-  unbind() {}
+  unbind() {
+    this.container = null
+    window.removeEventListener('mousedown', this.bindMouseDown)
+    window.removeEventListener('mousemove', this.bindMouseMove)
+    window.removeEventListener('mouseup', this.bindMouseUp)
+  }
   readyContainer() {
     this.container = getElement(this.container)
     window.addEventListener('mousedown', this.bindMouseDown)
@@ -25,15 +34,37 @@ class RegionalSelection implements Plugin {
   }
   _mousedown(event) {
     if (event.target !== this.container) return
-    const wrapEl = document.createElement('div')
-    wrapEl.style.position = 'absolute'
-    wrapEl.style.top = event.pageY + 'px'
-    wrapEl.style.left = event.pageX + 'px'
-    wrapEl.style.border = '1px solid aqua'
-    document.body.appendChild(wrapEl)
+    this.isPress = true
+    if (!this.regionalEl) this.regionalEl = document.createElement('div')
+    this.startCoordinate.x = event.pageX
+    this.startCoordinate.y = event.pageY
+    const regionalStyle = {
+      position: 'absolute',
+      top: event.pageY + 'px',
+      left: event.pageX + 'px',
+      border: '1px solid aqua',
+      width: '0',
+      height: '0',
+      display: 'block'
+    }
+    setStyle(this.regionalEl, regionalStyle)
+    document.body.appendChild(this.regionalEl)
   }
-  _mouseup() {}
-  _mouseMove(event) {}
+  _mouseup() {
+    if (!this.isPress) return
+    this.isPress = false
+    this.regionalEl.style.display = 'none'
+  }
+  _mouseMove(event) {
+    if (!this.isPress) return
+    const movement = {
+      x: event.pageX - this.startCoordinate.x,
+      y: event.pageY - this.startCoordinate.y
+    }
+    this.regionalEl.style.display = 'block'
+    this.regionalEl.style.width = movement.x + 'px'
+    this.regionalEl.style.height = movement.y + 'px'
+  }
   bindMouseDown
   bindMouseUp
   bindMouseMove

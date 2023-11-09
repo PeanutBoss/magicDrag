@@ -209,7 +209,6 @@ export function showOrHideContourPoint (pointElements, isShow) {
   }
 }
 function checkIsContains (target, pointElements, targetState, stateManager, event) {
-	console.log(111)
   const {
     globalDataParameter: { initialTarget, downPointPosition },
     stateParameter: { pointState },
