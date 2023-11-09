@@ -126,9 +126,6 @@ export default class Resizeable {
 
     limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
 
-    // this.sameRatio({ movementX, movementY, ...initialTarget }, { ratio, direction })
-    // console.log(movementX.value, movementY.value)
-
     _updateTargetStyle({ movementX, movementY })
 
     _updatePointPosition({ movementX, movementY })
@@ -150,6 +147,7 @@ export default class Resizeable {
    * @param ratio 比例
    * @param direction 轮廓点标识
    * @param standard 基准模式
+   * MARK 等比缩放需要修改createCoordinateStrategies，使单方向缩放时，可以更新另一个方向的尺寸
    */
   sameRatio({ movementX, movementY, width, height }, { ratio, direction }, standard: 'max' | 'min'| 'x' | 'y' = 'max') {
     const maxV = Math.max(movementX.value, movementY.value)

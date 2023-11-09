@@ -41,7 +41,6 @@ export function createCoordinateStrategies () {
 	All_DIRECTION.forEach(direction => {
 		const { hasT, hasR, hasB, hasL } = getDirectionDescription(direction)
 		strategies[direction] = ({ left, top, height, width, offsetX, offsetY }) => {
-      // TODO 如果目标元素旋转了，在这里要对 offsetX/offsetY进行处理
 			return {
 				left: conditionExecute(hasL, left + offsetX + 'px', left + 'px'),
 				top: conditionExecute(hasT, top + offsetY + 'px', top + 'px'),
@@ -287,6 +286,7 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 // updates the coordinates and dimensions of the target element
 // 更新目标元素的坐标和尺寸
 export function updateTargetStyle (target, { direction, movementX, movementY }, { targetState, initialTarget }) {
+	console.log(movementX.value, movementY.value, 'movementX.value, movementY.value')
   const pointStrategies = createCoordinateStrategies()
   // the browser calculates and updates the element style information with each frame update to avoid unnecessary calculations
   // 浏览器在每次帧更新时计算并更新元素样式信息，以避免不必要的计算
@@ -298,6 +298,7 @@ export function updateTargetStyle (target, { direction, movementX, movementY }, 
     offsetX: movementX.value,
     offsetY: movementY.value
   })
+	console.log({ ...styleData }, 'styleData')
 
 	whetherUpdateState(direction, targetState, styleData)
 
