@@ -1,6 +1,6 @@
 import { Plugin } from '../functions'
 import { nextTick } from '@vue/runtime-core'
-import {getElement, setStyle} from '../utils/tools'
+import {getElement, numberToStringSize, setStyle} from '../utils/tools'
 
 /*
 * 获取容器元素可以在按下鼠标的时候获取，这个时候DOM必然已经插入完毕
@@ -40,8 +40,6 @@ class RegionalSelection implements Plugin {
     this.startCoordinate.y = event.pageY
     const regionalStyle = {
       position: 'absolute',
-      top: event.pageY + 'px',
-      left: event.pageX + 'px',
       border: '1px solid aqua',
       width: '0',
       height: '0',
@@ -57,14 +55,29 @@ class RegionalSelection implements Plugin {
   }
   _mouseMove(event) {
     if (!this.isPress) return
-    const movement = {
-      x: event.pageX - this.startCoordinate.x,
-      y: event.pageY - this.startCoordinate.y
+    const offsetX = event.pageX - this.startCoordinate.x
+    const offsetY = event.pageY - this.startCoordinate.y
+    const regionalStyle = {
+      width: Math.abs(offsetX),
+      height: Math.abs(offsetY),
+      left: offsetX < 0 ? this.startCoordinate.x + offsetX : this.startCoordinate.x,
+      top: offsetY < 0 ? this.startCoordinate.y + offsetY : this.startCoordinate.y
     }
-    this.regionalEl.style.display = 'block'
-    this.regionalEl.style.width = movement.x + 'px'
-    this.regionalEl.style.height = movement.y + 'px'
+    setStyle(this.regionalEl, 'display', 'block')
+    setStyle(this.regionalEl, numberToStringSize(regionalStyle))
   }
+  containList(elList: HTMLElement[]) {
+    const regionalRect = this.regionalEl.getBoundingClientRect()
+    return elList.map(m => m.getBoundingClientRect())
+      .filter(rect => this._isContains(rect, regionalRect))
+  }
+  _isContains(rect, referRect) {
+    return rect.left > referRect.left
+      && rect.top > referRect.top
+      && rect.right < referRect.right
+      && rect.bottom < referRect.bottom
+  }
+
   bindMouseDown
   bindMouseUp
   bindMouseMove
