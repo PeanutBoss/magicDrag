@@ -41,6 +41,7 @@ class RegionalSelection implements Plugin {
     const regionalStyle = {
       position: 'absolute',
       border: '1px solid aqua',
+      zIndex: '88888',
       width: '0',
       height: '0',
       display: 'block'
