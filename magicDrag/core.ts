@@ -21,6 +21,7 @@ window.stateManager = stateManager
 
 /*
 * TODO
+*  * 通过globalData为一个目标元素创建一个状态对象
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
 *  18.目标元素的 left、top 应该是相对容器计算
 *  23.等比缩放
