@@ -19,7 +19,6 @@ export function useMagicDrag(
 	checkParameterValue(options)
 
 	options = tidyOptions(mergeObject(globalData.defaultOptions, options))
-	// TODO usePlugin应该提到API外面，但需要用处理后的options参数
 	usePlugin(options)
 	baseErrorTips(
 		options.customClass.customPointClass.startsWith(MAGIC_DRAG),

@@ -103,7 +103,6 @@ const limitBoundaryTasks = {
 export function createResizeLimitStrategies ({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo }) {
 	const strategies = {}
 	const leftTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
-    // TODO 如果目标元素旋转了，需要对 movementX movementY 进行处理
 		limitSizeTasks.left({ movementX, limitMinDistanceX, limitMaxDistanceX })
 		limitBoundaryTasks.left({ movementX, initialTarget })
 	}
@@ -345,7 +344,6 @@ export function updatePointPosition (target, { direction, movementX, movementY }
   // 根据新的坐标和尺寸信息设置轮廓点的位置
   const pointPosition = createParentPosition(coordinate, pointSize)
 
-  // TODO 如果目标元素旋转了
 	// pointPosition = updatePostRotateOutlinePoint({ initialTarget, downPointPosition: pointPosition }, { pointElements }, { rotate: initialTarget.rotate }) as PointPosition
 
   for (const innerDirection in pointPosition) {

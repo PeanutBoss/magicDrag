@@ -44,5 +44,3 @@ export function duplicateRemovalPlugin (plugins: Plugin[]) {
 		return hasPlugin
 	})
 }
-
-// TODO 防止手动篡改element

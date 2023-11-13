@@ -94,7 +94,7 @@ export function useMagicDragAPI (
     function listenContainerSize() {
       const oldTargetLeft = stateManager.currentState.globalDataParameter.initialTarget.left
       saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
-      // resize后更新轮廓点位置 TODO 计算所有元素信息
+      // resize后更新轮廓点位置 MARK 删除该功能
       needUpdateTargetPos(stateManager.currentState.globalDataParameter.containerInfo.width) && updateTargetPos()
 
       function needUpdateTargetPos(newContainerWidth) {
