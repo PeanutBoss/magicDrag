@@ -8,8 +8,8 @@ export function checkParameterType (defaultOptions, options = {}) {
   for (const key in defaultOptions) {
     const value = options[key]
     if (isNullOrUndefined(value)) continue
-    const originType = typeof defaultOptions[key]
-    const paramsType = typeof value
+    const originType = Array.isArray(defaultOptions[key]) ? 'array' : typeof defaultOptions[key]
+    const paramsType = Array.isArray(value) ? 'array' :  typeof value
     baseErrorTips(
       originType !== paramsType,
       `The type of options.${key} should be ${originType}, But the ${paramsType} type is passed in.`
@@ -25,7 +25,8 @@ export function checkParameterValue(options: MagicDragOptions) {
   checkCustomStyle(options.customStyle)
 }
 export function checkOptionSize(options: Partial<MagicDragOptions>) {
-  baseErrorTips(errorSize(), 'The minimum cannot be greater than the maximum')
+  baseWarnTips(errorSize(),`The maximum value cannot be less than the minimum value, and the maximum and minimum values have been replaced with each other`)
+  replaceExtremum()
   baseWarnTips(lessThanMinimum(), 'The initial size cannot be less than the minimum size')
   baseWarnTips(greaterThanMaximum(), 'The initial size cannot be greater than the maximum size')
   function lessThanMinimum() {
@@ -36,6 +37,17 @@ export function checkOptionSize(options: Partial<MagicDragOptions>) {
   }
   function errorSize() {
     return options.minWidth > options.maxWidth || options.minHeight > options.maxHeight
+  }
+  function replaceExtremum() {
+    const { minWidth, maxWidth, minHeight, maxHeight } = options
+    if (minWidth > maxWidth) {
+      options.minWidth = maxWidth
+      options.maxWidth = minWidth
+    }
+    if (minHeight > maxHeight) {
+      options.minHeight = maxHeight
+      options.maxHeight = minHeight
+    }
   }
 }
 function checkOptionPosition(initialInfo: MagicDragOptions['initialInfo']) {
