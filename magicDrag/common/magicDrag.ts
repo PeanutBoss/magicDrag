@@ -1,11 +1,9 @@
 /* strong correlation functional - 强相关的功能 */
 
-import {conditionExecute, generateID, getObjectIntValue, numberToStringSize, setStyle} from '../utils/tools'
 import {reactive} from '@vue/reactivity'
-import { executeActionCallbacks, getActionCallbacks } from '../plugins/contextMenu/actionMap'
-import {getTargetZIndex, TargetStatus} from "../style/className";
-
-const mousedownActions = getActionCallbacks('mousedownCallbacks')
+import {conditionExecute, generateID, getObjectIntValue, numberToStringSize, setStyle} from '../utils/tools'
+import {getTargetZIndex, TargetStatus} from '../style/className'
+import {MagicDragOptions} from './globalData'
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
 interface DirectionDescription {
@@ -36,7 +34,7 @@ export function getDirectionDescription (direction: Direction):DirectionDescript
 
 // create a strategy to move each contour point to update the coordinates and dimensions of the target element
 // 创建移动各个轮廓点更新目标元素坐标与尺寸信息的策略
-export function createCoordinateStrategies () {
+export function createCoordinateStrategies() {
 	const strategies = {}
 	All_DIRECTION.forEach(direction => {
 		const { hasT, hasR, hasB, hasL } = getDirectionDescription(direction)
@@ -233,9 +231,6 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 
   // 设置当前选中的target
 	stateManager.setCurrentElement(target)
-  // 按下鼠标时更新轮廓点位置信息
-  const isContinue = executeActionCallbacks(mousedownActions, stateManager, 'beforeCallback')
-  if (isContinue === false) return
 
   const pointPosition = skill.resize && updatePointPosition(
     target,
@@ -253,8 +248,6 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
   showOrHideContourPoint(pointElements, true)
   // 设置选中元素的层级
   setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
-
-  executeActionCallbacks(mousedownActions, stateManager, 'afterCallback')
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
@@ -431,7 +424,7 @@ export function initTargetStyle (target, size, position) {
 
 // Saves the initial data of the target element
 // 保存目标元素的初始化数据
-export function saveInitialData (target, initialTarget, isTest) {
+export function saveInitialData (target, initialTarget, isTest = false) {
 	// 直接获取相对于父元素的坐标
 	const rect = {
 		left: isTest ? parseInt(target.style.left) : target.offsetLeft,
@@ -447,4 +440,35 @@ export function saveInitialData (target, initialTarget, isTest) {
 export function getPointValue(obj, key) {
 	if (!obj.direction) return null
 	return obj[key]
+}
+
+// 轮廓点超出body不显示滚动条
+export function fixContourExceed() {
+	document.body.style.overflow = 'hidden'
+}
+
+// 为参考线、距离提示添加辅助方法
+export function mountAssistMethod(element: HTMLElement) {
+	element.show = function(coordinate) {
+		if (coordinate) {
+			this.style.width = coordinate.width + 'px'
+			this.style.height = coordinate.height + 'px'
+			this.style.left = coordinate.left + 'px'
+			this.style.top = coordinate.top + 'px'
+		}
+		this.style.display = 'block'
+	}
+	element.hide = function() {
+		this.style.display = 'none'
+	}
+	element.isShow = function() {
+		return this.style.display !== 'none'
+	}
+}
+
+// 整理参数
+export function tidyOptions(options: MagicDragOptions) {
+	// pointSize的优先级高于pointStyle.width
+	options.pointSize = options.pointSize || parseInt(options.customStyle.pointStyle.width) || parseInt(options.customStyle.pointStyle.height)
+	return options
 }

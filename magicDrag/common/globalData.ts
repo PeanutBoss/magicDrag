@@ -1,9 +1,9 @@
 /* Global variable correlation - 全局变量相关 */
+import { Ref, reactive, ref } from '@vue/reactivity'
 import { Direction } from './magicDrag'
 import { ClassName } from '../style/className'
-import { Ref, reactive, ref } from '@vue/reactivity'
 import { deepClone } from '../utils/tools'
-import { DomElementState } from "../functions/stateManager";
+import { DomElementState } from '../functions/stateManager'
 
 export interface MagicDragOptions {
 	containerSelector: string

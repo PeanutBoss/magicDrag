@@ -1,6 +1,6 @@
 import { Plugin, State } from '../functions'
 import {removeElements, setStyle} from '../utils/tools'
-import { mountAssistMethod } from '../common/functionAssist'
+import { mountAssistMethod } from '../common/magicDrag'
 import { MagicDragOptions } from '../common/globalData'
 
 declare global {

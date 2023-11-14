@@ -10,7 +10,7 @@ import globalData, {
   MagicDragState,
   unMountGlobalCb
 } from './common/globalData'
-import { fixContourExceed } from './common/functionAssist'
+import { fixContourExceed } from './common/magicDrag'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle,
   updateState, saveInitialData, showOrHideContourPoint, getPointValue
@@ -172,7 +172,7 @@ export function useMagicDragAPI (
     // 初始化目标元素样式信息
     initTargetStyle($target.value, posRelativeToContainer().size, posRelativeToContainer().position)
     // 初始化
-    saveInitialData($target.value, globalDataParameter.initialTarget, TEST)
+    saveInitialData($target.value, globalDataParameter.initialTarget)
     // 初始化结束后更新状态
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息

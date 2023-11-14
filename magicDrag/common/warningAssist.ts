@@ -72,9 +72,9 @@ function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
   checkTipStyle(styles.tipStyle)
   fixTipStyle(styles.tipStyle)
   function checkPointStyle(pointStyle: MagicDragOptions['customStyle']['pointStyle']) {
-    const unitRight = pointStyle?.width && /^\d+px$/.test(pointStyle.width)
-      && pointStyle?.height && /^\d+px$/.test(pointStyle.height)
-    baseErrorTips(!unitRight,
+    const unitError = pointStyle?.width && !/^\d+px$/.test(pointStyle.width)
+      || pointStyle?.height && !/^\d+px$/.test(pointStyle.height)
+    baseErrorTips(unitError,
       'The dimensions of the outline points are supported only in px units.')
     baseWarnTips(pointStyle?.position && pointStyle.position !== 'absolute',
       'PointStyle.position the expected value is absolute and is automatically modified.')

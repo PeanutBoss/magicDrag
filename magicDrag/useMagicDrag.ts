@@ -1,10 +1,10 @@
-import globalData, {MagicDragOptions} from "./common/globalData";
-import {baseErrorTips, mergeObject} from "./utils/tools";
-import {checkParameterType, checkParameterValue} from "./common/warningAssist";
-import {tidyOptions} from "./common/functionAssist";
-import {usePlugin} from "./manager";
-import {MAGIC_DRAG} from "./style/className";
-import {useMagicDragAPI} from "./core";
+import globalData, {MagicDragOptions} from './common/globalData'
+import {baseErrorTips, mergeObject} from './utils/tools'
+import {checkParameterType, checkParameterValue} from './common/warningAssist'
+import {tidyOptions} from './common/magicDrag'
+import {usePlugin} from './manager'
+import {MAGIC_DRAG} from './style/className'
+import {useMagicDragAPI} from './core'
 
 export function useMagicDrag(
 	targetSelector: string | HTMLElement,

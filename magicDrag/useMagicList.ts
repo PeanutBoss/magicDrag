@@ -2,7 +2,7 @@ import { mergeObject, baseErrorTips, notSelectorAndHTML } from './utils/tools'
 import { MAGIC_DRAG } from './style/className'
 import { usePlugin } from './manager'
 import globalData, { MagicDragOptions } from './common/globalData'
-import { tidyOptions } from './common/functionAssist'
+import { tidyOptions } from './common/magicDrag'
 import { checkParameterType, checkParameterValue, checkOptionSize } from './common/warningAssist'
 import { useMagicDragAPI } from './core'
 

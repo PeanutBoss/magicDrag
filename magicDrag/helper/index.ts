@@ -19,8 +19,12 @@ export function useWatchData(data, cb) {
 	})
 }
 
-export function watchIsPress(callback) {
-	window.addEventListener('mouseup', callback.bind(null, false))
-	window.addEventListener('mousedown', callback.bind(null, true))
+export function memoize(fn) {
+	const cache = {}
+	return function () {
+		if (cache[fn.name]) return cache[fn.name]
+		cache[fn.name] = fn()
+		return cache[fn.name]
+	}
 }
 
