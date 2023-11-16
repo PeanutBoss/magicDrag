@@ -1,8 +1,8 @@
 import { watch } from '@vue/runtime-core'
 import { State, PluginManager } from './index'
 import {
-  Direction, InitPointOption, PointPosition,
-  limitTargetResize, setPosition, updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
+  Direction, InitPointOption, createParentPosition, limitTargetResize, setPosition,
+  updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement
 } from '../common/magicDrag'
 import { addClassName, appendChild, conditionExecute, setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
@@ -16,22 +16,8 @@ export default class Resizeable {
   }
 
   init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
-    const pointPosition = this.createParentPosition(globalDataParameter.initialTarget, optionParameter.pointSize)
+    const pointPosition = createParentPosition(globalDataParameter.initialTarget, optionParameter.pointSize)
     this.initContourPoints(elementParameter, stateParameter, globalDataParameter, optionParameter, { pointPosition })
-  }
-
-  createParentPosition ({ left, top, width, height }, pointSize: number): PointPosition {
-    const halfPointSize = pointSize / 2
-    return {
-      lt: [left - halfPointSize, top - halfPointSize, 'nw-resize'],
-      lb: [left - halfPointSize, top + height - halfPointSize, 'ne-resize'],
-      rt: [left + width - halfPointSize, top - halfPointSize, 'ne-resize'],
-      rb: [left + width - halfPointSize, top + height - halfPointSize, 'nw-resize'],
-      t: [left + width / 2 - halfPointSize, top - halfPointSize, 'n-resize', 'X'],
-      b: [left + width / 2 - halfPointSize, top + height - halfPointSize, 'n-resize', 'X'],
-      l: [left - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y'],
-      r: [left + width - halfPointSize, top + height / 2 - halfPointSize, 'e-resize', 'Y']
-    }
   }
 
   // 初始化轮廓点
@@ -107,7 +93,7 @@ export default class Resizeable {
     const {
       globalDataParameter: { initialTarget, containerInfo },
       stateParameter: { targetState, pointState },
-      optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize, ratio },
+      optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
       elementParameter: { pointElements }
     } = parameter
 

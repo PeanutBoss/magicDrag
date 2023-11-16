@@ -205,3 +205,16 @@ export function generateID(): string {
 
   return `${timestamp}${randomPart.toFixed(0)}`
 }
+
+export function memoize(fn) {
+	if (!fn.name) {
+		console.warn('Anonymous functions cannot be taken as arguments')
+		return fn
+	}
+	const cache = {}
+	return function () {
+		if (cache[fn.name]) return cache[fn.name]
+		cache[fn.name] = fn()
+		return cache[fn.name]
+	}
+}
