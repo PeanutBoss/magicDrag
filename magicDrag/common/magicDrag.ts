@@ -99,7 +99,7 @@ const limitBoundaryTasks = {
 }
 // create a policy to limit the minimum size when resizing the target
 // 创建调整目标大小时限制最小尺寸的策略
-function createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo }) {
+export function createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo }) {
 	const strategies = {}
 	const leftTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
 		limitSizeTasks.left({ movementX, limitMinDistanceX, limitMaxDistanceX })
@@ -370,6 +370,7 @@ export function updatePointPosition (target, { direction, movementX, movementY }
 export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight }) {
   // a policy to limit the minimum size when resizing a target
   // 调整目标大小时限制最小尺寸的策略
+	// TODO 缓存优化
   const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
 }
