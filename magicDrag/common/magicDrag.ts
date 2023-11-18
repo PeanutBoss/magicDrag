@@ -157,16 +157,18 @@ export function createPositionStrategies () {
 export const memoizeCreatePositionStrategies = memoize(createPositionStrategies)
 
 export type PointPosition = {
-	[key in Direction]: [number, number, string?, ('X' | 'Y')?]
+	// 										left		top			cursor	limitDirection
+	[key in Direction]?: [number, number, string?, ('X' | 'Y')?]
 }
 // set element position
 // 设置元素坐标信息
-export function setPosition (point: HTMLElement, pointPosition: PointPosition, direction: Direction) {
+export function setPosition(point: HTMLElement, pointPosition: PointPosition, direction: Direction) {
 	setStyle(point, 'left', pointPosition[direction][0] + 'px')
 	setStyle(point, 'top', pointPosition[direction][1] + 'px')
 }
 
-export function createParentPosition ({ left, top, width, height }, pointSize: number): PointPosition {
+// 根据目标元素的尺寸、位置信息和轮廓点尺寸生成各个轮廓点的位置信息
+export function createParentPosition ({ left, top, width, height }, pointSize: number) {
 	const halfPointSize = pointSize / 2
 	return {
 		lt: [left - halfPointSize, top - halfPointSize, 'nw-resize'],

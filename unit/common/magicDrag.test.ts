@@ -5,7 +5,11 @@ import {
 	memoizeCreateCoordinateStrategies,
 	createPositionStrategies,
 	memoizeCreatePositionStrategies,
-	createResizeLimitStrategies
+	createResizeLimitStrategies,
+	createParentPosition,
+	setPosition,
+	updateState,
+	updateInitialTarget
 } from '../../magicDrag/common/magicDrag'
 
 describe('Drag and drop related helper functions.', () => {
@@ -55,7 +59,7 @@ describe('Drag and drop related helper functions.', () => {
 		expect(rbData).toEqual({ left: 100, top: 100, width: 250, height: 250 })
 	})
 
-	it('调整大小时对最大和最小尺寸的限制策略', () => {
+	it('The policy for limiting the maximum and minimum sizes when resizing', () => {
 		// 允许的最小尺寸为 100 * 100，允许的最大尺寸为 200 * 200
 		const limitParameters = {
 			minWidth: 100,
@@ -84,7 +88,7 @@ describe('Drag and drop related helper functions.', () => {
 		expect(movement.movementY.value).toBe(-60)
 	})
 
-	it('调整大小时超出容器范围的限制策略', () => {
+	it('Resize limits policies that exceed container scope', () => {
 		// 允许的最小尺寸为 100 * 100，允许的最大尺寸为 1000 * 1000
 		const limitParameters = {
 			minWidth: 100,
@@ -111,5 +115,34 @@ describe('Drag and drop related helper functions.', () => {
 		// 分别向右、向下移动 40px、40px 后，就会抵达容器边界
 		expect(movement.movementX.value).toBe(40)
 		expect(movement.movementY.value).toBe(40)
+	})
+})
+
+describe('Some tool methods', () => {
+	it('根据元素尺寸和位置信息获取改元素轮廓点的位置信息', () => {
+		const posData = createParentPosition({ left: 50, top: 70, width: 100, height: 500 }, 5)
+		expect(JSON.stringify(posData)).toBe('{"lt":[47.5,67.5,"nw-resize"],"lb":[47.5,567.5,"ne-resize"],"rt":[147.5,67.5,"ne-resize"],"rb":[147.5,567.5,"nw-resize"],"t":[97.5,67.5,"n-resize","X"],"b":[97.5,567.5,"n-resize","X"],"l":[47.5,317.5,"e-resize","Y"],"r":[147.5,317.5,"e-resize","Y"]}')
+	})
+
+	it('Set position information', () => {
+		const dom = { style: {} } as HTMLElement
+		setPosition(dom, { lt: [10, 20] }, 'lt')
+		expect(dom.style.left).toBe('10px')
+		expect(dom.style.top).toBe('20px')
+	})
+
+	it('A polymorphic method for updating the state of an object', () => {
+		const state: any = { name: '', size: 0 }
+		updateState(state, { name: 'state', size: 5 })
+		updateState(state, 'length', 3)
+		expect(state.name).toBe('state')
+		expect(state.size).toBe(5)
+		expect(state.length).toBe(3)
+	})
+
+	it('Updates or gets information that describes the initial state of an element', () => {
+		const { id, ...rest } = updateInitialTarget()
+		expect(rest).toEqual({ left: 0, top: 0, height: 0, width: 0 })
+		expect(typeof id).toBe('string')
 	})
 })
