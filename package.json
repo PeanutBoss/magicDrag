@@ -12,7 +12,7 @@
     "serve:list": "webpack serve --config ./config/list.config.js",
     "build:drag": "rollup -c rollup.config.js",
     "build:move": "webpack --config ./config/moveProduct.config.js",
-    "test": "jest unit"
+    "unit": "jest unit"
   },
   "repository": {
     "type": "git",

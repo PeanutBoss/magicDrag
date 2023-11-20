@@ -82,15 +82,15 @@ const limitSizeTasks = {
 }
 // 限制目标元素的移动边界
 const limitBoundaryTasks = {
-	left ({ movementX, initialTarget }) {
-		movementX.value + initialTarget.left <= 0 && (movementX.value = -initialTarget.left)
+	left ({ movementX, initialTarget, containerInfo }) {
+		movementX.value + initialTarget.left - containerInfo.offsetLeft <= 0 && (movementX.value = containerInfo.offsetLeft - initialTarget.left)
 	},
 	right ({ movementX, initialTarget, containerInfo }) {
 		movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width + containerInfo.offsetLeft &&
 		(movementX.value = containerInfo.width - initialTarget.left - initialTarget.width + containerInfo.offsetLeft)
 	},
-	top ({ movementY, initialTarget }) {
-		movementY.value + initialTarget.top <= 0 && (movementY.value = -initialTarget.top)
+	top ({ movementY, initialTarget, containerInfo }) {
+		movementY.value + initialTarget.top - containerInfo.offsetTop <= 0 && (movementY.value = containerInfo.offsetTop - initialTarget.top)
 	},
 	bottom ({ movementY, initialTarget, containerInfo }) {
 		movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height + containerInfo.offsetTop &&
@@ -103,11 +103,11 @@ export function createResizeLimitStrategies({ minWidth, minHeight, maxWidth, max
 	const strategies = {}
 	const leftTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
 		limitSizeTasks.left({ movementX, limitMinDistanceX, limitMaxDistanceX })
-		limitBoundaryTasks.left({ movementX, initialTarget })
+		limitBoundaryTasks.left({ movementX, initialTarget, containerInfo })
 	}
 	const topTask = (movementY, limitMinDistanceY, limitMaxDistanceY) => {
 		limitSizeTasks.top({ movementY, limitMinDistanceY, limitMaxDistanceY })
-		limitBoundaryTasks.top({ movementY, initialTarget })
+		limitBoundaryTasks.top({ movementY, initialTarget, containerInfo })
 	}
 	const bottomTask = (movementY, limitMinDistanceY, limitMaxDistanceY) => {
 		limitSizeTasks.bottom({ movementY, limitMinDistanceY, limitMaxDistanceY })

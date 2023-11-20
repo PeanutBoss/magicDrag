@@ -9,4 +9,4 @@ const defaultConfig = createDefaultConfig(
   path.resolve(__dirname, '../exampleDrag/index.html')
 )
 
-module.exports = mergeConfig(defaultConfig, vueTemplateConfig)
+module.exports = mergeConfig(defaultConfig, vueTemplateConfig, { devServer: { port: 9002, open: true, hot: true } })

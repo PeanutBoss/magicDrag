@@ -13,7 +13,7 @@ const state = useMagicDrag(
   '.box',
   {
     skill: {
-      resize: false, // 禁用放大缩小功能
+      resize: true, // 禁用放大缩小功能
       limitDragDirection: '' // 禁止X轴方向拖拽
     },
     callbacks: {

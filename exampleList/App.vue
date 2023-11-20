@@ -51,6 +51,8 @@ const state = useMagicList(
   {
     minHeight: 100,
     minWidth: 100,
+    maxWidth: 300,
+    maxHeight: 300,
     containerSelector: '.wrap',
     initialInfo: { left: 0, top: 0 },
     customClass: {},
