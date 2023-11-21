@@ -3,7 +3,6 @@ import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle, numberToStringSize } from './utils/tools'
 import { setInitialState, pluginManager, stateManager } from './manager'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
-import { insertResizeTask, stopListen } from './helper'
 import globalData, {
   addGlobalUnmountCb,
   MagicDragOptions,
@@ -90,33 +89,6 @@ export function useMagicDragAPI (
     saveContainerEl()
     setContainerGrid()
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
-    insertResizeTask(listenContainerSize)
-    function listenContainerSize() {
-      const oldTargetLeft = stateManager.currentState.globalDataParameter.initialTarget.left
-      saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
-      // resize后更新轮廓点位置 MARK 删除该功能
-      needUpdateTargetPos(stateManager.currentState.globalDataParameter.containerInfo.width) && updateTargetPos()
-
-      function needUpdateTargetPos(newContainerWidth) {
-        const targetRightSide = oldTargetLeft + stateManager.currentState.globalDataParameter.initialTarget.width
-        // resize后目标元素如果会被遮挡就需要更新位置
-        return targetRightSide > newContainerWidth
-      }
-      function newLeft(newContainerWidth) {
-        // resize后的容器尺寸 - 目标元素宽度
-        const resizeAfterLeft = newContainerWidth - stateManager.currentState.globalDataParameter.initialTarget.width
-        return resizeAfterLeft >= 0 ? resizeAfterLeft : 0
-      }
-      function updateTargetPos() {
-        updateInitialTarget(
-          stateManager.currentState.globalDataParameter.initialTarget,
-          { ...stateManager.currentState.globalDataParameter.initialTarget, left: newLeft(stateManager.currentState.globalDataParameter.containerInfo.width) }
-        )
-        setStyle(stateManager.currentElement, numberToStringSize(stateManager.currentState.globalDataParameter.initialTarget))
-        // 隐藏轮廓点
-        showOrHideContourPoint(stateManager.currentState.elementParameter.pointElements, false)
-      }
-    }
     function saveContainerEl() {
       elementParameter.privateContainer = $container.value = getElement(containerSelector)
       allContainer.push(elementParameter.privateContainer)
@@ -220,8 +192,6 @@ export function useMagicDragAPI (
     pluginManager.uninstallPlugin()
     // 页面卸载时销毁 dom 元素
     removeElements(elementParameter.pointElements)
-    // 移除全局resize监听
-    stopListen()
     // 移除所有目标元素的监听事件
     removeListener()
     // 清除状态信息
