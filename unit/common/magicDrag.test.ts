@@ -9,7 +9,8 @@ import {
 	createParentPosition,
 	setPosition,
 	updateState,
-	updateInitialTarget
+	updateInitialTarget,
+	updatePointPosition
 } from '../../magicDrag/common/magicDrag'
 
 describe('Drag and drop related helper functions.', () => {
@@ -119,6 +120,7 @@ describe('Drag and drop related helper functions.', () => {
 })
 
 describe('Some tool methods', () => {
+
 	it('根据元素尺寸和位置信息获取改元素轮廓点的位置信息', () => {
 		const posData = createParentPosition({ left: 50, top: 70, width: 100, height: 500 }, 5)
 		expect(JSON.stringify(posData)).toBe('{"lt":[47.5,67.5,"nw-resize"],"lb":[47.5,567.5,"ne-resize"],"rt":[147.5,67.5,"ne-resize"],"rb":[147.5,567.5,"nw-resize"],"t":[97.5,67.5,"n-resize","X"],"b":[97.5,567.5,"n-resize","X"],"l":[47.5,317.5,"e-resize","Y"],"r":[147.5,317.5,"e-resize","Y"]}')
@@ -144,5 +146,32 @@ describe('Some tool methods', () => {
 		const { id, ...rest } = updateInitialTarget()
 		expect(rest).toEqual({ left: 0, top: 0, height: 0, width: 0 })
 		expect(typeof id).toBe('string')
+	})
+
+	it.skip('调整大小后，更新轮廓点的位置信息', () => {
+		const initialTarget = { width: 100, height: 100, top: 20, left: 20 }
+		const pointElements = createPointElements()
+		const pointState = createPointState()
+		// 尺寸为100 * 100，在 20, 20 位置的元素以左上角为基点，在x和y轴方向各缩小了10px
+		updatePointPosition(
+			{ direction: 'lt', movementX: 10, movementY: 10 },
+			{ initialTarget, pointElements, pointSize: 10, pointState }
+		)
+		console.log(pointElements)
+		console.log(pointState)
+		function createPointElements() {
+			const pointElements = {};
+				['l', 't', 'r', 'b', 'lt', 'lb', 'rt', 'rb'].forEach(direction => {
+				pointElements[direction] = document.createElement('div')
+			})
+			return pointElements
+		}
+		function createPointState() {
+			const pointState = {};
+			['l', 't', 'r', 'b', 'lt', 'lb', 'rt', 'rb'].forEach(direction => {
+				pointState[direction] = 0
+			})
+			return pointState
+		}
 	})
 })

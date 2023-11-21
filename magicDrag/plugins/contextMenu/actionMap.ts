@@ -100,7 +100,6 @@ export const actionMap: ActionMap = {
 			targetState.width += scaleSize.x
 			targetState.height += scaleSize.y
 			updatePointPosition(
-				privateTarget,
 				{ direction: 'rb', movementX: scaleSize.x, movementY: scaleSize.y },
 				{ initialTarget, pointElements, pointSize: 10, pointState },
 				{ excludeCurPoint: false }
@@ -129,7 +128,6 @@ export const actionMap: ActionMap = {
 			targetState.width -= scaleSize.x
 			targetState.height -= scaleSize.y
 			updatePointPosition(
-				privateTarget,
 				{ direction: 'rb', movementX: -scaleSize.x, movementY: -scaleSize.y },
 				{ initialTarget, pointElements, pointSize, pointState },
 				{ excludeCurPoint: false }

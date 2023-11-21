@@ -38,6 +38,7 @@
     "jest-environment-jsdom": "^29.6.4",
     "rollup": "^4.1.0",
     "rollup-plugin-terser": "^7.0.2",
+    "text-encoding": "^0.7.0",
     "ts-jest": "^29.1.1",
     "ts-loader": "^9.4.4",
     "tslib": "^2.6.2",

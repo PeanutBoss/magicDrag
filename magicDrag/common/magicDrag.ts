@@ -238,7 +238,6 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 
 	// skill.resize关闭时不需要显示轮廓点，就不需要更新位置
   const pointPosition = skill.resize && updatePointPosition(
-    target,
     { direction: "t", movementX: 0, movementY: 0 },
     { initialTarget, pointElements, pointSize, pointState },
     { excludeCurPoint: false, updateDirection: false }
@@ -331,7 +330,7 @@ function whetherUpdateState (direction, targetState, newState) {
  * excludeCurPoint: 是否排除当前轮廓点（例如按下左下角轮廓点调整大小时，其他轮廓点的坐标是根据这个轮廓点的移动信息更新的，因此不需要更新这个轮廓点的坐标）
  * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
  */
-export function updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
+export function updatePointPosition({ direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = memoizeCreatePositionStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used

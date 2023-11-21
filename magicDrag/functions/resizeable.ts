@@ -106,7 +106,7 @@ export default class Resizeable {
       updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
     }
     const _updatePointPosition = ({ movementX, movementY }) => {
-      updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
+      updatePointPosition({ direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
     }
 
     limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
