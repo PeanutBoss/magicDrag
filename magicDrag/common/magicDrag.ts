@@ -239,7 +239,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 	// skill.resize关闭时不需要显示轮廓点，就不需要更新位置
   const pointPosition = skill.resize && updatePointPosition(
     target,
-    { direction: "t", movementX: { value: 0 }, movementY: { value: 0 } },
+    { direction: "t", movementX: 0, movementY: 0 },
     { initialTarget, pointElements, pointSize, pointState },
     { excludeCurPoint: false, updateDirection: false }
   )
@@ -281,7 +281,7 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 /* movePoint */
 // updates the coordinates and dimensions of the target element
 // 更新目标元素的坐标和尺寸
-export function updateTargetStyle (target, { direction, movementX, movementY }, { targetState, initialTarget }) {
+export function updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget }) {
   const pointStrategies = memoizeCreateCoordinateStrategies()
   // the browser calculates and updates the element style information with each frame update to avoid unnecessary calculations
   // 浏览器在每次帧更新时计算并更新元素样式信息，以避免不必要的计算
@@ -290,8 +290,8 @@ export function updateTargetStyle (target, { direction, movementX, movementY }, 
     top: initialTarget.top,
     width: initialTarget.width,
     height: initialTarget.height,
-    offsetX: movementX.value,
-    offsetY: movementY.value
+    offsetX: movementX,
+    offsetY: movementY
   })
 
 	whetherUpdateState(direction, targetState, styleData)
@@ -331,18 +331,16 @@ function whetherUpdateState (direction, targetState, newState) {
  * excludeCurPoint: 是否排除当前轮廓点（例如按下左下角轮廓点调整大小时，其他轮廓点的坐标是根据这个轮廓点的移动信息更新的，因此不需要更新这个轮廓点的坐标）
  * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
  */
-export function updatePointPosition (target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
+export function updatePointPosition(target, { direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = memoizeCreatePositionStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
   // 获取目标元素的最新坐标和尺寸信息。使用不同的策略计算不同点的坐标和尺寸
-  const coordinate = paramStrategies[direction]({ ...initialTarget, movementX: movementX.value, movementY: movementY.value })
+  const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
   // set the position of the contour points based on the new coordinates and dimension information
   // 根据新的坐标和尺寸信息设置轮廓点的位置
   const pointPosition = createParentPosition(coordinate, pointSize)
-
-	// pointPosition = updatePostRotateOutlinePoint({ initialTarget, downPointPosition: pointPosition }, { pointElements }, { rotate: initialTarget.rotate }) as PointPosition
 
   for (const innerDirection in pointPosition) {
     // there is no need to update the current drag point

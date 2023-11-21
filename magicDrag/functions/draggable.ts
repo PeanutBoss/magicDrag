@@ -47,6 +47,13 @@ export default class Draggable {
 			const parameter = this.stateManager.currentState
 			const initialTarget = parameter.globalDataParameter.initialTarget
 
+			const _updateContourPointPosition = movement => {
+				updateContourPointPosition(downPointPosition, movement, pointElements)
+			}
+			const _updateState = movement => {
+				updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
+			}
+
 			// Wrap the action to move the target element as a separate new function, and if the user defines a callback
 			// use moveTargetAction as an argument to that callback
 			// 将移动目标元素的操作包装为单独新的函数,如果用户有定义回调，则将moveTargetAction作为这个回调的参数
@@ -68,13 +75,6 @@ export default class Draggable {
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
 			this.plugins.callExtensionPoint('drag', parameter, { movement, _updateContourPointPosition, _updateState })
-
-			function _updateContourPointPosition (movement) {
-				updateContourPointPosition(downPointPosition, movement, pointElements)
-			}
-			function _updateState(movement) {
-				updateState(targetState, { left: initialTarget.left + movement.x, top: initialTarget.top + movement.y })
-			}
 		}
 	}
 

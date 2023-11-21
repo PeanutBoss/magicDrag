@@ -111,9 +111,9 @@ export default class Resizeable {
 
     limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
 
-    _updateTargetStyle({ movementX, movementY })
+    _updateTargetStyle({ movementX: movementX.value, movementY: movementY.value })
 
-    _updatePointPosition({ movementX, movementY })
+    _updatePointPosition({ movementX: movementX.value, movementY: movementY.value })
 
     this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
   }

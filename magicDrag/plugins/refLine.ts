@@ -80,8 +80,8 @@ export default class RefLine implements Plugin {
 		const adsorbCallback = ({ top, left }) => {
 			movementX.value -= left
 			movementY.value -= top
-			_updateTargetStyle({ movementX, movementY })
-			_updatePointPosition({ movementX, movementY })
+			_updateTargetStyle({ movementX: movementX.value, movementY: movementY.value })
+			_updatePointPosition({ movementX: movementX.value, movementY: movementY.value })
 		}
 		this.startCheck({ elementParameter }, 'resize', adsorbCallback)
 	}
