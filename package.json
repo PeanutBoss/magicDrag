@@ -12,7 +12,8 @@
     "serve:list": "webpack serve --config ./config/list.config.js",
     "build:drag": "rollup -c rollup.config.js",
     "build:move": "webpack --config ./config/moveProduct.config.js",
-    "unit": "jest test/unit"
+    "unit": "jest test",
+    "e2e": "cypress open"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "@types/jest": "^29.5.8",
     "babel-jest": "^29.6.4",
     "copy-webpack-plugin": "^11.0.0",
+    "cypress": "^13.6.0",
     "html-webpack-plugin": "^5.5.3",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.6.4",
