@@ -62,9 +62,78 @@ describe('拖拽功能测试', () => {
       cy.wrap(rect.top).should('eq', 100)
     })
 
+    // 鼠标移动到页面 0,0 的位置
+    cy.get('body')
+      .trigger('mousemove', { pageX: 1000, pageY: 1000 })
+
+    // 等待页面更新完成
+    cy.wait(500)
+
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      // box元素被限制在容器左上角 100,100 的位置
+      cy.wrap(rect.left).should('eq', 800)
+      cy.wrap(rect.top).should('eq', 800)
+    })
+
     // 鼠标抬起
     cy.get('body')
       .trigger('mouseup')
+  })
+
+  it.only('元素大小限制', () => {
+    cy.visit('http://localhost:9001/')
+
+    // 选中目标元素
+    cy.get('.box')
+      .trigger('mousedown')
+    cy.get('.box')
+      .trigger('mouseup')
+
+    // 按下左上角的轮廓点
+    cy.get('.lt')
+      .trigger('mousedown')
+
+    cy.get('body')
+      .trigger('mousemove', { pageX: 0, pageY: 0 })
+
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.width).should('eq', 256)
+    })
+
+    cy.get('body')
+      .trigger('mousemove', { pageX: 500, pageY: 500 })
+
+    cy.wait(500)
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.width).should('eq', 100)
+    })
+
+    cy.get('body')
+      .trigger('mouseup')
+
+    cy.get('.box')
+      .trigger('mousedown', 'center')
+
+    cy.get('body')
+      .trigger('mousemove', { pageX: 300, pageY: 300 })
+
+    cy.get('body')
+      .trigger('mouseup')
+
+    // 按下左上角的轮廓点
+    cy.get('.lt')
+      .trigger('mousedown')
+
+    cy.get('body')
+      .trigger('mousemove', { pageX: 0, pageY: 0 })
+
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.width).should('eq', 250)
+    })
   })
 
   it('辅助线、距离提示功能', async () => {

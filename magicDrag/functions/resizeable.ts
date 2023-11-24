@@ -31,6 +31,7 @@ export default class Resizeable {
       const point = this.createContourPoint(pointElements, direction)
       this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointStyle)
       addClassName(point, customPointClass)
+      addClassName(point, direction)
       appendChild(target.value.parentNode, point)
 
       const isPress = this.addDragFunctionToPoint(elementParameter, stateParameter, globalDataParameter, options, { point, pointPosition, direction })
