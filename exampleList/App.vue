@@ -3,10 +3,10 @@
     <div class="wrap">
       <div class="box"></div>
       <div class="box1"></div>
-      <div class="box2"></div>
-      <div class="box3"></div>
-      <div class="box4"></div>
-      <div class="box5"></div>
+<!--      <div class="box2"></div>-->
+<!--      <div class="box3"></div>-->
+<!--      <div class="box4"></div>-->
+<!--      <div class="box5"></div>-->
     </div>
   </div>
 </template>
@@ -14,13 +14,6 @@
 <script setup>
 import { onBeforeUnmount } from 'vue'
 import { useMagicList } from '../magicDrag'
-// import { useSpecialKey } from "../magicDrag/plugins/shortcut";
-
-// const { ctrlIsPress } = useSpecialKey()
-//
-// window.addEventListener('click', () => {
-//   console.log(ctrlIsPress.value, 'ctrlIsPress')
-// })
 
 const targetSelectors = [
   {
@@ -33,17 +26,17 @@ const targetSelectors = [
     // initialPosition: { left: 700, top: 0 },
     initialSize: { width: 100, height: 100 }
   },
-  {
-    selector: '.box2',
-    initialSize: { width: 100, height: 100 },
-    // initialPosition: { left: 0, top: 700 }
-  },
-  {
-    selector: '.box3',
-    // initialPosition: { left: 700, top: 700 },
-    initialSize: { width: 100, height: 100 }
-  },
-  '.box4', '.box5'
+  // {
+  //   selector: '.box2',
+  //   initialSize: { width: 100, height: 100 },
+  //   // initialPosition: { left: 0, top: 700 }
+  // },
+  // {
+  //   selector: '.box3',
+  //   // initialPosition: { left: 700, top: 700 },
+  //   initialSize: { width: 100, height: 100 }
+  // },
+  // '.box4', '.box5'
 ]
 
 const state = useMagicList(
