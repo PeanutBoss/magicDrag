@@ -81,7 +81,7 @@ describe('拖拽功能测试', () => {
       .trigger('mouseup')
   })
 
-  it.only('元素大小限制', () => {
+  it('元素大小限制 - 左上方向', () => {
     cy.visit('http://localhost:9001/')
 
     // 选中目标元素
@@ -94,32 +94,42 @@ describe('拖拽功能测试', () => {
     cy.get('.lt')
       .trigger('mousedown')
 
+    // 鼠标移动到 0,0 位置，.box会被放大
     cy.get('body')
       .trigger('mousemove', { pageX: 0, pageY: 0 })
 
+    // 限制的最大尺寸为 256 * 256
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 256)
     })
 
+    // 鼠标移动到 500,500 位置，.box会被缩小
     cy.get('body')
       .trigger('mousemove', { pageX: 500, pageY: 500 })
 
+    // 确保渲染完毕
     cy.wait(500)
+
+    // 限制的最小尺寸为 100 * 100
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 100)
     })
 
+    // 抬起鼠标
     cy.get('body')
       .trigger('mouseup')
 
+    // 按下box
     cy.get('.box')
       .trigger('mousedown', 'center')
 
+    // 移动到 300,300 的位置
     cy.get('body')
       .trigger('mousemove', { pageX: 300, pageY: 300 })
 
+    // 抬起鼠标
     cy.get('body')
       .trigger('mouseup')
 
@@ -127,13 +137,102 @@ describe('拖拽功能测试', () => {
     cy.get('.lt')
       .trigger('mousedown')
 
+    // 鼠标移动到 0,0 位置，元素被放大
     cy.get('body')
       .trigger('mousemove', { pageX: 0, pageY: 0 })
 
+    // 确保渲染完毕
+    cy.wait(500)
+
+    // 因为碰到容器边界，到达 250 * 250 后不能再被放大
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 250)
     })
+
+    // 抬起鼠标
+    cy.get('body')
+      .trigger('mouseup')
+  })
+
+  it('元素大小限制 - 右下方向', () => {
+    cy.visit('http://localhost:9001/')
+
+    // 选中目标元素
+    cy.get('.box')
+      .trigger('mousedown')
+
+    // 将box移动到 600,600 的位置
+    cy.get('body')
+      .trigger('mousemove', { pageX: 650, pageY: 650 })
+
+    // 抬起鼠标
+    cy.get('body')
+      .trigger('mouseup')
+
+    // 按下右下角的轮廓点
+    cy.get('.rb')
+      .trigger('mousedown')
+
+    // 鼠标移动到 1000,1000 位置，.box会被放大
+    cy.get('body')
+      .trigger('mousemove', { pageX: 1000, pageY: 1000 })
+
+    // 限制的最大尺寸为 256 * 256
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.width).should('eq', 256)
+    })
+
+    // 鼠标移动到 0,0 位置，.box会被缩小
+    cy.get('body')
+      .trigger('mousemove', { pageX: 0, pageY: 0 })
+
+    // 确保渲染完毕
+    cy.wait(500)
+
+    // 限制的最小尺寸为 100 * 100
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.width).should('eq', 100)
+    })
+
+    // 抬起鼠标
+    cy.get('body')
+      .trigger('mouseup')
+
+    // 按下box
+    cy.get('.box')
+      .trigger('mousedown', 'center')
+
+    // 移动到 700,700 的位置
+    cy.get('body')
+      .trigger('mousemove', { pageX: 750, pageY: 750 })
+
+    // 抬起鼠标
+    cy.get('body')
+      .trigger('mouseup')
+
+    // 按下右下角的轮廓点
+    cy.get('.rb')
+      .trigger('mousedown')
+
+    // 鼠标移动到 1000,1000 位置，元素被放大
+    cy.get('body')
+      .trigger('mousemove', { pageX: 1000, pageY: 1000 })
+
+    // 确保渲染完毕
+    cy.wait(500)
+
+    // 因为碰到容器边界，到达 200 * 200 后不能再被放大
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.width).should('eq', 200)
+    })
+
+    // 抬起鼠标
+    cy.get('body')
+      .trigger('mouseup')
   })
 
   it('辅助线、距离提示功能', async () => {
