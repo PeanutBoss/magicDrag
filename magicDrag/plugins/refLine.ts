@@ -3,6 +3,9 @@ import {removeElements, setStyle} from '../utils/tools'
 import { mountAssistMethod } from '../common/magicDrag'
 import { MagicDragOptions } from '../common/globalData'
 
+export const REF_LINE_CLASS_NAME = 'ref-line'
+export const DISTANCE_TIP_CLASS_NAME = 'distance-tip'
+
 declare global {
   interface HTMLElement {
     show: (coordinate) => void
@@ -52,6 +55,8 @@ export default class RefLine implements Plugin {
 	createLines() {
 		for (const key in this.lines) {
 			const node = this.lines[key] = document.createElement('div')  as HTMLElement
+			node.classList.add(REF_LINE_CLASS_NAME)
+			node.classList.add(key)
 			setStyle(node, this.options.customStyle.refLineStyle as Record<string, string>)
 			// 挂载一些辅助方法
 			mountAssistMethod(node)
@@ -61,6 +66,7 @@ export default class RefLine implements Plugin {
 	createTipEl() {
 		for (const elKey in this.tipEls) {
 			const el = document.createElement('div')
+			el.classList.add(DISTANCE_TIP_CLASS_NAME)
 			setStyle(el, this.options.customStyle.tipStyle as Record<string, string>)
 			mountAssistMethod(el)
 			document.body.appendChild(el)

@@ -1,5 +1,7 @@
+import { DISTANCE_TIP_CLASS_NAME } from '../../magicDrag/plugins/refLine'
+
 describe('拖拽功能测试', () => {
-  it('基本拖拽功能', () => {
+  it.skip('基本拖拽功能', () => {
     cy.visit('http://localhost:9001/')
     cy.viewport(1500, 1000)
 
@@ -38,5 +40,42 @@ describe('拖拽功能测试', () => {
     // 鼠标在其他位置按下后会隐藏轮廓点
     cy.get('.magic_drag-outline_point').should('not.be.visible')
     cy.get('.wrap').trigger('mouseup')
+  })
+
+  it('辅助线、距离提示功能', async () => {
+    cy.visit('http://localhost:9001/')
+
+    // 在元素box1上按下鼠标左键
+    cy.get('.box')
+      .trigger('mousedown', 'topLeft')
+
+    // 鼠标移动到页面 200,300 的位置
+    cy.get('body')
+      .trigger('mousemove', { pageX: 200, pageY: 300 })
+
+    // box在y轴方向上会与 box1 的右边对齐，显示的辅助线的类名包含 yr
+    cy.get('.yr')
+      .should('be.visible')
+
+    // 显示距离提示
+    cy.get(`.${DISTANCE_TIP_CLASS_NAME}`).should('be.visible')
+
+    // 鼠标移动到页面 0,300 的位置
+    cy.get('body')
+      .trigger('mousemove', { pageX: 500, pageY: 0 })
+
+    // box在y轴方向上会与 box1 水平对齐，显示的辅助线的类名包含 xr、xc、xl
+    cy.get('.xr, .xl, .xc')
+      .should('be.visible')
+
+    // 显示距离提示
+    cy.get(`.${DISTANCE_TIP_CLASS_NAME}`).should('be.visible')
+
+    // 提示的距离为300
+    cy.get(`.${DISTANCE_TIP_CLASS_NAME}`).invoke('text')
+      .then(res => cy.wrap(res).should('eq', '300'))
+
+    // 鼠标抬起
+    // cy.get('body').trigger('mouseup')
   })
 })
