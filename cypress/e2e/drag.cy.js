@@ -102,6 +102,7 @@ describe('拖拽功能测试', () => {
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 256)
+      cy.wrap(rect.height).should('eq', 256)
     })
 
     // 鼠标移动到 500,500 位置，.box会被缩小
@@ -115,6 +116,7 @@ describe('拖拽功能测试', () => {
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 100)
+      cy.wrap(rect.height).should('eq', 100)
     })
 
     // 抬起鼠标
@@ -148,6 +150,7 @@ describe('拖拽功能测试', () => {
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 250)
+      cy.wrap(rect.height).should('eq', 250)
     })
 
     // 抬起鼠标
@@ -182,6 +185,7 @@ describe('拖拽功能测试', () => {
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 256)
+      cy.wrap(rect.height).should('eq', 256)
     })
 
     // 鼠标移动到 0,0 位置，.box会被缩小
@@ -195,6 +199,7 @@ describe('拖拽功能测试', () => {
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 100)
+      cy.wrap(rect.height).should('eq', 100)
     })
 
     // 抬起鼠标
@@ -228,6 +233,7 @@ describe('拖拽功能测试', () => {
     cy.get('.box').then(els => {
       const rect = els[0].getBoundingClientRect()
       cy.wrap(rect.width).should('eq', 200)
+      cy.wrap(rect.height).should('eq', 200)
     })
 
     // 抬起鼠标
