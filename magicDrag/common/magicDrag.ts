@@ -357,10 +357,10 @@ export function updatePointPosition({ direction, movementX, movementY }, { initi
     }
     // set the innerDirection position of the contour point
     // 设置轮廓点的innerDirection位置
-    setPosition(pointElements[innerDirection], pointPosition, innerDirection as Direction)
+    setPosition(pointElements[innerDirection], pointPosition as any, innerDirection as Direction)
   }
 	if (!excludeCurPoint) {
-		setPosition(pointElements[direction], pointPosition, direction as Direction)
+		setPosition(pointElements[direction], pointPosition as any, direction as Direction)
 	}
   return pointPosition
 }

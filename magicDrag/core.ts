@@ -1,4 +1,4 @@
-import { toRef, computed } from '@vue/reactivity'
+import {toRef, computed, Ref} from '@vue/reactivity'
 import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle, numberToStringSize } from './utils/tools'
 import { setInitialState, pluginManager, stateManager } from './manager'
@@ -9,7 +9,7 @@ import globalData, {
   MagicDragState,
   unMountGlobalCb
 } from './common/globalData'
-import { fixContourExceed } from './common/magicDrag'
+import {Direction, fixContourExceed} from './common/magicDrag'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle,
   updateState, saveInitialData, showOrHideContourPoint, getPointValue
@@ -28,6 +28,35 @@ window.stateManager = stateManager
 *  26.通过调用API的方式来处理配置信息
 *  27.style类控制样式
 * */
+
+interface PublicDragState {
+  allTarget: HTMLElement[]
+  allContainer: HTMLElement[]
+  pointElements: { [key in Direction]: HTMLElement }
+  downPointPosition: { [key in Direction]: [number, number] }
+  containerInfo: {
+    width: number
+    height: number
+    offsetLeft: number
+    offsetTop: number
+  }
+  publicCoordinate: {} // 选中元素的坐标信息 - initialTarget
+  publicTarget: Ref<HTMLElement>  // 处于选中状态的目标元素 - $target
+  publicContainer: Ref<HTMLElement> // 容器元素 - $container
+  options: MagicDragOptions
+  pointState: any // 轮廓点的响应式状态
+  targetState: any // 目标元素的响应式状态
+}
+interface PrivateDragState {
+  width: number
+  height: number
+  left: number
+  top: number
+  container: HTMLElement
+  target: HTMLElement
+  getStateData(): any // 获取状态数据（不包含target、container等元素信息）
+}
+type DragState = PublicDragState | PrivateDragState
 
 // default configuration
 // 默认配置

@@ -70,7 +70,8 @@ export interface MagicDragState {
 	pointIsPress: Ref<boolean>
 	direction: Ref<string | null>
 	getStateList: () => DomElementState['state']['globalDataParameter']['initialTarget'][]
-	getTargetState: () => DomElementState['state']['globalDataParameter']['initialTarget']
+	getTargetState: () => DomElementState['state']['globalDataParameter']['initialTarget'],
+  unMount(): void
 }
 class GlobalData {
 	private allTarget = []
