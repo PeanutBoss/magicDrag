@@ -39,6 +39,9 @@ function formatSelectors(targetSelectors: MagicSelector[]) {
 	return { selectors, initialInfos }
 }
 
+/*
+* MARK 参数判空问题修复 options initialInfo customStyle
+* */
 export function useMagicList(
 	targetSelectors: MagicSelector[],
 	options?: MagicDragOptions
