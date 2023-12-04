@@ -20,21 +20,27 @@ export function checkParameterType (defaultOptions, options = {}) {
 // Check that the options passed in are valid
 // 检查传入的选项是否合法
 export function checkParameterValue(options: MagicDragOptions) {
-  checkOptionPosition(options.initialInfo)
+  checkOptionPosition(options?.initialInfo)
   checkOptionSize(options)
-  checkCustomStyle(options.customStyle)
+  checkCustomStyle(options?.customStyle)
 }
-export function checkOptionSize(options: Partial<MagicDragOptions>) {
+export function checkOptionSize(options: Partial<MagicDragOptions> = {}) {
   baseWarnTips(errorSize(),`The maximum value cannot be less than the minimum value, and the maximum and minimum values have been replaced with each other.`)
   // 最大最小值无效时替换最大最小值
   fixMaxAndMin()
-  baseWarnTips(lessThanMinimum(), 'The initial size cannot be less than the minimum size.')
-  baseWarnTips(greaterThanMaximum(), 'The initial size cannot be greater than the maximum size.')
-  function lessThanMinimum() {
-    return options.initialInfo.height < options.minHeight || options.initialInfo.width < options.minWidth
+  baseWarnTips(lessThanMinimumH() && lessThanMinimumW(), 'The initial size cannot be less than the minimum size.')
+  baseWarnTips(greaterThanMaximumH() && greaterThanMaximumW(), 'The initial size cannot be greater than the maximum size.')
+  function lessThanMinimumH() {
+    return options?.initialInfo?.height && options.minHeight && (options.initialInfo.height < options.minHeight)
   }
-  function greaterThanMaximum() {
-    return options.initialInfo.height > options.maxHeight || options.initialInfo.width > options.maxWidth
+  function lessThanMinimumW() {
+    return options?.initialInfo?.width && options.minWidth &&  (options.initialInfo.width < options.minWidth)
+  }
+  function greaterThanMaximumH() {
+    return options?.initialInfo?.height && options.maxHeight && (options.initialInfo.height > options.maxHeight)
+  }
+  function greaterThanMaximumW() {
+    return options?.initialInfo?.width && options.maxWidth && (options.initialInfo.width > options.maxWidth)
   }
   function errorSize() {
     return options.minWidth > options.maxWidth || options.minHeight > options.maxHeight
@@ -52,6 +58,7 @@ export function checkOptionSize(options: Partial<MagicDragOptions>) {
   }
 }
 function checkOptionPosition(initialInfo: MagicDragOptions['initialInfo']) {
+  if (!initialInfo) return
   baseWarnTips(posBeNegative(), 'It is not recommended that the initial location information be set to a negative value.')
   fixInitialPos()
   function fixInitialPos() {
@@ -65,6 +72,7 @@ function checkOptionPosition(initialInfo: MagicDragOptions['initialInfo']) {
   }
 }
 function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
+  if (!styles) return
   checkPointStyle(styles.pointStyle)
   fixPointStyle(styles.pointStyle)
   checkRefLineStyle(styles.refLineStyle)
@@ -72,6 +80,7 @@ function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
   checkTipStyle(styles.tipStyle)
   fixTipStyle(styles.tipStyle)
   function checkPointStyle(pointStyle: MagicDragOptions['customStyle']['pointStyle']) {
+    if (!pointStyle) return
     const unitError = pointStyle?.width && !/^\d+px$/.test(pointStyle.width)
       || pointStyle?.height && !/^\d+px$/.test(pointStyle.height)
     baseErrorTips(unitError,
@@ -103,17 +112,20 @@ function checkCustomStyle(styles: MagicDragOptions['customStyle']) {
       'If the contour point box-sizing property is not set to border-box, the contour point position may be shifted.')
   }
   function fixPointStyle(pointStyle: MagicDragOptions['customStyle']['pointStyle']) {
+    if (!pointStyle) return
     if (pointStyle?.position) pointStyle.position = 'absolute'
     if (pointStyle?.display) pointStyle.display = 'none'
     if (pointStyle?.boxSizing) pointStyle.boxSizing = 'border-box'
   }
   function fixRefLineStyle(refLineStyle: MagicDragOptions['customStyle']['refLineStyle']) {
+    if (!refLineStyle) return
     if (refLineStyle?.width) delete refLineStyle.width
     if (refLineStyle?.height) delete refLineStyle.height
     if (refLineStyle?.position) refLineStyle.position = 'absolute'
     if (refLineStyle?.display) refLineStyle.display = 'none'
   }
   function fixTipStyle(tipStyle: MagicDragOptions['customStyle']['tipStyle']) {
+    if (!tipStyle) return
     if (tipStyle?.position) tipStyle.position = 'absolute'
     if (tipStyle?.display) tipStyle.display = 'none'
     if (tipStyle?.boxSizing) tipStyle.boxSizing = 'border-box'

@@ -51,10 +51,10 @@ export function useMagicList(
 
 	initialInfos.forEach(initialInfo => checkOptionSize({
 		initialInfo,
-		maxHeight: options.maxHeight,
-		minHeight: options.minHeight,
-		maxWidth: options.maxWidth,
-		minWidth: options.minWidth
+		maxHeight: options?.maxHeight ?? globalData.defaultOptions.maxHeight,
+		minHeight: options?.minHeight ?? globalData.defaultOptions.minHeight,
+		maxWidth: options?.maxWidth ?? globalData.defaultOptions.maxWidth,
+		minWidth: options?.minWidth ?? globalData.defaultOptions.minWidth
 	}))
 
 	const hasCorrectType = selectors.some(selector => notSelectorAndHTML(selector))
