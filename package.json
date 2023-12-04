@@ -1,6 +1,6 @@
 {
   "name": "magic_drag",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "A simple drag and resizing tool",
   "main": "lib/magic_drag-esm.js",
   "module": "lib/magic_drag-esm.js",
