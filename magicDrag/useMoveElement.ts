@@ -49,6 +49,11 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 		x: 0,
 		y: 0
 	})
+	// 相对容器元素变化的偏移量
+	const relativeContainer = reactive({
+		x: 0,
+		y: 0
+	})
 	const throttleMouseMove = throttle(mouseMove, 10, { leading: true })
 	const watchMovement = useWatchData(movement, updatePosition)
 
@@ -85,6 +90,10 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 		}
 		transferControl(moveAction, moveCallback, watchMovement)
 	}
+	function save() {
+		relativeContainer.x = $ele.offsetLeft - startCoordinate.x
+		relativeContainer.y = $ele.offsetTop - startCoordinate.y
+	}
 	function destroy() {
 		$ele.removeEventListener('mousedown', mouseDown)
 		window.removeEventListener('mousemove', throttleMouseMove)
@@ -99,6 +108,8 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 		top: toRef(startCoordinate, 'y'),
 		movementX: toRef(watchMovement, 'x'),
 		movementY: toRef(watchMovement, 'y'),
+		relContainerX: toRef(relativeContainer, 'x'),
+		relContainerY: toRef(relativeContainer, 'y'),
     isPress: readonly(isPress),
 		destroy
 	}

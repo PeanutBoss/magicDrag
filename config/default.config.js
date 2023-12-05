@@ -2,7 +2,7 @@ const htmlPlugin = require('html-webpack-plugin')
 const path = require('path')
 const vueLoader = require('vue-loader')
 
-function createDefaultConfig (entry, output, templatePath) {
+function createDefaultConfig (entry, output, templatePath, port = 9001) {
   return {
     entry,
     output,
@@ -45,7 +45,7 @@ function createDefaultConfig (entry, output, templatePath) {
       extensions: ['.ts', '.tsx', '.js', '.jsx'] // 自动追加的文件后缀名
     },
     devServer: {
-      port: 9001,
+      port,
       open: true
     },
     mode: 'development'

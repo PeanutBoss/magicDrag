@@ -21,6 +21,7 @@ window.stateManager = stateManager
 /*
 * TODO
 *  * 通过globalData为一个目标元素创建一个状态对象
+*  * 初始化目标元素、容器元素的操作用一个类来做
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
 *  18.目标元素的 left、top 应该是相对容器计算
 *  23.等比缩放
@@ -122,11 +123,13 @@ export function useMagicDragAPI (
       elementParameter.privateContainer = $container.value = getElement(containerSelector)
       allContainer.push(elementParameter.privateContainer)
     }
+    // 容器尺寸信息
     function contentAreaSize() {
       const {
         paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing,
         borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth
       } = getComputedStyle(elementParameter.container.value)
+
       return { containerWidth: containerWidth(), containerHeight: containerHeight() }
       function isBorderBox() {
         return boxSizing === 'border-box'
@@ -142,9 +145,25 @@ export function useMagicDragAPI (
           : parseInt(width)
       }
     }
+    // 容器相对body内容左上角的偏移量（如果容器元素的父级不是body可能出现问题）
     function contentAreaOffset() {
+      const { position, left, top } = getComputedStyle(elementParameter.container.value)
+
+      // 如果开启定位，返回偏移量
+      // if (openPositioning()) {
+      //   return { offsetLeft: parseInt(left), offsetTop: parseInt(top) }
+      // }
+      // else // 否则计算容器相对body的偏移量
+      // {
+      //   const containerRect = elementParameter.container.value.getBoundingClientRect()
+      //   return { offsetLeft: containerRect.left, offsetTop: containerRect.top }
+      // }
       const containerRect = elementParameter.container.value.getBoundingClientRect()
       return { offsetLeft: containerRect.left, offsetTop: containerRect.top }
+      // 容器元素是否开启定位
+      function openPositioning() {
+        return ['absolute', 'relative', 'fixed'].includes(position)
+      }
     }
     function saveContainerSizeAndOffset({ containerWidth, containerHeight }, { offsetLeft, offsetTop }) {
       globalDataParameter.containerInfo.width = containerWidth
@@ -156,6 +175,7 @@ export function useMagicDragAPI (
 
   // initializes the target element - 初始化目标元素
   function initTarget () {
+    const { position } = getComputedStyle($container.value)
     // 保存目标元素的引用
     saveTargetEl()
     baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
@@ -169,8 +189,8 @@ export function useMagicDragAPI (
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息
     function posRelativeToContainer() {
-      const left = globalDataParameter.containerInfo.offsetLeft + options.initialInfo.left
-      const top = globalDataParameter.containerInfo.offsetTop + options.initialInfo.top
+      const left = openPositioning() ? options.initialInfo.left : globalDataParameter.containerInfo.offsetLeft + options.initialInfo.left
+      const top = openPositioning() ? options.initialInfo.top : globalDataParameter.containerInfo.offsetTop + options.initialInfo.top
       return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
     }
     function saveTargetEl() {
@@ -180,6 +200,9 @@ export function useMagicDragAPI (
     function saveAndBindTargetData() {
       $target.value.addEventListener('mousedown', updateTargetPointTo)
       $target.value.dataset.index = allTarget.length
+    }
+    function openPositioning() {
+      return ['absolute', 'relative', 'fixed'].includes(position)
     }
   }
 

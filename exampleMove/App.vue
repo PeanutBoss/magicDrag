@@ -7,6 +7,7 @@
     鼠标相对目标元素的X轴方向偏移量{{ state.mouseX }}<br>
     鼠标相对目标元素的Y轴方向偏移量{{ state.mouseY }}<br>
     鼠标是否按下{{ state.isPress }}<br>
+    相对容器元素变化的偏移量：{{ state.relContainerX }} - {{ state.relContainerY }}
 <!--    <input type="text" v-model.number="state.movementX.value">-->
     <div class="box" ref="Box"></div>
   </div>
@@ -32,5 +33,12 @@ onBeforeUnmount(state.destroy)
   width: 200px;
   height: 200px;
   background-color: greenyellow;
+  position: absolute;
+  left: 150px;
+}
+.container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
 }
 </style>

@@ -30,7 +30,7 @@ container开启定位后，给目标元素设置的left、top都是相对于cont
 */
 .container {
   width: 1000px;
-  height: 800px;
+  height: 100vh;
   position: relative;
 }
 .wrap {

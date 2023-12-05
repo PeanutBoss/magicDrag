@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" style="position: absolute; left: 100px">
     <div class="wrap">
       <div class="box"></div>
       <div class="box1"></div>

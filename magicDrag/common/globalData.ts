@@ -103,7 +103,7 @@ class GlobalData {
 			refLine: true, // whether to support refLine - 是否支持参考线
       shortcut: true, // whether to support shortcut - 是否支持快捷键
       multipleChoice: false, // whether multiple election is supported - 是否支持多选
-      regionalSelection: true, // whether multiple region selection is supported - 是否支持区域多选
+      regionalSelection: false, // whether multiple region selection is supported - 是否支持区域多选
 			limitDragDirection: null // restricted direction of movement - 限制移动方向
 		},
 		customClass: {
