@@ -14,6 +14,7 @@
 <script setup>
 import { onBeforeUnmount } from 'vue'
 import { useMagicList } from '../magicDrag'
+// import { useMagicList } from 'magic_drag'
 
 const targetSelectors = [
   {
