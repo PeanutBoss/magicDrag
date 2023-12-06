@@ -162,8 +162,8 @@ export function useMagicDragAPI (
 
       // 如果开启定位，返回偏移量
       return {
-        offsetLeft: parseInt(paddingLeft) + parseInt(paddingRight),
-        offsetTop: parseInt(paddingTop) + parseInt(paddingBottom)
+        offsetLeft: parseInt(paddingLeft),
+        offsetTop: parseInt(paddingTop)
       }
     }
     function saveContainerSizeAndOffset({ containerWidth, containerHeight }, { offsetLeft, offsetTop }) {
@@ -194,8 +194,8 @@ export function useMagicDragAPI (
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息
     function posRelativeToContainer() {
-      const left = options.initialInfo.left
-      const top = options.initialInfo.top
+      const left = options.initialInfo.left + containerInfo.offsetLeft
+      const top = options.initialInfo.top + containerInfo.offsetTop
       return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
     }
     function saveTargetEl() {
