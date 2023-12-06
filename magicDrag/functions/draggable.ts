@@ -3,7 +3,7 @@ import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../common/magicDrag'
 import {State, PluginManager, splitState} from './index'
-import globalData, {addGlobalUnmountCb} from '../common/globalData'
+import {addGlobalUnmountCb} from '../common/globalData'
 
 export default class Draggable {
 	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager) {

@@ -427,13 +427,13 @@ export function initTargetStyle (target, size, position) {
 
 // Saves the initial data of the target element
 // 保存目标元素的初始化数据
-export function saveInitialData (target, initialTarget, isTest = false) {
+export function saveInitialData (target, initialTarget) {
 	// 直接获取相对于父元素的坐标
 	const rect = {
-		left: isTest ? parseInt(target.style.left) : target.offsetLeft,
-		top: isTest ? parseInt(target.style.top) : target.offsetTop,
-		width: isTest ? parseInt(target.style.width) : target.offsetWidth,
-		height: isTest ? parseInt(target.style.height) : target.offsetHeight
+		left: target.offsetLeft,
+		top: target.offsetTop,
+		width: target.offsetWidth,
+		height: target.offsetHeight
 	}
 	for (const rectKey in initialTarget) {
 		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]

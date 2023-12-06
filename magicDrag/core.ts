@@ -1,6 +1,6 @@
 import {toRef, computed, Ref} from '@vue/reactivity'
 import { nextTick } from './helper'
-import { getElement, removeElements, baseErrorTips, setStyle, numberToStringSize } from './utils/tools'
+import { getElement, removeElements, baseErrorTips, setStyle } from './utils/tools'
 import { setInitialState, pluginManager, stateManager } from './manager'
 import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
 import globalData, {
@@ -12,7 +12,7 @@ import globalData, {
 import {Direction, fixContourExceed} from './common/magicDrag'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle,
-  updateState, saveInitialData, showOrHideContourPoint, getPointValue
+  updateState, saveInitialData, getPointValue
 } from './common/magicDrag'
 
 // @ts-ignore
@@ -89,7 +89,6 @@ function initGlobalData () {
 export function useMagicDragAPI (
   targetSelector: string | HTMLElement,
   options?: MagicDragOptions,
-  TEST = false
 ): MagicDragState {
   const { containerSelector } = options
 
@@ -158,7 +157,7 @@ export function useMagicDragAPI (
     }
     // 容器相对body内容左上角的偏移量（如果容器元素的父级不是body可能出现问题）
     function contentAreaOffset() {
-      const { paddingLeft = '0', paddingRight = '0', paddingTop = '0', paddingBottom = '0' } = getComputedStyle(elementParameter.container.value)
+      const { paddingLeft = '0', paddingTop = '0' } = getComputedStyle(elementParameter.container.value)
 
       // 如果开启定位，返回偏移量
       return {
@@ -194,8 +193,8 @@ export function useMagicDragAPI (
     updateState(stateParameter.targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息
     function posRelativeToContainer() {
-      const left = options.initialInfo.left + containerInfo.offsetLeft
-      const top = options.initialInfo.top + containerInfo.offsetTop
+      const left = options.initialInfo.left + globalDataParameter.containerInfo.offsetLeft
+      const top = options.initialInfo.top + globalDataParameter.containerInfo.offsetTop
       return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
     }
     function saveTargetEl() {

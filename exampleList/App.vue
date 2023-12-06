@@ -1,6 +1,5 @@
 <template>
-  <div style="margin-left: 100px;position: absolute;left: 100px">
-    <div style="width: 200px;height: 100px;"></div>
+  <div class="container">
     <div class="wrap" style="position:relative;padding: 20px">
       <div class="box"></div>
       <div class="box1"></div>
@@ -15,7 +14,6 @@
 <script setup>
 import { onBeforeUnmount } from 'vue'
 import { useMagicList } from '../magicDrag'
-// import { useMagicList } from 'magic_drag'
 
 const targetSelectors = [
   {
