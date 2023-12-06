@@ -1,6 +1,7 @@
 <template>
-  <div class="container" style="position: absolute; left: 100px">
-    <div class="wrap">
+  <div style="margin-left: 100px;position: absolute;left: 100px">
+    <div style="width: 200px;height: 100px;"></div>
+    <div class="wrap" style="position:relative;">
       <div class="box"></div>
       <div class="box1"></div>
 <!--      <div class="box2"></div>-->
