@@ -1,19 +1,15 @@
-import {toRef, computed, Ref} from '@vue/reactivity'
+import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle } from './utils/tools'
 import { setInitialState, pluginManager, stateManager } from './manager'
-import {ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable} from './functions'
-import globalData, {
-  addGlobalUnmountCb,
-  MagicDragOptions,
-  MagicDragState,
-  unMountGlobalCb
-} from './common/globalData'
-import {Direction, fixContourExceed} from './common/magicDrag'
+import { ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable } from './functions'
+import { addGlobalUnmountCb, MagicDragOptions, MagicDragState, unMountGlobalCb } from './common/globalData'
+import { fixContourExceed } from './common/magicDrag'
 import {
   blurOrFocus, updateInitialTarget, initTargetStyle,
   updateState, saveInitialData, getPointValue
 } from './common/magicDrag'
+import buildState from './common/buildState'
 
 // @ts-ignore
 window.stateManager = stateManager
@@ -31,41 +27,13 @@ window.stateManager = stateManager
 *  28.包裹、容器元素位置信息兼容
 * */
 
-interface PublicDragState {
-  allTarget: HTMLElement[]
-  allContainer: HTMLElement[]
-  pointElements: { [key in Direction]: HTMLElement }
-  downPointPosition: { [key in Direction]: [number, number] }
-  containerInfo: {
-    width: number
-    height: number
-    offsetLeft: number
-    offsetTop: number
-  }
-  publicCoordinate: {} // 选中元素的坐标信息 - initialTarget
-  publicTarget: Ref<HTMLElement>  // 处于选中状态的目标元素 - $target
-  publicContainer: Ref<HTMLElement> // 容器元素 - $container
-  options: MagicDragOptions
-  pointState: any // 轮廓点的响应式状态
-  targetState: any // 目标元素的响应式状态
-}
-interface PrivateDragState {
-  width: number
-  height: number
-  left: number
-  top: number
-  container: HTMLElement
-  target: HTMLElement
-  getStateData(): any // 获取状态数据（不包含target、container等元素信息）
-}
-type DragState = PublicDragState | PrivateDragState
-
 // default configuration
 // 默认配置
-const { allTarget, allContainer } = globalData.allElement()
-let { $target, $container, initialTarget, pointElements, containerInfo, downPointPosition } = globalData.storingDataContainer()
-// 目标元素的状态和轮廓点的状态
-const { targetState, pointState } = globalData.defaultState
+let {
+  allTarget, allContainer,
+  $target, $container, initialTarget, pointElements, containerInfo, downPointPosition,
+  targetState, pointState
+} = buildState.publicState
 function initGlobalData () {
   $target.value = null
   $container.value = null
@@ -97,7 +65,7 @@ export function useMagicDragAPI (
   }
 
   // 显示或隐藏轮廓点的方法
-  const processBlurOrFocus = blurOrFocus(elementParameter.pointElements, stateParameter.targetState, stateManager)
+  const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManager)
   // 每次都是获取到一个新闭包，需要单独保存
   addGlobalUnmountCb(processBlurOrFocus.bind(null, $target.value, false))
 
@@ -122,14 +90,14 @@ export function useMagicDragAPI (
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
     function saveContainerEl() {
       elementParameter.privateContainer = $container.value = getElement(containerSelector)
-      allContainer.push(elementParameter.privateContainer)
+      allContainer.push($container.value)
     }
     // 容器尺寸信息
     function contentAreaSize() {
       const {
         paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing,
         borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth
-      } = getComputedStyle(elementParameter.container.value)
+      } = getComputedStyle($container.value)
 
       return { containerWidth: containerWidth(), containerHeight: containerHeight() }
       function isBorderBox() {
@@ -148,7 +116,7 @@ export function useMagicDragAPI (
     }
     // 容器相对body内容左上角的偏移量（如果容器元素的父级不是body可能出现问题）
     function contentAreaOffset() {
-      const { paddingLeft = '0', paddingTop = '0' } = getComputedStyle(elementParameter.container.value)
+      const { paddingLeft = '0', paddingTop = '0' } = getComputedStyle($container.value)
 
       // 如果开启定位，返回偏移量
       return {
@@ -161,6 +129,10 @@ export function useMagicDragAPI (
       globalDataParameter.containerInfo.height = containerHeight
       globalDataParameter.containerInfo.offsetLeft = offsetLeft
       globalDataParameter.containerInfo.offsetTop = offsetTop
+      containerInfo.width = containerWidth
+      containerInfo.height = containerHeight
+      containerInfo.offsetLeft = offsetLeft
+      containerInfo.offsetTop = offsetTop
     }
     // 如果容器元素未开启定位，给它开启相对定位
     function guaranteeOpenPosition() {
@@ -181,11 +153,11 @@ export function useMagicDragAPI (
     // 初始化
     saveInitialData($target.value, globalDataParameter.initialTarget)
     // 初始化结束后更新状态
-    updateState(stateParameter.targetState, globalDataParameter.initialTarget)
+    updateState(targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息
     function posRelativeToContainer() {
-      const left = options.initialInfo.left + globalDataParameter.containerInfo.offsetLeft
-      const top = options.initialInfo.top + globalDataParameter.containerInfo.offsetTop
+      const left = options.initialInfo.left + containerInfo.offsetLeft
+      const top = options.initialInfo.top + containerInfo.offsetTop
       return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
     }
     function saveTargetEl() {
@@ -199,18 +171,18 @@ export function useMagicDragAPI (
   }
 
   return {
-    targetLeft: computed(() => stateParameter.targetState.left - stateManager.containerLeft),
-    targetTop: computed(() => stateParameter.targetState.top - stateManager.containerTop),
-    targetWidth: toRef(stateParameter.targetState, 'width'),
-    targetHeight: toRef(stateParameter.targetState, 'height'),
-    targetIsPress: toRef(stateParameter.targetState, 'isPress'),
-    targetIsLock: toRef(stateParameter.targetState, 'isLock'),
-    pointLeft: computed(() => getPointValue(stateParameter.pointState, 'left')),
-    pointTop: computed(() => getPointValue(stateParameter.pointState, 'top')),
-    direction: toRef(stateParameter.pointState, 'direction'),
-    pointIsPress: toRef(stateParameter.pointState, 'isPress'),
-    pointMovementX: toRef(stateParameter.pointState, 'movementX'),
-    pointMovementY: toRef(stateParameter.pointState, 'movementY'),
+    targetLeft: computed(() => targetState.left - stateManager.containerLeft),
+    targetTop: computed(() => targetState.top - stateManager.containerTop),
+    targetWidth: toRef(targetState, 'width'),
+    targetHeight: toRef(targetState, 'height'),
+    targetIsPress: toRef(targetState, 'isPress'),
+    targetIsLock: toRef(targetState, 'isLock'),
+    pointLeft: computed(() => getPointValue(pointState, 'left')),
+    pointTop: computed(() => getPointValue(pointState, 'top')),
+    direction: toRef(pointState, 'direction'),
+    pointIsPress: toRef(pointState, 'isPress'),
+    pointMovementX: toRef(pointState, 'movementX'),
+    pointMovementY: toRef(pointState, 'movementY'),
     getStateList() {
       return stateManager.elementStates.map(m => m.state.globalDataParameter.initialTarget)
     },
@@ -226,7 +198,7 @@ export function useMagicDragAPI (
     // 解绑所有插件
     pluginManager.uninstallPlugin()
     // 页面卸载时销毁 dom 元素
-    removeElements(elementParameter.pointElements)
+    removeElements(pointElements)
     // 移除所有目标元素的监听事件
     removeListener()
     // 清除状态信息
