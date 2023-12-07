@@ -1,9 +1,9 @@
 <template>
   <div class="container">
-    <div class="wrap" style="position:relative;padding: 20px">
+    <div class="wrap" style="position:relative;">
       <div class="box"></div>
       <div class="box1"></div>
-<!--      <div class="box2"></div>-->
+      <div class="box2"></div>
 <!--      <div class="box3"></div>-->
 <!--      <div class="box4"></div>-->
 <!--      <div class="box5"></div>-->
@@ -26,11 +26,11 @@ const targetSelectors = [
     // initialPosition: { left: 700, top: 0 },
     initialSize: { width: 100, height: 100 }
   },
-  // {
-  //   selector: '.box2',
-  //   initialSize: { width: 100, height: 100 },
-  //   // initialPosition: { left: 0, top: 700 }
-  // },
+  {
+    selector: '.box2',
+    initialSize: { width: 170, height: 180 },
+    initialPosition: { left: 475, top: 475 }
+  },
   // {
   //   selector: '.box3',
   //   // initialPosition: { left: 700, top: 700 },

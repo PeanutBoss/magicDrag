@@ -41,6 +41,19 @@ describe('拖拽功能测试', () => {
     cy.get('.wrap').trigger('mouseup')
   })
 
+  it('设置初始位置和尺寸', () => {
+    cy.visit('http://localhost:9001/')
+
+    cy.get('.box2').then(els => {
+      const box = els[0]
+      const rect = box.getBoundingClientRect()
+      cy.wrap(rect.left).should('eq', 575)
+      cy.wrap(rect.top).should('eq', 575)
+      cy.wrap(rect.width).should('eq', 170)
+      cy.wrap(rect.height).should('eq', 180)
+    })
+  })
+
   it('容器边界限制', () => {
     cy.visit('http://localhost:9001/')
 
@@ -241,6 +254,7 @@ describe('拖拽功能测试', () => {
       .trigger('mouseup')
   })
 
+  // 需要放到最后一个
   it('辅助线、距离提示功能', async () => {
     cy.visit('http://localhost:9001/')
 
