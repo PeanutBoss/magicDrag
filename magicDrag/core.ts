@@ -9,7 +9,7 @@ import {
   blurOrFocus, updateInitialTarget, initTargetStyle,
   updateState, saveInitialData, getPointValue
 } from './common/magicDrag'
-import buildState from './common/buildState'
+import BuildState from './common/buildState'
 
 // @ts-ignore
 window.stateManager = stateManager
@@ -31,12 +31,15 @@ window.stateManager = stateManager
 // 默认配置
 let {
   allTarget, allContainer,
-  $target, $container, initialTarget, pointElements, containerInfo, downPointPosition,
-  targetState, pointState
-} = buildState.publicState
+  publicTarget, publicContainer, pointElements, containerInfo, downPointPosition,
+  targetState, pointState,
+  left, top, width, height, id
+} = new BuildState()
+
+let initialTarget
 function initGlobalData () {
-  $target.value = null
-  $container.value = null
+  publicTarget.value = null
+  publicContainer.value = null
   initialTarget = updateInitialTarget()
   pointElements = pointElements || {}
   containerInfo = {}
@@ -58,8 +61,8 @@ export function useMagicDragAPI (
   const globalDataParameter: GlobalDataParameter = { initialTarget, containerInfo, downPointPosition }
   const elementParameter: ElementParameter = {
     pointElements, allTarget, allContainer,
-    target: $target,
-    container: $container,
+    target: publicTarget,
+    container: publicContainer,
     privateTarget: null as HTMLElement,
     privateContainer: null as HTMLElement
   }
@@ -67,7 +70,7 @@ export function useMagicDragAPI (
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManager)
   // 每次都是获取到一个新闭包，需要单独保存
-  addGlobalUnmountCb(processBlurOrFocus.bind(null, $target.value, false))
+  addGlobalUnmountCb(processBlurOrFocus.bind(null, publicTarget.value, false))
 
 	nextTick(readyMagicDrag)
 
@@ -75,11 +78,11 @@ export function useMagicDragAPI (
     initContainer()
     initTarget()
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
-    setInitialState($target.value, initialState(), true)
+    setInitialState(publicTarget.value, initialState(), true)
     enableDragFunc()
     enableResizeFunc()
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
-    processBlurOrFocus($target.value)
+    processBlurOrFocus(publicTarget.value)
   }
 
   // initializes the container element - 初始化容器元素
@@ -89,15 +92,15 @@ export function useMagicDragAPI (
     guaranteeOpenPosition()
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
     function saveContainerEl() {
-      elementParameter.privateContainer = $container.value = getElement(containerSelector)
-      allContainer.push($container.value)
+      elementParameter.privateContainer = publicContainer.value = getElement(containerSelector)
+      allContainer.push(publicContainer.value)
     }
     // 容器尺寸信息
     function contentAreaSize() {
       const {
         paddingLeft, paddingRight, paddingTop, paddingBottom, width, height, boxSizing,
         borderLeftWidth, borderRightWidth, borderTopWidth, borderBottomWidth
-      } = getComputedStyle($container.value)
+      } = getComputedStyle(publicContainer.value)
 
       return { containerWidth: containerWidth(), containerHeight: containerHeight() }
       function isBorderBox() {
@@ -116,7 +119,7 @@ export function useMagicDragAPI (
     }
     // 容器相对body内容左上角的偏移量（如果容器元素的父级不是body可能出现问题）
     function contentAreaOffset() {
-      const { paddingLeft = '0', paddingTop = '0' } = getComputedStyle($container.value)
+      const { paddingLeft = '0', paddingTop = '0' } = getComputedStyle(publicContainer.value)
 
       // 如果开启定位，返回偏移量
       return {
@@ -136,8 +139,8 @@ export function useMagicDragAPI (
     }
     // 如果容器元素未开启定位，给它开启相对定位
     function guaranteeOpenPosition() {
-      const { position } = getComputedStyle($container.value)
-      if (['relative', 'absolute', 'fixed'].includes(position)) $container.value.style.position = 'relative'
+      const { position } = getComputedStyle(publicContainer.value)
+      if (['relative', 'absolute', 'fixed'].includes(position)) publicContainer.value.style.position = 'relative'
     }
   }
 
@@ -145,13 +148,13 @@ export function useMagicDragAPI (
   function initTarget () {
     // 保存目标元素的引用
     saveTargetEl()
-    baseErrorTips(!$target.value, 'targetSelector is an invalid selector or HTMLElement')
+    baseErrorTips(!publicTarget.value, 'targetSelector is an invalid selector or HTMLElement')
     // 保存目标元素的信息和绑定事件
     saveAndBindTargetData()
     // 初始化目标元素样式信息
-    initTargetStyle($target.value, posRelativeToContainer().size, posRelativeToContainer().position)
+    initTargetStyle(publicTarget.value, posRelativeToContainer().size, posRelativeToContainer().position)
     // 初始化
-    saveInitialData($target.value, globalDataParameter.initialTarget)
+    saveInitialData(publicTarget.value, globalDataParameter.initialTarget)
     // 初始化结束后更新状态
     updateState(targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息
@@ -161,12 +164,12 @@ export function useMagicDragAPI (
       return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
     }
     function saveTargetEl() {
-      elementParameter.privateTarget = $target.value = getElement(targetSelector)
-      allTarget.push($target.value)
+      elementParameter.privateTarget = publicTarget.value = getElement(targetSelector)
+      allTarget.push(publicTarget.value)
     }
     function saveAndBindTargetData() {
-      $target.value.addEventListener('mousedown', updateTargetPointTo)
-      $target.value.dataset.index = allTarget.length
+      publicTarget.value.addEventListener('mousedown', updateTargetPointTo)
+      publicTarget.value.dataset.index = String(allTarget.length)
     }
   }
 
@@ -210,7 +213,7 @@ export function useMagicDragAPI (
     }
   }
   function updateTargetPointTo(event) {
-    $target.value = event.target
+    publicTarget.value = event.target
   }
   function initialState(): State {
     return { elementParameter, stateParameter, globalDataParameter, optionParameter: options }
@@ -227,7 +230,7 @@ export function useMagicDragAPI (
   function enableContainerGrid() {
     options.grid && setContainerGrid()
     function setContainerGrid() {
-      setStyle($container.value, {
+      setStyle(publicContainer.value, {
         background: 'white',
         backgroundImage:`linear-gradient(90deg,rgba(241,243,244,1) 10%,transparent 0),
         linear-gradient(rgba(241,243,244,1) 10%,transparent 0)`,

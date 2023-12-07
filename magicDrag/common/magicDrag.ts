@@ -394,6 +394,7 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
   if (targetCoordinate && newCoordinate) {
 		updateState(targetCoordinate, newCoordinate)
   }
+	// TODO 不需要响应式
   return reactive({
     left: 0,
     top: 0,
