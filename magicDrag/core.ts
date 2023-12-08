@@ -80,7 +80,7 @@ export function useMagicDragAPI (
     initContainer()
     initTarget()
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
-    setInitialState(publicTarget.value, initialStateNew(), true)
+    setInitialState(publicTarget.value, initialState(), true)
     enableDragFunc()
     enableResizeFunc()
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
@@ -218,10 +218,7 @@ export function useMagicDragAPI (
   function updateTargetPointTo(event) {
     publicTarget.value = event.target
   }
-  function initialState(): State {
-    return { elementParameter, stateParameter, globalDataParameter, optionParameter: options }
-  }
-  function initialStateNew(): any {
+  function initialState(): any {
     return {
       allTarget, allContainer,
       publicTarget, publicContainer, pointElements, containerInfo, downPointPosition,
@@ -230,7 +227,7 @@ export function useMagicDragAPI (
     }
   }
   function enableDragFunc() {
-    options.skill.drag && new Draggable(pluginManager, initialStateNew(), stateManager)
+    options.skill.drag && new Draggable(pluginManager, initialState(), stateManager)
   }
   function enableResizeFunc() {
     options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager)

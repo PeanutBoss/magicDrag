@@ -389,14 +389,13 @@ export function updateInitialTarget (targetCoordinate?, newCoordinate?) {
   if (targetCoordinate && newCoordinate) {
 		updateState(targetCoordinate, newCoordinate)
   }
-	// TODO 不需要响应式
-  return reactive({
-    left: 0,
-    top: 0,
-    width: 0,
-    height: 0,
-    id: generateID()
-  })
+  return {
+		left: 0,
+		top: 0,
+		width: 0,
+		height: 0,
+		id: generateID()
+	}
 }
 
 export function saveDownPointPosition({ downPointPosition, pointElements }) {
@@ -430,10 +429,6 @@ export function saveInitialData (target, initialTarget) {
 		top: target.offsetTop,
 		width: target.offsetWidth,
 		height: target.offsetHeight
-	}
-	// TODO 重构完成后可删除
-	for (const rectKey in initialTarget) {
-		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]
 	}
 	// 处理坐标对象
 	if (initialTarget.isCoordinate) {

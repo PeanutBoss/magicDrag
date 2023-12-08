@@ -75,5 +75,11 @@ export function useMagicList(
 	selectors.forEach((selector, index) => {
 		state = useMagicDragAPI(selector, mergeObject(options, { initialInfo: initialInfos[index] }))
 	})
+
+	// 参数检查
+	function insertElement(selector, initialInfo) {
+		return useMagicDragAPI(selector, mergeObject(options, { initialInfo }))
+	}
+
 	return state
 }

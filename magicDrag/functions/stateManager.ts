@@ -109,6 +109,11 @@ class StateManager {
 			this.notifySubscribers(element, newState)
 		}
 	}
+	insertState(element: HTMLElement, state, options) {
+		this._elementRecords.push({
+			element, state, options
+		})
+	}
 
 	clear() {
 		this._elementRecords = []
