@@ -8,48 +8,50 @@ import { addClassName, appendChild, conditionExecute, setStyle, transferControl 
 import { useMoveElement } from '../useMoveElement'
 
 export default class Resizeable {
-  constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
-    this.init(stateManager.currentState)
+  constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager?, private stateManagerNew?) {
+    this.init(stateManagerNew.currentState)
   }
 
-  init({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
-    const pointPosition = createParentPosition(globalDataParameter.initialTarget, optionParameter.pointSize)
-    this.initContourPoints(elementParameter, stateParameter, globalDataParameter, optionParameter, { pointPosition })
+  init(initState) {
+    const {
+      coordinate,
+      publicTarget, pointElements, pointState,
+      options
+    } = initState
+    const pointPosition = createParentPosition(coordinate, options.pointSize)
+    this.initContourPoints({ publicTarget, pointElements }, { pointState }, { coordinate }, options, { pointPosition })
   }
 
   // 初始化轮廓点
-  initContourPoints (elementParameter, stateParameter, globalDataParameter, options, runtimeParameter) {
-    const { target, pointElements } = elementParameter
-    const { pointState } = stateParameter
+  initContourPoints ({ publicTarget, pointElements }, { pointState }, { coordinate }, options, runtimeParameter) {
     const { pointPosition } = runtimeParameter
     const { pointSize, customClass: { customPointClass }, customStyle: { pointStyle } } = options
-    const { initialTarget } = globalDataParameter
     for (const direction in pointPosition) {
       const point = this.createContourPoint(pointElements, direction)
       this.initPointStyle(point, { pointPosition, direction: direction as Direction, pointSize }, pointStyle)
       addClassName(point, customPointClass)
       addClassName(point, direction)
-      appendChild(target.value.parentNode, point)
+      appendChild(publicTarget.value.parentNode, point)
 
-      const isPress = this.addDragFunctionToPoint(elementParameter, stateParameter, globalDataParameter, options, { point, pointPosition, direction })
+      const isPress = this.addDragFunctionToPoint(publicTarget, options, { point, pointPosition, direction })
       // update the width and height information when releasing the mouse - 当释放鼠标时更新宽度和高度信息
-      watch(isPress, this.pointIsPressChangeCallback(target.value, { initialTarget, pointState, direction }, elementParameter))
+      watch(isPress, this.pointIsPressChangeCallback(publicTarget.value, { coordinate, pointState, direction }))
     }
   }
 
-  pointIsPressChangeCallback (target, { initialTarget, pointState, direction }, elementParameter) {
+  pointIsPressChangeCallback (target, { coordinate, pointState, direction }) {
     return newV => {
-      const currentTarget = this.stateManager.currentElement
+      const currentTarget = this.stateManagerNew.currentElement
       // 与window绑定mousedown同理，取消无用更新
       if (target !== currentTarget) return
       pointState.isPress = newV
       pointState.direction = direction
       if (!newV) {
         pointState.direction = null
-        updateInitialTarget(initialTarget, getCoordinateByElement(target))
+        updateInitialTarget(coordinate, getCoordinateByElement(target))
       }
       // MARK 通知插件鼠标状态更新
-      this.plugins.callExtensionPoint('pointPressChange', newV, elementParameter)
+      // this.plugins.callExtensionPoint('pointPressChange', newV, elementParameter)
     }
   }
 
@@ -64,19 +66,12 @@ export default class Resizeable {
   }
 
   // 为轮廓点添加拖拽功能
-  addDragFunctionToPoint (elementParameter, stateParameter, globalDataParameter, options, runTimeParameter) {
-    const { target } = elementParameter
+  addDragFunctionToPoint (publicTarget, options, runTimeParameter) {
     const { point, pointPosition, direction } = runTimeParameter
     const { resizeCallback } = options.callbacks || {}
     const { isPress, movementX, movementY } = useMoveElement(point, (moveAction) => {
       const moveResizeAction = () => {
-        this.movePointCallback(
-          stateParameter,
-          elementParameter,
-          globalDataParameter,
-          options,
-          { direction, movementX, movementY, moveAction, target: target.value }
-        )
+        this.movePointCallback({ direction, movementX, movementY, moveAction, target: publicTarget.value })
       }
       // Hand over control (moveResizeAction) - 将控制权（moveResizeAction）交出
       transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value })
@@ -84,33 +79,29 @@ export default class Resizeable {
     return isPress
   }
 
-  movePointCallback(stateParameter, elementParameter, globalParameter, options, runTimeParameter) {
-    const { moveAction, target, direction, movementX, movementY } = runTimeParameter
-
-    const parameter = this.stateManager.getElementState(target)
+  movePointCallback({ moveAction, target, direction, movementX, movementY }) {
     const {
-      globalDataParameter: { initialTarget, containerInfo },
-      stateParameter: { targetState, pointState },
-      optionParameter: { minWidth, minHeight, maxWidth, maxHeight, pointSize },
-      elementParameter: { pointElements }
-    } = parameter
+      coordinate, containerInfo,
+      targetState, pointState, pointElements,
+      options: { minWidth, minHeight, maxWidth, maxHeight, pointSize }
+    } = this.stateManagerNew.getElementState(target)
 
     moveAction()
 
     const _updateTargetStyle = ({ movementX, movementY }) => {
-      updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget })
+      updateTargetStyle(target, { direction, movementX, movementY }, { targetState, coordinate })
     }
     const _updatePointPosition = ({ movementX, movementY }) => {
-      updatePointPosition({ direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState })
+      updatePointPosition({ direction, movementX, movementY }, { coordinate, pointElements, pointSize, pointState })
     }
 
-    limitTargetResize(target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
+    limitTargetResize(target, { direction, movementX, movementY }, { coordinate, containerInfo, minWidth, minHeight, maxWidth, maxHeight })
 
     _updateTargetStyle({ movementX: movementX.value, movementY: movementY.value })
 
     _updatePointPosition({ movementX: movementX.value, movementY: movementY.value })
 
-    this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
+    // this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
   }
 
   standardStrategies = {

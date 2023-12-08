@@ -234,7 +234,7 @@ export function useMagicDragAPI (
     options.skill.drag && new Draggable(pluginManager, initialStateNew(), stateManager, stateManagerNew)
   }
   function enableResizeFunc() {
-    options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager)
+    options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager, stateManagerNew)
   }
   function initGlobalStyle() {
     options.containerSelector === 'body' && fixContourExceed()

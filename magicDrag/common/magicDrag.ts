@@ -82,45 +82,45 @@ const limitSizeTasks = {
 }
 // 限制目标元素的移动边界
 const limitBoundaryTasks = {
-	left ({ movementX, initialTarget, containerInfo }) {
-		movementX.value + initialTarget.left - containerInfo.offsetLeft <= 0 && (movementX.value = containerInfo.offsetLeft - initialTarget.left)
+	left ({ movementX, coordinate, containerInfo }) {
+		movementX.value + coordinate.left - containerInfo.offsetLeft <= 0 && (movementX.value = containerInfo.offsetLeft - coordinate.left)
 	},
-	right ({ movementX, initialTarget, containerInfo }) {
-		movementX.value + initialTarget.left + initialTarget.width >= containerInfo.width + containerInfo.offsetLeft &&
-		(movementX.value = containerInfo.width - initialTarget.left - initialTarget.width + containerInfo.offsetLeft)
+	right ({ movementX, coordinate, containerInfo }) {
+		movementX.value + coordinate.left + coordinate.width >= containerInfo.width + containerInfo.offsetLeft &&
+		(movementX.value = containerInfo.width - coordinate.left - coordinate.width + containerInfo.offsetLeft)
 	},
-	top ({ movementY, initialTarget, containerInfo }) {
-		movementY.value + initialTarget.top - containerInfo.offsetTop <= 0 && (movementY.value = containerInfo.offsetTop - initialTarget.top)
+	top ({ movementY, coordinate, containerInfo }) {
+		movementY.value + coordinate.top - containerInfo.offsetTop <= 0 && (movementY.value = containerInfo.offsetTop - coordinate.top)
 	},
-	bottom ({ movementY, initialTarget, containerInfo }) {
-		movementY.value + initialTarget.top + initialTarget.height >= containerInfo.height + containerInfo.offsetTop &&
-		(movementY.value = containerInfo.height - initialTarget.top - initialTarget.height + containerInfo.offsetTop)
+	bottom ({ movementY, coordinate, containerInfo }) {
+		movementY.value + coordinate.top + coordinate.height >= containerInfo.height + containerInfo.offsetTop &&
+		(movementY.value = containerInfo.height - coordinate.top - coordinate.height + containerInfo.offsetTop)
 	}
 }
 // create a policy to limit the minimum size when resizing the target
 // 创建调整目标大小时限制最小尺寸的策略
-export function createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo }) {
+export function createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { coordinate, containerInfo }) {
 	const strategies = {}
 	const leftTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
 		limitSizeTasks.left({ movementX, limitMinDistanceX, limitMaxDistanceX })
-		limitBoundaryTasks.left({ movementX, initialTarget, containerInfo })
+		limitBoundaryTasks.left({ movementX, coordinate, containerInfo })
 	}
 	const topTask = (movementY, limitMinDistanceY, limitMaxDistanceY) => {
 		limitSizeTasks.top({ movementY, limitMinDistanceY, limitMaxDistanceY })
-		limitBoundaryTasks.top({ movementY, initialTarget, containerInfo })
+		limitBoundaryTasks.top({ movementY, coordinate, containerInfo })
 	}
 	const bottomTask = (movementY, limitMinDistanceY, limitMaxDistanceY) => {
 		limitSizeTasks.bottom({ movementY, limitMinDistanceY, limitMaxDistanceY })
-		limitBoundaryTasks.bottom({ movementY, initialTarget, containerInfo })
+		limitBoundaryTasks.bottom({ movementY, coordinate, containerInfo })
 	}
 	const rightTask = (movementX, limitMinDistanceX, limitMaxDistanceX) => {
 		limitSizeTasks.right({ movementX, limitMinDistanceX, limitMaxDistanceX })
-		limitBoundaryTasks.right({ movementX, initialTarget, containerInfo })
+		limitBoundaryTasks.right({ movementX, coordinate, containerInfo })
 	}
 
 	All_DIRECTION.forEach(direction => {
 		strategies[direction] = ({ movementX, movementY }) => {
-			const { width, height } = initialTarget
+			const { width, height } = coordinate
 			const { hasT, hasR, hasB, hasL } = getDirectionDescription(direction)
 			// the maximum distance that can be moved
 			const limitMinDistanceX = width - minWidth
@@ -275,15 +275,15 @@ export function updateContourPointPosition (downPointPosition, movement, pointEl
 /* movePoint */
 // updates the coordinates and dimensions of the target element
 // 更新目标元素的坐标和尺寸
-export function updateTargetStyle(target, { direction, movementX, movementY }, { targetState, initialTarget }) {
+export function updateTargetStyle(target, { direction, movementX, movementY }, { targetState, coordinate }) {
   const pointStrategies = memoizeCreateCoordinateStrategies()
   // the browser calculates and updates the element style information with each frame update to avoid unnecessary calculations
   // 浏览器在每次帧更新时计算并更新元素样式信息，以避免不必要的计算
   const styleData = pointStrategies[direction]({
-    left: initialTarget.left,
-    top: initialTarget.top,
-    width: initialTarget.width,
-    height: initialTarget.height,
+    left: coordinate.left,
+    top: coordinate.top,
+    width: coordinate.width,
+    height: coordinate.height,
     offsetX: movementX,
     offsetY: movementY
   })
@@ -361,11 +361,11 @@ export function updatePointPosition({ direction, movementX, movementY }, { coord
 }
 // limits the minimum size of the target element
 // 限制目标元素的最小尺寸
-export function limitTargetResize (target, { direction, movementX, movementY }, { initialTarget, containerInfo, minWidth, minHeight, maxWidth, maxHeight }) {
+export function limitTargetResize (target, { direction, movementX, movementY }, { coordinate, containerInfo, minWidth, minHeight, maxWidth, maxHeight }) {
   // a policy to limit the minimum size when resizing a target
   // 调整目标大小时限制最小尺寸的策略
 	// TODO 缓存优化
-  const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { initialTarget, containerInfo })
+  const resizeLimitStrategies = createResizeLimitStrategies({ minWidth, minHeight, maxWidth, maxHeight }, { coordinate, containerInfo })
   resizeLimitStrategies[direction]({ movementX, movementY })
 }
 

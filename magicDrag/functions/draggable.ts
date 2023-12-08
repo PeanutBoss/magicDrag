@@ -51,9 +51,7 @@ export default class Draggable {
 
 	moveTargetCallback(dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
 		return (moveAction, movement) => {
-			// const coordinate = this.stateManager.currentState.globalDataParameter.initialTarget
 			const coordinate = this.stateManagerNew.currentState.coordinate
-			console.log({ ...coordinate }, 'coordinate')
 
 			const _updateContourPointPosition = movement => {
 				updateContourPointPosition(downPointPosition, movement, pointElements)
