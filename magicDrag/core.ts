@@ -1,7 +1,7 @@
 import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle } from './utils/tools'
-import { setInitialState, pluginManager, stateManager, setInitialStateNew, stateManagerNew } from './manager'
+import { pluginManager, setInitialState, stateManager } from './manager'
 import { ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable } from './functions'
 import { addGlobalUnmountCb, MagicDragOptions, MagicDragState, unMountGlobalCb } from './common/globalData'
 import { fixContourExceed } from './common/magicDrag'
@@ -70,7 +70,7 @@ export function useMagicDragAPI (
   }
 
   // 显示或隐藏轮廓点的方法
-  const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManagerNew)
+  const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManager)
   // 每次都是获取到一个新闭包，需要单独保存
   addGlobalUnmountCb(processBlurOrFocus.bind(null, publicTarget.value, false))
 
@@ -80,8 +80,7 @@ export function useMagicDragAPI (
     initContainer()
     initTarget()
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
-    setInitialState(publicTarget.value, initialState(), true)
-    setInitialStateNew(publicTarget.value, initialStateNew(), true)
+    setInitialState(publicTarget.value, initialStateNew(), true)
     enableDragFunc()
     enableResizeFunc()
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
@@ -191,10 +190,10 @@ export function useMagicDragAPI (
     pointMovementX: toRef(pointState, 'movementX'),
     pointMovementY: toRef(pointState, 'movementY'),
     getStateList() {
-      return stateManager.elementStates.map(m => m.state.globalDataParameter.initialTarget)
+      return stateManager.elementStates.map(m => m.state)
     },
     getTargetState() {
-      return stateManager.currentState.globalDataParameter.initialTarget
+      return stateManager.currentState
     },
     unMount
   }
@@ -231,10 +230,10 @@ export function useMagicDragAPI (
     }
   }
   function enableDragFunc() {
-    options.skill.drag && new Draggable(pluginManager, initialStateNew(), stateManager, stateManagerNew)
+    options.skill.drag && new Draggable(pluginManager, initialStateNew(), stateManager)
   }
   function enableResizeFunc() {
-    options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager, stateManagerNew)
+    options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager)
   }
   function initGlobalStyle() {
     options.containerSelector === 'body' && fixContourExceed()

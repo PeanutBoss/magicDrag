@@ -1,4 +1,4 @@
-import globalData, {MagicDragOptions} from './common/globalData'
+import { MagicDragOptions, defaultOptions } from './common/globalData'
 import {baseErrorTips, mergeObject} from './utils/tools'
 import {checkParameterType, checkParameterValue} from './common/warningAssist'
 import {tidyOptions} from './common/magicDrag'
@@ -15,10 +15,10 @@ export function useMagicDrag(
 	const CorrectParameterType = typeof targetSelector !== 'string' && !(targetSelector instanceof HTMLElement)
 	baseErrorTips(CorrectParameterType, 'targetSelector should be a selector or HTML Element')
 
-	checkParameterType(globalData.defaultOptions, options)
+	checkParameterType(defaultOptions(), options)
 	checkParameterValue(options)
 
-	options = tidyOptions(mergeObject(globalData.defaultOptions, options))
+	options = tidyOptions(mergeObject(defaultOptions(), options))
 	usePlugin(options)
 	baseErrorTips(
 		options.customClass.customPointClass.startsWith(MAGIC_DRAG),

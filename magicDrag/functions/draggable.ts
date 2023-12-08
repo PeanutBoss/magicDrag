@@ -6,9 +6,9 @@ import {State, PluginManager, splitState} from './index'
 import {addGlobalUnmountCb} from '../common/globalData'
 
 export default class Draggable {
-	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager, private stateManagerNew) {
+	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager) {
 		// this.start(stateManager.currentState)
-		this.start(stateManagerNew.currentState)
+		this.start(stateManager.currentState)
 	}
 
 	// start({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
@@ -51,7 +51,7 @@ export default class Draggable {
 
 	moveTargetCallback(dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
 		return (moveAction, movement) => {
-			const { coordinate, allTarget, privateTarget } = this.stateManagerNew.currentState
+			const { coordinate, allTarget, privateTarget } = this.stateManager.currentState
 
 			const _updateContourPointPosition = movement => {
 				updateContourPointPosition(downPointPosition, movement, pointElements)

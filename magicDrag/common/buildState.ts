@@ -30,51 +30,13 @@ interface PrivateState {
 
 export type MagicState = PublicState & PrivateState
 
-enum CoordinateKey {
-	left = '_left',
-	top = '_top',
-	width = '_width',
-	height = '_height'
-}
 export class Coordinate {
 	left = 0
 	top = 0
 	width = 0
 	height = 0
-	public id: string
-	constructor() {
-		this.id = generateID()
-	}
-	// setValue(key: CoordinateKey, value: number) {
-	// 	this[CoordinateKey[key]] = value
-	// }
-	setValue(key: '_left' | '_top'| '_width'| '_height', value) {
-		this[key] = value
-	}
-	// get left() {
-	// 	return this._left
-	// }
-	// get top() {
-	// 	return this._top
-	// }
-	// get width() {
-	// 	return this._width
-	// }
-	// get height() {
-	// 	return this._height
-	// }
-	// set left(val) {
-	// 	return this._left = val
-	// }
-	// set top(val) {
-	// 	return this._top = val
-	// }
-	// set width(val) {
-	// 	return this._width = val
-	// }
-	// set height(val) {
-	// 	return this._height = val
-	// }
+	public id: string = generateID()
+	constructor() {}
 	get isCoordinate() {
 		return true
 	}
@@ -83,12 +45,7 @@ export class Coordinate {
 class BuildState {
 	private _publicState: PublicState = createPublicState()
 	private _privateState: PrivateState = createPrivateState()
-	constructor() {
-		// return {
-		// 	...this._publicState,
-		// 	...this.privateState
-		// }
-	}
+	constructor() {}
 	get publicState() {
 		return this._publicState
 	}

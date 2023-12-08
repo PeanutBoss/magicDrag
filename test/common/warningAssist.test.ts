@@ -1,5 +1,5 @@
 import { checkParameterType, checkParameterValue } from '../../magicDrag/common/warningAssist'
-import globalData from '../../magicDrag/common/globalData'
+import { defaultOptions } from '../../magicDrag/common/globalData'
 import {mergeObject} from "../../magicDrag/utils/tools";
 
 describe('parameters check', function () {
@@ -26,7 +26,7 @@ describe('parameters check', function () {
 	it('Check whether the parameter "initialInfo" field value is valid.', () => {
 		const originWarn = console.warn
 		console.warn = jest.fn()
-		const options = mergeObject(globalData.defaultOptions, { initialInfo: { left: 10, top: -20 } })
+		const options = mergeObject(defaultOptions(), { initialInfo: { left: 10, top: -20 } })
 		checkParameterValue(options)
 		expect(console.warn).toHaveBeenCalled()
 		expect(console.warn.mock.calls[0][0]).toContain('It is not recommended that the initial location information be set to a negative value.')
@@ -38,7 +38,7 @@ describe('parameters check', function () {
 	it('Exchange error field values.', () => {
 		const originWarn = console.warn
 		console.warn = jest.fn()
-		const options = mergeObject(globalData.defaultOptions, { minWidth: 20, maxWidth: 10, minHeight: 30, maxHeight: 20 })
+		const options = mergeObject(defaultOptions(), { minWidth: 20, maxWidth: 10, minHeight: 30, maxHeight: 20 })
 		checkParameterValue(options)
 		expect(console.warn).toHaveBeenCalled()
 		expect(console.warn.mock.calls[0][0]).toContain('The maximum value cannot be less than the minimum value, and the maximum and minimum values have been replaced with each other.')
@@ -52,8 +52,8 @@ describe('parameters check', function () {
 	it('Check the width and height related fields.', () => {
 		const originWarn = console.warn
 		console.warn = jest.fn()
-		checkParameterValue(mergeObject(globalData.defaultOptions, { initialInfo: { height: 50 }, minHeight: 100 }))
-		checkParameterValue(mergeObject(globalData.defaultOptions, { initialInfo: { height: 200 }, maxHeight: 100 }))
+		checkParameterValue(mergeObject(defaultOptions(), { initialInfo: { height: 50 }, minHeight: 100 }))
+		checkParameterValue(mergeObject(defaultOptions(), { initialInfo: { height: 200 }, maxHeight: 100 }))
 		expect(console.warn).toHaveBeenCalledTimes(2)
 		expect(console.warn.mock.calls[0][0]).toContain('The initial size cannot be less than the minimum size.')
 		expect(console.warn.mock.calls[1][0]).toContain('The initial size cannot be greater than the maximum size.')
@@ -63,9 +63,9 @@ describe('parameters check', function () {
 	it('Check that the value of the customStyle.pointStyle field is valid', () => {
 		const originWarn = console.warn
 		console.warn = jest.fn()
-		expect(() => checkParameterValue(mergeObject(globalData.defaultOptions, { customStyle: { pointStyle: { width: '20' } } })))
+		expect(() => checkParameterValue(mergeObject(defaultOptions(), { customStyle: { pointStyle: { width: '20' } } })))
 			.toThrow('The dimensions of the outline points are supported only in px units.')
-		const options = mergeObject(globalData.defaultOptions, { customStyle: { pointStyle: { position: 'relative', display: 'block', boxSizing: 'content-box' } } })
+		const options = mergeObject(defaultOptions(), { customStyle: { pointStyle: { position: 'relative', display: 'block', boxSizing: 'content-box' } } })
 		checkParameterValue(options)
 		expect(console.warn).toHaveBeenCalledTimes(3)
 		expect(console.warn.mock.calls[0][0]).toContain('PointStyle.position the expected value is absolute and is automatically modified')
@@ -81,7 +81,7 @@ describe('parameters check', function () {
 	it('Check that the value of the customStyle.refLineStyle field is valid', () => {
 		const originWarn = console.warn
 		console.warn = jest.fn()
-		const options = mergeObject(globalData.defaultOptions, { customStyle: { refLineStyle: { width: '1', position: 'relative', display: 'block' } } })
+		const options = mergeObject(defaultOptions(), { customStyle: { refLineStyle: { width: '1', position: 'relative', display: 'block' } } })
 		checkParameterValue(options)
 		expect(console.warn).toHaveBeenCalledTimes(3)
 		expect(console.warn.mock.calls[0][0]).toContain('The guide size cannot be set. It has been moved and deleted.')
@@ -98,7 +98,7 @@ describe('parameters check', function () {
 	it('Check that the value of the customStyle.tipStyle field is valid', () => {
 		const originWarn = console.warn
 		console.warn = jest.fn()
-		const options = mergeObject(globalData.defaultOptions, { customStyle: { tipStyle: { position: 'relative', display: 'block', boxSizing: 'content-box' } } })
+		const options = mergeObject(defaultOptions(), { customStyle: { tipStyle: { position: 'relative', display: 'block', boxSizing: 'content-box' } } })
 		checkParameterValue(options)
 		expect(console.warn).toHaveBeenCalledTimes(3)
 		expect(console.warn.mock.calls[0][0]).toContain('TipStyle.position the expected value is absolute and is automatically modified.')

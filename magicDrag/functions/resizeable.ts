@@ -8,8 +8,8 @@ import { addClassName, appendChild, conditionExecute, setStyle, transferControl 
 import { useMoveElement } from '../useMoveElement'
 
 export default class Resizeable {
-  constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager?, private stateManagerNew?) {
-    this.init(stateManagerNew.currentState)
+  constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
+    this.init(stateManager.currentState)
   }
 
   init(initState) {
@@ -41,7 +41,7 @@ export default class Resizeable {
 
   pointIsPressChangeCallback (target, { coordinate, pointState, direction, allTarget, privateTarget }) {
     return newV => {
-      const currentTarget = this.stateManagerNew.currentElement
+      const currentTarget = this.stateManager.currentElement
       // 与window绑定mousedown同理，取消无用更新
       if (target !== currentTarget) return
       pointState.isPress = newV
@@ -84,7 +84,7 @@ export default class Resizeable {
       coordinate, containerInfo,
       targetState, pointState, pointElements, allTarget, privateTarget,
       options: { minWidth, minHeight, maxWidth, maxHeight, pointSize }
-    } = this.stateManagerNew.getElementState(target)
+    } = this.stateManager.getElementState(target)
 
     moveAction()
 

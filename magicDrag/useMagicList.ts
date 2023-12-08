@@ -1,7 +1,7 @@
 import { mergeObject, baseErrorTips, notSelectorAndHTML } from './utils/tools'
 import { MAGIC_DRAG } from './style/className'
 import { usePlugin } from './manager'
-import globalData, { MagicDragOptions } from './common/globalData'
+import { MagicDragOptions, defaultOptions } from './common/globalData'
 import { tidyOptions } from './common/magicDrag'
 import { checkParameterType, checkParameterValue, checkOptionSize } from './common/warningAssist'
 import { useMagicDragAPI } from './core'
@@ -51,10 +51,10 @@ export function useMagicList(
 
 	initialInfos.forEach(initialInfo => checkOptionSize({
 		initialInfo,
-		maxHeight: options?.maxHeight ?? globalData.defaultOptions.maxHeight,
-		minHeight: options?.minHeight ?? globalData.defaultOptions.minHeight,
-		maxWidth: options?.maxWidth ?? globalData.defaultOptions.maxWidth,
-		minWidth: options?.minWidth ?? globalData.defaultOptions.minWidth
+		maxHeight: options?.maxHeight ?? defaultOptions().maxHeight,
+		minHeight: options?.minHeight ?? defaultOptions().minHeight,
+		maxWidth: options?.maxWidth ?? defaultOptions().maxWidth,
+		minWidth: options?.minWidth ?? defaultOptions().minWidth
 	}))
 
 	const hasCorrectType = selectors.some(selector => notSelectorAndHTML(selector))
@@ -62,9 +62,9 @@ export function useMagicList(
 		`targetSelectors receive an array of tag selectors or HTML elements,
 		but the passed targetSelectors contain the value of the unexpected type`)
 
-	checkParameterType(globalData.defaultOptions, options)
+	checkParameterType(defaultOptions(), options)
 	checkParameterValue(options)
-	options = tidyOptions(mergeObject(globalData.defaultOptions, options))
+	options = tidyOptions(mergeObject(defaultOptions(), options))
 	usePlugin(options)
 	baseErrorTips(
 		options.customClass.customPointClass.startsWith(MAGIC_DRAG),
