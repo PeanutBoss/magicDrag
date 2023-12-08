@@ -210,28 +210,23 @@ export function showOrHideContourPoint (pointElements, isShow) {
   }
 }
 function checkIsContains (target, pointElements, targetState, stateManager, event) {
-  const {
-    globalDataParameter: { initialTarget, downPointPosition },
-    stateParameter: { pointState },
-    optionParameter: { pointSize, skill },
-		elementParameter: { allContainer, target: $target, privateTarget }
-  } = stateManager.getElementState(target)
+	const {
+		coordinate, downPointPosition,
+		pointState,
+		options: { pointSize, skill },
+		allContainer, publicTarget, privateTarget
+	} = stateManager.getElementState(target)
 
 	// 如果点击目标元素是容器则隐藏轮廓点
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
 		showOrHideContourPoint(pointElements, false)
     // 隐藏轮廓点时让当前选中的元素的层级恢复到正常状态（因为锁定状态不能被选中，所以不需要判断锁定的状态）
-		privateTarget === $target.value && setStyle($target.value, 'zIndex', initialTarget.zIndex || getTargetZIndex(TargetStatus.Normal, $target.value))
+		privateTarget === publicTarget.value && setStyle(publicTarget.value, 'zIndex', coordinate.zIndex || getTargetZIndex(TargetStatus.Normal, publicTarget.value))
 	}
 
 	// 每注册一个元素，window就多绑定一个事件，点击时也会触发window绑定的其他元素对应的mousedown事件，
 	// 判断事件目标与绑定的元素是否相同，如果不同不响应操作
 	if (event.target !== target) return
-
-	// 如果当前元素是锁定状态，则隐藏轮廓点
-	if (initialTarget.isLock) {
-		showOrHideContourPoint(pointElements, false)
-	}
 
   // 设置当前选中的target
 	stateManager.setCurrentElement(target)
@@ -239,7 +234,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 	// skill.resize关闭时不需要显示轮廓点，就不需要更新位置
   const pointPosition = skill.resize && updatePointPosition(
     { direction: "t", movementX: 0, movementY: 0 },
-    { initialTarget, pointElements, pointSize, pointState },
+    { coordinate, pointElements, pointSize, pointState },
     { excludeCurPoint: false, updateDirection: false }
   )
   // 更新downPointPosition
@@ -330,16 +325,16 @@ function whetherUpdateState (direction, targetState, newState) {
  * excludeCurPoint: 是否排除当前轮廓点（例如按下左下角轮廓点调整大小时，其他轮廓点的坐标是根据这个轮廓点的移动信息更新的，因此不需要更新这个轮廓点的坐标）
  * updateDirection: 按下某个轮廓点时，pointState对应的状态也会更新，updateDirection控制其是否更新
  */
-export function updatePointPosition({ direction, movementX, movementY }, { initialTarget, pointElements, pointSize, pointState }, updateOption: any = {}) {
+export function updatePointPosition({ direction, movementX, movementY }, { coordinate, pointElements, pointSize, pointState }, updateOption: any = {}) {
 	const { excludeCurPoint = true, updateDirection = true } = updateOption
   const paramStrategies = memoizeCreatePositionStrategies()
   // obtain the latest coordinate and dimension information of target. Different strategies are used
   // to calculate coordinates and dimensions at different points
   // 获取目标元素的最新坐标和尺寸信息。使用不同的策略计算不同点的坐标和尺寸
-  const coordinate = paramStrategies[direction]({ ...initialTarget, movementX, movementY })
+  const newCoordinate = paramStrategies[direction]({ ...coordinate, movementX, movementY })
   // set the position of the contour points based on the new coordinates and dimension information
   // 根据新的坐标和尺寸信息设置轮廓点的位置
-  const pointPosition = createParentPosition(coordinate, pointSize)
+  const pointPosition = createParentPosition(newCoordinate, pointSize)
 
   for (const innerDirection in pointPosition) {
     // there is no need to update the current drag point
@@ -436,8 +431,15 @@ export function saveInitialData (target, initialTarget) {
 		width: target.offsetWidth,
 		height: target.offsetHeight
 	}
+	// TODO 重构完成后可删除
 	for (const rectKey in initialTarget) {
 		initialTarget[rectKey] = rect[rectKey] || initialTarget[rectKey]
+	}
+	// 处理坐标对象
+	if (initialTarget.isCoordinate) {
+		for (const key of ['left', 'top', 'width', 'height']) {
+			initialTarget[key] = rect[key] || initialTarget[key]
+		}
 	}
 }
 

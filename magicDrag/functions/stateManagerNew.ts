@@ -2,10 +2,10 @@ import { Ref } from 'vue'
 import { MagicDragOptions } from '../common/globalData'
 import type { MagicState } from '../common/buildState'
 
-export type DomElementState = {
+export type DomElementRecords = {
 	element: HTMLElement
 	state: MagicState
-	options?: MagicDragOptions
+	options?: any
 }
 
 type Flatten<T> = T extends object
@@ -77,10 +77,10 @@ export type State = {
 
 type Callback = (element: HTMLElement, state: any) => void
 
-class StateManager {
-	private _elementStates: DomElementState[] = []
+class StateManagerNew {
+	private _elementRecords: DomElementRecords[] = []
 	private selectedElement: HTMLElement | null = null
-	private selectedState: DomElementState['state'] = null
+	private selectedState: DomElementRecords['state'] = null
 	private subscriptions: Record<string, Callback[]> = {}
 
 	/**
@@ -90,20 +90,20 @@ class StateManager {
 	 * @param isSetSelected 是否设置为选中状态
 	 */
 	registerElementState(element: HTMLElement, initialState: any, isSetSelected = true) {
-		this._elementStates.push({ element, state: initialState })
+		this._elementRecords.push({ element, state: initialState, options: {} })
 		isSetSelected && this.setCurrentElement(element)
 	}
 
 	// 获取 DOM 元素的状态
 	getElementState(element: HTMLElement) {
-		const elementState = this._elementStates.find((es) => es.element === element)
+		const elementState = this._elementRecords.find((es) => es.element === element)
 		if (!elementState) throw Error('元素未注册')
 		return elementState ? elementState.state : null
 	}
 
 	// 更新 DOM 元素的状态
 	updateElementState(element: HTMLElement, newState: any) {
-		const elementState = this._elementStates.find((es) => es.element === element)
+		const elementState = this._elementRecords.find((es) => es.element === element)
 		if (elementState) {
 			elementState.state = newState
 			this.notifySubscribers(element, newState)
@@ -111,17 +111,17 @@ class StateManager {
 	}
 
 	clear() {
-		this._elementStates = []
+		this._elementRecords = []
 		this.selectedState = null
 		this.selectedElement = null
 		this.subscriptions = {}
 	}
 
 	get elementStates() {
-		return this._elementStates.slice()
+		return this._elementRecords.slice()
 	}
   get targetState() {
-    return (this.currentState as MagicState)
+    return (this.currentState as MagicState).targetState
   }
 
 	// 获取当前选中的 DOM 元素
@@ -135,7 +135,7 @@ class StateManager {
 	}
 
 	get size() {
-		return this._elementStates.length
+		return this._elementRecords.length
 	}
 
 	// 设置当前选中的 DOM 元素和状态
@@ -147,13 +147,13 @@ class StateManager {
 	}
 
   updatePublicTargetState() {
-    StateManager.COORDINATE_KEY.forEach(key => {
-      this.currentState.stateParameter.targetState[key] = this.currentState.globalDataParameter.initialTarget[key]
+    StateManagerNew.COORDINATE_KEY.forEach(key => {
+      this.currentState.targetState[key] = this.currentState.coordinate[key]
     })
   }
 
   updatePublicPointState() {
-    StateManager.COORDINATE_KEY.forEach(key => {
+		StateManagerNew.COORDINATE_KEY.forEach(key => {
 
     })
   }
@@ -181,14 +181,7 @@ class StateManager {
 		}
 	}
 
-  get containerLeft() {
-    return this.currentState?.globalDataParameter?.containerInfo?.offsetLeft || 0
-  }
-  get containerTop() {
-    return this.currentState?.globalDataParameter?.containerInfo?.offsetTop || 0
-  }
-
   static COORDINATE_KEY = ['left', 'top', 'width', 'height']
 }
 
-export default StateManager
+export default StateManagerNew

@@ -1,7 +1,7 @@
 import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle } from './utils/tools'
-import { setInitialState, pluginManager, stateManager } from './manager'
+import { setInitialState, pluginManager, stateManager, setInitialStateNew, stateManagerNew } from './manager'
 import { ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable } from './functions'
 import { addGlobalUnmountCb, MagicDragOptions, MagicDragState, unMountGlobalCb } from './common/globalData'
 import { fixContourExceed } from './common/magicDrag'
@@ -33,8 +33,8 @@ let {
   allTarget, allContainer,
   publicTarget, publicContainer, pointElements, containerInfo, downPointPosition,
   targetState, pointState,
-  left, top, width, height, id
-} = new BuildState()
+  // left, top, width, height, id, coordinate // 坐标信息必须是独立的
+} = new BuildState().publicState
 
 let initialTarget
 function initGlobalData () {
@@ -54,6 +54,8 @@ export function useMagicDragAPI (
 ): MagicDragState {
   const { containerSelector } = options
 
+  const privateState = new BuildState().privateState
+
   // 初始化全局数据
   initGlobalData()
   initGlobalStyle()
@@ -68,7 +70,7 @@ export function useMagicDragAPI (
   }
 
   // 显示或隐藏轮廓点的方法
-  const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManager)
+  const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManagerNew)
   // 每次都是获取到一个新闭包，需要单独保存
   addGlobalUnmountCb(processBlurOrFocus.bind(null, publicTarget.value, false))
 
@@ -79,6 +81,7 @@ export function useMagicDragAPI (
     initTarget()
     // 注册元素状态的同时将元素设置为选中元素（初始化Draggable和Resizeable时需要使用）
     setInitialState(publicTarget.value, initialState(), true)
+    setInitialStateNew(publicTarget.value, initialStateNew(), true)
     enableDragFunc()
     enableResizeFunc()
     // 处理点击目标元素显示/隐藏轮廓点的逻辑
@@ -155,6 +158,7 @@ export function useMagicDragAPI (
     initTargetStyle(publicTarget.value, posRelativeToContainer().size, posRelativeToContainer().position)
     // 初始化
     saveInitialData(publicTarget.value, globalDataParameter.initialTarget)
+    saveInitialData(publicTarget.value, privateState.coordinate)
     // 初始化结束后更新状态
     updateState(targetState, globalDataParameter.initialTarget)
     // 计算相对容器的尺寸信息
@@ -218,8 +222,16 @@ export function useMagicDragAPI (
   function initialState(): State {
     return { elementParameter, stateParameter, globalDataParameter, optionParameter: options }
   }
+  function initialStateNew(): any {
+    return {
+      allTarget, allContainer,
+      publicTarget, publicContainer, pointElements, containerInfo, downPointPosition,
+      targetState, pointState,
+      ...privateState, options
+    }
+  }
   function enableDragFunc() {
-    options.skill.drag && new Draggable(pluginManager, initialState(), stateManager)
+    options.skill.drag && new Draggable(pluginManager, initialStateNew(), stateManager, stateManagerNew)
   }
   function enableResizeFunc() {
     options.skill.resize && new Resizeable(pluginManager, initialState(), stateManager)

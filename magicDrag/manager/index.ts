@@ -1,3 +1,3 @@
-export { setInitialState, stateManager } from './state'
+export { setInitialState, stateManager, setInitialStateNew, stateManagerNew } from './state'
 export { usePlugin, pluginManager } from './plugin'
 

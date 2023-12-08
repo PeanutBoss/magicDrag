@@ -48,7 +48,8 @@ function createDefaultConfig (entry, output, templatePath, port = 9001) {
       port,
       open: true
     },
-    mode: 'development'
+    mode: 'development',
+    devtool: 'source-map'
   }
 }
 
