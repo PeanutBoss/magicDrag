@@ -59,8 +59,6 @@ export function useMagicDragAPI (
   // 初始化全局数据
   initGlobalData()
   initGlobalStyle()
-  const stateParameter: StateParameter = { pointState, targetState }
-  const globalDataParameter: GlobalDataParameter = { initialTarget, containerInfo, downPointPosition }
   const elementParameter: ElementParameter = {
     pointElements, allTarget, allContainer,
     target: publicTarget,
@@ -94,7 +92,7 @@ export function useMagicDragAPI (
     guaranteeOpenPosition()
     saveContainerSizeAndOffset(contentAreaSize(), contentAreaOffset())
     function saveContainerEl() {
-      elementParameter.privateContainer = publicContainer.value = getElement(containerSelector)
+      publicContainer.value = getElement(containerSelector)
       allContainer.push(publicContainer.value)
     }
     // 容器尺寸信息
@@ -130,10 +128,6 @@ export function useMagicDragAPI (
       }
     }
     function saveContainerSizeAndOffset({ containerWidth, containerHeight }, { offsetLeft, offsetTop }) {
-      globalDataParameter.containerInfo.width = containerWidth
-      globalDataParameter.containerInfo.height = containerHeight
-      globalDataParameter.containerInfo.offsetLeft = offsetLeft
-      globalDataParameter.containerInfo.offsetTop = offsetTop
       containerInfo.width = containerWidth
       containerInfo.height = containerHeight
       containerInfo.offsetLeft = offsetLeft
@@ -156,10 +150,9 @@ export function useMagicDragAPI (
     // 初始化目标元素样式信息
     initTargetStyle(publicTarget.value, posRelativeToContainer().size, posRelativeToContainer().position)
     // 初始化
-    saveInitialData(publicTarget.value, globalDataParameter.initialTarget)
     saveInitialData(publicTarget.value, privateState.coordinate)
     // 初始化结束后更新状态
-    updateState(targetState, globalDataParameter.initialTarget)
+    updateState(targetState, privateState.coordinate)
     // 计算相对容器的尺寸信息
     function posRelativeToContainer() {
       const left = options.initialInfo.left + containerInfo.offsetLeft

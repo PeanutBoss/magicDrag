@@ -2,7 +2,7 @@ import { watch } from '@vue/runtime-core'
 import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../common/magicDrag'
-import {State, PluginManager, splitState} from './index'
+import { State, PluginManager } from './index'
 import {addGlobalUnmountCb} from '../common/globalData'
 
 export default class Draggable {
@@ -11,13 +11,7 @@ export default class Draggable {
 		this.start(stateManager.currentState)
 	}
 
-	// start({ elementParameter, stateParameter, globalDataParameter, optionParameter }) {
 	start(currentState) {
-		// const {
-		// 	pointElements, target, targetState, containerInfo,
-		// 	initialTarget, downPointPosition,
-		// 	drag, limitDragDirection, dragCallback
-		// } = splitState(currentState)
 		const {
 			pointElements, targetState, containerInfo, publicTarget,
 			downPointPosition, allTarget, privateTarget,

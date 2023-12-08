@@ -22,35 +22,6 @@ type DeepFlatten<T> = T extends object
 		: never
 	: T
 
-export function splitState(state: State) {
-	return {
-		target: state.elementParameter.target,
-		container: state.elementParameter.container,
-		privateTarget: state.elementParameter.privateTarget,
-		privateContainer: state.elementParameter.privateContainer,
-		pointElements: state.elementParameter.pointElements,
-		allTarget: state.elementParameter.allTarget,
-		allContainer: state.elementParameter.allContainer,
-		pointState: state.stateParameter.pointState,
-		targetState: state.stateParameter.targetState,
-		initialTarget: state.globalDataParameter.initialTarget,
-		containerInfo: state.globalDataParameter.containerInfo,
-		downPointPosition: state.globalDataParameter.downPointPosition,
-		drag: state.optionParameter.skill.drag,
-		resize: state.optionParameter.skill.resize,
-		limitDragDirection: state.optionParameter.skill.limitDragDirection,
-		dragCallback: state.optionParameter.callbacks.dragCallback,
-		resizeCallback: state.optionParameter.callbacks.resizeCallback,
-		customPointClass: state.optionParameter.customClass.customPointClass,
-		containerSelector: state.optionParameter.containerSelector,
-		minWidth: state.optionParameter.minWidth,
-		minHeight: state.optionParameter.minHeight,
-		maxWidth: state.optionParameter.maxWidth,
-		maxHeight: state.optionParameter.maxHeight,
-		pointSize: state.optionParameter.pointSize
-	}
-}
-
 export interface ElementParameter {
 	target: Ref<HTMLElement>
 	container: Ref<HTMLElement>
