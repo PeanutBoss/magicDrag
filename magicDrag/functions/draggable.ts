@@ -20,7 +20,7 @@ export default class Draggable {
 		// } = splitState(currentState)
 		const {
 			pointElements, targetState, containerInfo, publicTarget,
-			initialTarget, downPointPosition,
+			downPointPosition, allTarget, privateTarget,
 			drag, limitDragDirection, dragCallback,
 			coordinate
 		} = currentState
@@ -37,7 +37,7 @@ export default class Draggable {
 		addGlobalUnmountCb(destroy)
 
 		watch(isPress, this.isPressChangeCallback(
-      { pointElements },
+      { pointElements, allTarget, privateTarget },
 			{ targetState },
 			{ downPointPosition, coordinate },
 			{ movementX, movementY }
@@ -51,7 +51,7 @@ export default class Draggable {
 
 	moveTargetCallback(dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
 		return (moveAction, movement) => {
-			const coordinate = this.stateManagerNew.currentState.coordinate
+			const { coordinate, allTarget, privateTarget } = this.stateManagerNew.currentState
 
 			const _updateContourPointPosition = movement => {
 				updateContourPointPosition(downPointPosition, movement, pointElements)
@@ -80,7 +80,7 @@ export default class Draggable {
 			// 将控制权（moveTargetAction）交出
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
-			// this.plugins.callExtensionPoint('drag', parameter, { movement, _updateContourPointPosition, _updateState })
+			this.plugins.callExtensionPoint('drag', { allTarget, privateTarget }, { movement, _updateContourPointPosition, _updateState })
 		}
 	}
 
@@ -119,7 +119,7 @@ export default class Draggable {
 		updateInitialTarget(coordinate, { top: coordinate.top + movementY.value, left: coordinate.left + movementX.value })
 	}
 
-	isPressChangeCallback({ pointElements }, { targetState }, { downPointPosition, coordinate }, { movementX, movementY }) {
+	isPressChangeCallback({ pointElements, allTarget, privateTarget }, { targetState }, { downPointPosition, coordinate }, { movementX, movementY }) {
 		return (newV) => {
 			updateState(targetState, 'isPress', newV)
 			if (newV) {
@@ -128,7 +128,7 @@ export default class Draggable {
 				this.targetMouseUp({ coordinate, movementX, movementY })
 			}
 
-      // this.plugins.callExtensionPoint('targetPressChange', newV, elementParameter)
+      this.plugins.callExtensionPoint('targetPressChange', newV, { allTarget, privateTarget })
 		}
 	}
 }

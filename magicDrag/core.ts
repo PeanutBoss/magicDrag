@@ -168,7 +168,7 @@ export function useMagicDragAPI (
       return { position: { left, top }, size: { width: options.initialInfo.width, height: options.initialInfo.height } }
     }
     function saveTargetEl() {
-      elementParameter.privateTarget = publicTarget.value = getElement(targetSelector)
+      privateState.privateTarget = publicTarget.value = getElement(targetSelector)
       allTarget.push(publicTarget.value)
     }
     function saveAndBindTargetData() {

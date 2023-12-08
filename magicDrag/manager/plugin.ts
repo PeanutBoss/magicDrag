@@ -8,7 +8,7 @@ import RegionalSelection from '../plugins/regionalSelection'
 export const pluginManager = new PluginManager()
 
 export function usePlugin(options: MagicDragOptions) {
-	// options.skill.refLine && enableRefLine(tidyRefLineOptions(options))
+	options.skill.refLine && enableRefLine(tidyRefLineOptions(options))
 	options.skill.shortcut && enableShortcut()
   options.skill.multipleChoice && enableMultipleChoice()
   options.skill.regionalSelection && enableRegionalSelection(options.containerSelector)

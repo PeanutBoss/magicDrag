@@ -14,16 +14,16 @@ export default class Resizeable {
 
   init(initState) {
     const {
-      coordinate,
+      coordinate, allTarget, privateTarget,
       publicTarget, pointElements, pointState,
       options
     } = initState
     const pointPosition = createParentPosition(coordinate, options.pointSize)
-    this.initContourPoints({ publicTarget, pointElements }, { pointState }, { coordinate }, options, { pointPosition })
+    this.initContourPoints({ publicTarget, pointElements, allTarget, privateTarget }, { pointState }, { coordinate }, options, { pointPosition })
   }
 
   // 初始化轮廓点
-  initContourPoints ({ publicTarget, pointElements }, { pointState }, { coordinate }, options, runtimeParameter) {
+  initContourPoints ({ publicTarget, pointElements, allTarget, privateTarget }, { pointState }, { coordinate }, options, runtimeParameter) {
     const { pointPosition } = runtimeParameter
     const { pointSize, customClass: { customPointClass }, customStyle: { pointStyle } } = options
     for (const direction in pointPosition) {
@@ -35,11 +35,11 @@ export default class Resizeable {
 
       const isPress = this.addDragFunctionToPoint(publicTarget, options, { point, pointPosition, direction })
       // update the width and height information when releasing the mouse - 当释放鼠标时更新宽度和高度信息
-      watch(isPress, this.pointIsPressChangeCallback(publicTarget.value, { coordinate, pointState, direction }))
+      watch(isPress, this.pointIsPressChangeCallback(publicTarget.value, { coordinate, pointState, direction, allTarget, privateTarget }))
     }
   }
 
-  pointIsPressChangeCallback (target, { coordinate, pointState, direction }) {
+  pointIsPressChangeCallback (target, { coordinate, pointState, direction, allTarget, privateTarget }) {
     return newV => {
       const currentTarget = this.stateManagerNew.currentElement
       // 与window绑定mousedown同理，取消无用更新
@@ -51,7 +51,7 @@ export default class Resizeable {
         updateInitialTarget(coordinate, getCoordinateByElement(target))
       }
       // MARK 通知插件鼠标状态更新
-      // this.plugins.callExtensionPoint('pointPressChange', newV, elementParameter)
+      this.plugins.callExtensionPoint('pointPressChange', newV, { allTarget, privateTarget })
     }
   }
 
@@ -82,7 +82,7 @@ export default class Resizeable {
   movePointCallback({ moveAction, target, direction, movementX, movementY }) {
     const {
       coordinate, containerInfo,
-      targetState, pointState, pointElements,
+      targetState, pointState, pointElements, allTarget, privateTarget,
       options: { minWidth, minHeight, maxWidth, maxHeight, pointSize }
     } = this.stateManagerNew.getElementState(target)
 
@@ -101,7 +101,7 @@ export default class Resizeable {
 
     _updatePointPosition({ movementX: movementX.value, movementY: movementY.value })
 
-    // this.plugins.callExtensionPoint('resize', parameter, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
+    this.plugins.callExtensionPoint('resize', { allTarget, privateTarget }, { movementX, movementY, _updateTargetStyle, _updatePointPosition })
   }
 
   standardStrategies = {

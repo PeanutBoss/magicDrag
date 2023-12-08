@@ -73,42 +73,42 @@ export default class RefLine implements Plugin {
 			this.tipEls[elKey] = el
 		}
 	}
-	drag({ elementParameter, stateParameter, globalDataParameter, optionParameter }: State, { movement, _updateContourPointPosition, _updateState }) {
+	drag(dragEles, { movement, _updateContourPointPosition, _updateState }) {
 		const adsorbCallback = ({ top, left }) => {
 			movement.x -= left
 			movement.y -= top
 			_updateContourPointPosition(movement)
 			_updateState(movement)
 		}
-		this.startCheck({ elementParameter }, 'drag', adsorbCallback)
+		this.startCheck(dragEles, 'drag', adsorbCallback)
 	}
-	resize({ elementParameter }: State, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {
+	resize({ allTarget, privateTarget }: State, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {
 		const adsorbCallback = ({ top, left }) => {
 			movementX.value -= left
 			movementY.value -= top
 			_updateTargetStyle({ movementX: movementX.value, movementY: movementY.value })
 			_updatePointPosition({ movementX: movementX.value, movementY: movementY.value })
 		}
-		this.startCheck({ elementParameter }, 'resize', adsorbCallback)
+		this.startCheck({ allTarget, privateTarget }, 'resize', adsorbCallback)
 	}
-	targetPressChange(isPress: boolean, elementParameter) {
+	targetPressChange(isPress: boolean, dragEles) {
 		isPress
-			? this.startCheck({ elementParameter }, 'drag')
+			? this.startCheck(dragEles, 'drag')
 			: this.checkEnd()
 	}
-	pointPressChange(isPress: boolean, elementParameter) {
+	pointPressChange(isPress: boolean, dragEles) {
 		isPress
-			? this.startCheck({ elementParameter }, 'drag')
+			? this.startCheck(dragEles, 'drag')
 			: this.checkEnd()
 	}
 
 	// 检查是否有达到吸附条件的元素
-	startCheck({ elementParameter }, way, adsorbCallback?) {
+	startCheck(dragEles, way, adsorbCallback?) {
 		const self = this
 		// 记录参与本次操作的所有元素
-		this.rectManager.setElement(elementParameter.allTarget, elementParameter.privateTarget)
+		this.rectManager.setElement(dragEles.allTarget, dragEles.privateTarget)
 		// 获取要与dragRect对比的rect对象
-		const checkDragRect = this.rectManager.excludeDragRect(elementParameter.privateTarget)
+		const checkDragRect = this.rectManager.excludeDragRect(dragEles.privateTarget)
 		// 开始新一轮的check需要重置上一次check的数据
 		this.checkEnd()
 		// 创建参考线的描述数据
@@ -127,7 +127,7 @@ export default class RefLine implements Plugin {
 		function createRefLineDescribeData() {
 			// 遍历nodeList
 			Array.from(checkDragRect).forEach((item: DragDOMRect) => {
-				if (item === elementParameter.privateTarget) return
+				if (item === dragEles.privateTarget) return
 
 				// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
 				self.buildConditions(item)
