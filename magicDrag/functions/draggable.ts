@@ -2,7 +2,7 @@ import { watch } from '@vue/runtime-core'
 import { setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../common/magicDrag'
-import { State, PluginManager } from './index'
+import { State, PluginManager } from '../manager'
 import {addGlobalUnmountCb} from '../common/globalData'
 
 export default class Draggable {

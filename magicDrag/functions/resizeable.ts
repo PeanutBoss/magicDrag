@@ -1,5 +1,5 @@
 import { watch } from '@vue/runtime-core'
-import { State, PluginManager } from './index'
+import { State, PluginManager } from '../manager'
 import {
   Direction, InitPointOption, createParentPosition, limitTargetResize, setPosition,
   updateInitialTarget, updatePointPosition, updateTargetStyle, getCoordinateByElement

@@ -2,7 +2,7 @@
 import { Ref } from '@vue/reactivity'
 import { Direction } from './magicDrag'
 import { ClassName } from '../style/className'
-import { DomElementRecords } from '../functions/stateManager'
+import { DomElementRecords } from '../manager/stateManager'
 
 export interface MagicDragOptions {
 	containerSelector: string

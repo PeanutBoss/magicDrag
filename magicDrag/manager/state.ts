@@ -1,4 +1,4 @@
-import StateManager from '../functions/stateManager'
+import StateManager from '../manager/stateManager'
 
 export const stateManager = new StateManager()
 

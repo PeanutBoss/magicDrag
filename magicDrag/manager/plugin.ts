@@ -1,4 +1,4 @@
-import PluginManager from '../functions/pluginManager'
+import PluginManager from '../manager/pluginManager'
 import { MagicDragOptions } from '../common/globalData'
 import RefLine, { RefLineOptions } from '../plugins/refLine'
 import Shortcut from '../plugins/shortcut'
@@ -40,7 +40,7 @@ function enableMultipleChoice() {
   pluginManager.registerPlugin(multipleChoice.name, multipleChoice)
 }
 
-function enableRegionalSelection(container: string | HTMLElement) {
+function enableRegionalSelection(container: string) {
   const regionalSelection = new RegionalSelection(container)
   pluginManager.registerPlugin(regionalSelection.name, regionalSelection)
 }
