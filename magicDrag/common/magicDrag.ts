@@ -215,7 +215,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 		pointState,
 		options: { pointSize, skill },
 		allContainer, publicTarget, privateTarget
-	} = stateManager.getElementState(target)
+	} = stateManager.getStateByEle(target)
 
 	// 如果点击目标元素是容器则隐藏轮廓点
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {

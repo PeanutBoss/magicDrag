@@ -1,6 +1,6 @@
 import { Ref } from 'vue'
 import { MagicDragOptions } from '../common/globalData'
-import type { MagicState } from '../common/buildState'
+import type { MagicState, PrivateState } from '../common/buildState'
 
 export type DomElementRecords = {
 	element: HTMLElement
@@ -66,10 +66,14 @@ class StateManager {
 	}
 
 	// 获取 DOM 元素的状态
-	getElementState(element: HTMLElement) {
+	getStateByEle(element: HTMLElement) {
 		const elementState = this._elementRecords.find((es) => es.element === element)
-		if (!elementState) throw Error('元素未注册')
+		if (!elementState) console.warn('元素未注册')
 		return elementState ? elementState.state : null
+	}
+	setStateByEle(element: HTMLElement, key: keyof PrivateState, value: any) {
+		const ele = this._elementRecords.find(item => item.element === element)
+		if(ele) ele.state[key] = value
 	}
 
 	// 更新 DOM 元素的状态
@@ -93,6 +97,9 @@ class StateManager {
 		this.subscriptions = {}
 	}
 
+	get allElement() {
+		return this.selectedState.allTarget
+	}
 	get containerLeft() {
 		return this.currentState?.containerInfo?.offsetLeft || 0
 	}
@@ -124,7 +131,7 @@ class StateManager {
 	// 设置当前选中的 DOM 元素和状态
 	setCurrentElement(element: HTMLElement | null) {
 		this.selectedElement = element
-		this.selectedState = this.getElementState(element!) // 获取选中元素的状态
+		this.selectedState = this.getStateByEle(element!) // 获取选中元素的状态
     this.updatePublicTargetState() // 更新公共状态
 		this.notifySubscribers(this.selectedElement, this.selectedState)
 	}
@@ -132,12 +139,6 @@ class StateManager {
   updatePublicTargetState() {
     StateManager.COORDINATE_KEY.forEach(key => {
       this.currentState.targetState[key] = this.currentState.coordinate[key]
-    })
-  }
-
-  updatePublicPointState() {
-		StateManager.COORDINATE_KEY.forEach(key => {
-
     })
   }
 

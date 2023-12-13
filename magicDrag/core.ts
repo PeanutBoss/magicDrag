@@ -2,7 +2,8 @@ import { toRef, computed } from '@vue/reactivity'
 import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle } from './utils/tools'
 import { pluginManager, setInitialState, stateManager } from './manager'
-import { ElementParameter, GlobalDataParameter, State, StateParameter, Draggable, Resizeable } from './functions'
+import { Draggable, Resizeable } from './functions'
+import { ElementParameter, GlobalDataParameter, State, StateParameter } from './manager'
 import { addGlobalUnmountCb, MagicDragOptions, MagicDragState, unMountGlobalCb } from './common/globalData'
 import { fixContourExceed } from './common/magicDrag'
 import {
@@ -16,15 +17,13 @@ window.stateManager = stateManager
 
 /*
 * TODO
-*  * 通过globalData为一个目标元素创建一个状态对象
-*  * 初始化目标元素、容器元素的操作用一个类来做
 *  15.使用 key 的映射表来保存坐标、尺寸等信息
 *  18.目标元素的 left、top 应该是相对容器计算
-*  23.等比缩放
-*  24.将用户传入的不支持使用的值修改为默认值并警告
+*  23.等比缩放 (需要修改 createCoordinateStrategies 方法)
 *  26.通过调用API的方式来处理配置信息
 *  27.style类控制样式
 *  28.包裹、容器元素位置信息兼容
+*  29.重构创建初始状态的代码
 * */
 
 // default configuration

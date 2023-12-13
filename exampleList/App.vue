@@ -50,6 +50,9 @@ const state = useMagicList(
     initialInfo: { left: 0, top: 0 },
     customClass: {},
     gap: 10,
+    skill: {
+      regionalSelection: true
+    },
     customStyle: {
       tipStyle: {
         width: '34px',

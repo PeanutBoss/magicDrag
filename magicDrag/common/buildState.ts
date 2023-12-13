@@ -16,12 +16,14 @@ interface PublicState {
 	pointState: any // 轮廓点的响应式状态
 	targetState: any // 目标元素的响应式状态
 }
-interface PrivateState {
-	width?: number
-	height?: number
-	left?: number
-	top?: number
-	coordinate: Coordinate
+export interface PrivateState {
+	// width?: number
+	// height?: number
+	// left?: number
+	// top?: number
+	isSelected: boolean // 是否选中
+	isComposed: boolean // 是否组合
+	coordinate: Coordinate // 坐标信息 位置&尺寸
 	id: string
 	container?: HTMLElement
 	privateTarget?: HTMLElement
@@ -60,6 +62,8 @@ function createPrivateState(): PrivateState {
 	return {
 		privateTarget: null,
 		coordinate: new Coordinate(),
+		isSelected: false,
+		isComposed: false,
 		id: generateID()
 	}
 }

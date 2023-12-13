@@ -1,4 +1,4 @@
-import { Plugin } from '../functions'
+import { Plugin, StateManager } from '../manager'
 import { getElement, numberToStringSize, setStyle } from '../utils/tools'
 
 /*
@@ -11,7 +11,7 @@ class RegionalSelection implements Plugin {
   private startCoordinate = { x: 0, y: 0 }
   private isPress = false
   private containerEl
-  constructor(private containerSelector: string) {
+  constructor(private containerSelector: string, private stateManager: StateManager) {
     this.name = 'regionalSelection'
     this.bindMouseDown = this._mousedown.bind(this)
     this.bindMouseMove = this._mouseMove.bind(this)
@@ -43,7 +43,8 @@ class RegionalSelection implements Plugin {
     const regionalStyle = {
       position: 'absolute',
       border: '1px solid aqua',
-      zIndex: '88888'
+      zIndex: '88888',
+      backgroundColor: 'rgba(0, 255, 255, 0.1)'
     }
     setStyle(this.regionalEl, regionalStyle)
     document.body.appendChild(this.regionalEl)
@@ -55,6 +56,11 @@ class RegionalSelection implements Plugin {
   }
   _mouseMove(event) {
     if (!this.isPress) return
+
+    // 先重置所有元素的选中状态和样式
+    this.stateManager.allElement.forEach(el => el.style.outline = 'none')
+    this.stateManager.allElement.forEach(el => this.stateManager.setStateByEle(el, 'isSelected', false))
+
     const offsetX = event.pageX - this.startCoordinate.x
     const offsetY = event.pageY - this.startCoordinate.y
     const regionalStyle = {
@@ -65,17 +71,29 @@ class RegionalSelection implements Plugin {
     }
     setStyle(this.regionalEl, 'display', 'block')
     setStyle(this.regionalEl, numberToStringSize(regionalStyle))
+
+    const selectedEls = this.containList(this.stateManager.allElement)
+      .map(m => m.el)
+
+    // 更新选中元素的标识
+    selectedEls.forEach(el => {
+      this.stateManager.setStateByEle(el, 'isSelected', true)
+    })
+    // 为选中的元素添加选中状态
+    selectedEls.forEach(el => {
+      el.style.outline = '1px solid black'
+    })
   }
   containList(elList: HTMLElement[]) {
     const regionalRect = this.regionalEl.getBoundingClientRect()
-    return elList.map(m => m.getBoundingClientRect())
+    return elList.map(m => Object.assign(m.getBoundingClientRect(), { el: m }))
       .filter(rect => this._isContains(rect, regionalRect))
   }
   _isContains(rect, referRect) {
-    return rect.left > referRect.left
-      && rect.top > referRect.top
-      && rect.right < referRect.right
-      && rect.bottom < referRect.bottom
+    return rect.left >= referRect.left
+      && rect.top >= referRect.top
+      && rect.right <= referRect.right
+      && rect.bottom <= referRect.bottom
   }
 
   bindMouseDown

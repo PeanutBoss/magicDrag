@@ -1,4 +1,4 @@
-import { Plugin } from '../functions'
+import { Plugin } from '../manager'
 import { useSpecialKey } from './shortcut'
 const { ctrlIsPress } = useSpecialKey()
 

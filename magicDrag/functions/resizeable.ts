@@ -84,7 +84,7 @@ export default class Resizeable {
       coordinate, containerInfo,
       targetState, pointState, pointElements, allTarget, privateTarget,
       options: { minWidth, minHeight, maxWidth, maxHeight, pointSize }
-    } = this.stateManager.getElementState(target)
+    } = this.stateManager.getStateByEle(target)
 
     moveAction()
 

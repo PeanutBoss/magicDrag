@@ -1,4 +1,4 @@
-import { Plugin } from '../functions'
+import { Plugin } from '../manager'
 import { ref } from '@vue/reactivity'
 
 const shiftIsPress = ref(false)
