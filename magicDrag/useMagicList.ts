@@ -83,3 +83,7 @@ export function useMagicList(
 
 	return state
 }
+
+export function useMagicDrag(targetSelector, options) {
+	return useMagicList([targetSelector], options)
+}
