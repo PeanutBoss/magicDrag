@@ -21,7 +21,7 @@ export interface PrivateState {
 	// height?: number
 	// left?: number
 	// top?: number
-	isSelected: boolean // 是否选中
+	regionSelected: boolean // 是否选中
 	isComposed: boolean // 是否组合
 	coordinate: Coordinate // 坐标信息 位置&尺寸
 	id: string
@@ -62,7 +62,7 @@ function createPrivateState(): PrivateState {
 	return {
 		privateTarget: null,
 		coordinate: new Coordinate(),
-		isSelected: false,
+		regionSelected: false,
 		isComposed: false,
 		id: generateID()
 	}

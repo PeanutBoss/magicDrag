@@ -74,12 +74,13 @@ export default class RefLine implements Plugin {
 			this.tipEls[elKey] = el
 		}
 	}
-	drag(dragEles, { movement, _updateContourPointPosition, _updateState }) {
+	drag(dragEles, { movement, _updateContourPointPosition, _updateState, updateOtherEl }) {
 		const adsorbCallback = ({ top, left }) => {
 			movement.x -= left
 			movement.y -= top
 			_updateContourPointPosition(movement)
 			_updateState(movement)
+			updateOtherEl(movement)
 		}
 		this.startCheck(dragEles, 'drag', adsorbCallback)
 	}

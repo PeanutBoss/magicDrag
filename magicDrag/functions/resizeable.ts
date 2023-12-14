@@ -8,7 +8,7 @@ import { addClassName, appendChild, conditionExecute, setStyle, transferControl 
 import { useMoveElement } from '../useMoveElement'
 
 export default class Resizeable {
-  constructor(private plugins: PluginManager = new PluginManager(), parameter: State, private stateManager) {
+  constructor(private plugins: PluginManager = new PluginManager(), private stateManager) {
     this.init(stateManager.currentState)
   }
 

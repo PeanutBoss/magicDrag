@@ -29,7 +29,7 @@ type Callback = (defaultAction: Function, ...rest: any[]) => void
 
 export function useMoveElement (
 	selector: string | HTMLElement,
-	callback: Callback | Record<'move' | 'down' | 'up', Callback> = () => {},
+	callback: Callback | Partial<Record<'move' | 'down' | 'up', Callback>> = () => {},
 	moveOption: MoveOption = {}
 ) {
   const { limitDirection, throttleTime = 10, offsetLeft = 0, offsetTop = 0 } = moveOption
@@ -112,6 +112,7 @@ export function useMoveElement (
 			arriveTopBound() && setMovement({ y: offsetTop - startCoordinate.y })
 			updatePosition()
 		}
+
 		transferControl(moveAction, moveCallback, watchMovement)
 	}
 	function save() {

@@ -83,7 +83,7 @@ class RegionalSelection implements Plugin {
     }
     function selectedState(elementList: HTMLElement[]) {
       selectedEls.forEach(el => {
-        _this.stateManager.setStateByEle(el, 'isSelected', true)
+        _this.stateManager.setStateByEle(el, 'regionSelected', true)
       })
     }
     function selectedStyle(elementList: HTMLElement[]) {
@@ -94,7 +94,7 @@ class RegionalSelection implements Plugin {
     function resetStateAndStyle() {
       _this.stateManager.allElement.forEach(el => {
         el.style.outline = 'none'
-        _this.stateManager.setStateByEle(el, 'isSelected', false)
+        _this.stateManager.setStateByEle(el, 'regionSelected', false)
       })
     }
   }

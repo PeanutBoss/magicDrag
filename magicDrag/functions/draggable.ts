@@ -6,8 +6,9 @@ import { State, PluginManager } from '../manager'
 import {addGlobalUnmountCb} from '../common/globalData'
 
 export default class Draggable {
-	constructor(private plugins: PluginManager = new PluginManager, parameter: State, private stateManager) {
-		// this.start(stateManager.currentState)
+	// regionSelected start coordinate
+	private RSStartCoordinate: { left: number, top: number, width: number, height: number, el?: HTMLElement }[] = []
+	constructor(private plugins: PluginManager = new PluginManager, private stateManager) {
 		this.start(stateManager.currentState)
 	}
 
@@ -23,9 +24,23 @@ export default class Draggable {
 		drag && setStyle(publicTarget.value, 'cursor', 'all-scroll')
 		const { movementX, movementY, isPress, destroy } = useMoveElement(
 			publicTarget.value,
-			this.moveTargetCallback(dragCallback, {
-				downPointPosition, pointElements, targetState, containerInfo
-			}),
+			{
+				move: this.moveTargetCallback(dragCallback, {
+					downPointPosition, pointElements, targetState, containerInfo
+				}),
+				down: downAction => {
+					downAction()
+					// 按下的时候记录被区域选中的组件的初始位置
+					this.stateManager.regionSelectedState.forEach(item => {
+						this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
+					})
+				},
+				up: upAction => {
+					upAction()
+					// 鼠标抬起时候清空记录的数据
+					this.RSStartCoordinate.length = 0
+				}
+			},
 			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop }
 		)
 		addGlobalUnmountCb(destroy)
@@ -44,6 +59,7 @@ export default class Draggable {
 	}
 
 	moveTargetCallback(dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
+		const _this = this
 		return (moveAction, movement) => {
 			const { coordinate, allTarget, privateTarget } = this.stateManager.currentState
 
@@ -66,15 +82,52 @@ export default class Draggable {
 				// update the position of the contour points
 				// 更新轮廓点位置
 				_updateContourPointPosition(movement)
-
 				// update the state of the target element - 更新目标元素状态
 				_updateState(movement)
+
+				updateOtherEl(movement)
 			}
 			// Hand over control (moveTargetAction)
 			// 将控制权（moveTargetAction）交出
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
-			this.plugins.callExtensionPoint('drag', { allTarget, privateTarget }, { movement, _updateContourPointPosition, _updateState })
+			this.plugins.callExtensionPoint('drag', { allTarget, privateTarget }, { movement, _updateContourPointPosition, _updateState, updateOtherEl })
+
+			// 需要更新其他元素位置和状态 TODO 其他元素抵达边界时需要限制
+			function updateOtherEl(movement) {
+				updateOtherElStyle()
+				updateOtherElState()
+				if (needMoveOtherEl()) {
+					// 更新其余被区域选中的元素样式
+					updateOtherElStyle()
+					// 更新其余被区域选中的元素状态
+					updateOtherElState()
+				}
+				function needMoveOtherEl() {
+					return _this.stateManager.regionSelectedElement.length
+				}
+				function updateOtherElStyle() {
+					_this.stateManager.regionSelectedElement.forEach(el => {
+						if (el === _this.stateManager.currentElement) return
+						const startCoordinate = _this.RSStartCoordinate.find(item => item.el === el)
+						if (startCoordinate) {
+							el.style.left = startCoordinate.left + movement.x + 'px'
+							el.style.top = startCoordinate.top + movement.y + 'px'
+						}
+					})
+				}
+				function updateOtherElState() {
+					_this.stateManager.regionSelectedState.forEach(state => {
+						if (state.privateTarget === _this.stateManager.currentElement) return
+						const startCoordinate = _this.RSStartCoordinate.find(item => item.el === state.privateTarget)
+						if (startCoordinate) {
+							_this.stateManager.setStateByEle(state.privateTarget, 'coordinate',
+								{ ...state.coordinate, left: startCoordinate.left + movement.x, top: startCoordinate.top + movement.y }
+							)
+						}
+					})
+				}
+			}
 		}
 	}
 

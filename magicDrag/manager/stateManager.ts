@@ -1,6 +1,7 @@
 import { Ref } from 'vue'
 import { MagicDragOptions } from '../common/globalData'
 import type { MagicState, PrivateState } from '../common/buildState'
+import {mergeObject} from "../utils/tools";
 
 export type DomElementRecords = {
 	element: HTMLElement
@@ -74,7 +75,13 @@ class StateManager {
 
 	setStateByEle(element: HTMLElement, key: keyof PrivateState, value: PrivateState[keyof PrivateState]) {
 		const ele = this._elementRecords.find(item => item.element === element)
-		if(ele) ele.state[key] = value
+		if(ele && typeof value === 'object') {
+			for (const innerKey in value) {
+				ele.state[key][innerKey] = value[innerKey]
+			}
+		} else {
+			ele.state[key] = value
+		}
 		this.notifySubscribers('selected', element, key, value)
 	}
 
@@ -120,6 +127,15 @@ class StateManager {
 
 	get size() {
 		return this._elementRecords.length
+	}
+
+	get regionSelectedState(): MagicState[] {
+		return this._elementRecords.filter(record => record.state.regionSelected)
+			.map(m => m.state)
+	}
+	get regionSelectedElement(): HTMLElement[] {
+		return this._elementRecords.filter(record => record.state.regionSelected)
+			.map(m => m.element)
 	}
 
 	// 设置当前选中的 DOM 元素和状态
