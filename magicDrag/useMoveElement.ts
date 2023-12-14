@@ -25,8 +25,24 @@ type Pos = {
 	y?: number
 }
 
-export function useMoveElement (selector: string | HTMLElement, moveCallback?, moveOption: MoveOption = {}) {
+type Callback = (defaultAction: Function, ...rest: any[]) => void
+
+export function useMoveElement (
+	selector: string | HTMLElement,
+	callback: Callback | Record<'move' | 'down' | 'up', Callback> = () => {},
+	moveOption: MoveOption = {}
+) {
   const { limitDirection, throttleTime = 10, offsetLeft = 0, offsetTop = 0 } = moveOption
+
+	let moveCallback, downCallback, upCallback
+	if (callback && typeof callback === 'function') {
+		moveCallback = callback
+	} else if (callback && typeof callback === 'object') {
+		moveCallback = callback.move
+		downCallback = callback.down
+		upCallback = callback.up
+	}
+
 	baseWarnTips(throttleTime >= 100, 'the throttleTime is greater than 100 and the visual effects may not be smooth')
 
   nextTick(initElement)
@@ -63,19 +79,27 @@ export function useMoveElement (selector: string | HTMLElement, moveCallback?, m
 		$ele.addEventListener('mousedown', mouseDown)
 	}
 	function mouseUp () {
-		changePress(false)
+		const upAction = () => {
+			changePress(false)
+		}
+		// 如果有回调将控制权交给回调，否则执行默认动作
+		upCallback ? transferControl(upAction, upCallback) : upAction()
 	}
 	function mouseDown (event) {
 		event.preventDefault()
-		changePress(true)
-		// 初始化鼠标移动的距离
-		setMovement({ x: 0, y: 0 })
-		// 更新计算元素的坐标
-		setStartCoordinate({ x: $ele.offsetLeft, y: $ele.offsetTop })
-		// 更新鼠标的坐标
-		setStartOffset({ x: event.pageX, y: event.pageY })
-		window.addEventListener('mousemove', throttleMouseMove)
-		window.addEventListener('mouseup', mouseUp)
+		const downAction = () => {
+			changePress(true)
+			// 初始化鼠标移动的距离
+			setMovement({ x: 0, y: 0 })
+			// 更新计算元素的坐标
+			setStartCoordinate({ x: $ele.offsetLeft, y: $ele.offsetTop })
+			// 更新鼠标的坐标
+			setStartOffset({ x: event.pageX, y: event.pageY })
+			window.addEventListener('mousemove', throttleMouseMove)
+			window.addEventListener('mouseup', mouseUp)
+		}
+		// 如果有回调将控制权交给回调，否则执行默认动作
+		downCallback ? transferControl(downAction, downCallback) : downAction()
 	}
 	function mouseMove (event) {
 		if (!isPress.value) return
