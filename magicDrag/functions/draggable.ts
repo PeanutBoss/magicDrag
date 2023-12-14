@@ -80,7 +80,7 @@ export default class Draggable {
 				_updateContourPointPosition(movement)
 				// update the state of the target element - 更新目标元素状态
 				_updateState(movement)
-
+				// 更新被多选的其他元素的状态和样式（位置）
 				updateOtherEl(movement)
 			}
 			// Hand over control (moveTargetAction)

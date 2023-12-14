@@ -34,10 +34,17 @@ class RegionalSelection implements Plugin {
     return this.containerEl
   }
   _mousedown(event) {
+    // 保证已经获取到了容器元素
     this.getContainer()
     if (event.target !== this.containerEl) return
     this.isPress = true
-    if (!this.regionalEl) this.regionalEl = document.createElement('div')
+    // 确保已经创建了选择框
+    if (!this.regionalEl) {
+      this.regionalEl = document.createElement('div')
+      document.body.appendChild(this.regionalEl)
+    }
+
+    // 计算并设置元素样式
     this.startCoordinate.x = event.pageX
     this.startCoordinate.y = event.pageY
     const regionalStyle = {
@@ -47,7 +54,8 @@ class RegionalSelection implements Plugin {
       backgroundColor: 'rgba(0, 255, 255, 0.1)'
     }
     setStyle(this.regionalEl, regionalStyle)
-    document.body.appendChild(this.regionalEl)
+
+    // 重置选中元素的状态和样式
     this.resetStateAndStyle()
   }
   _mouseup() {
