@@ -56,33 +56,47 @@ class RegionalSelection implements Plugin {
   }
   _mouseMove(event) {
     if (!this.isPress) return
+    const _this = this
 
-    // 先重置所有元素的选中状态和样式
-    this.stateManager.allElement.forEach(el => el.style.outline = 'none')
-    this.stateManager.allElement.forEach(el => this.stateManager.setStateByEle(el, 'isSelected', false))
-
-    const offsetX = event.pageX - this.startCoordinate.x
-    const offsetY = event.pageY - this.startCoordinate.y
-    const regionalStyle = {
-      width: Math.abs(offsetX),
-      height: Math.abs(offsetY),
-      left: offsetX < 0 ? this.startCoordinate.x + offsetX : this.startCoordinate.x,
-      top: offsetY < 0 ? this.startCoordinate.y + offsetY : this.startCoordinate.y
-    }
-    setStyle(this.regionalEl, 'display', 'block')
-    setStyle(this.regionalEl, numberToStringSize(regionalStyle))
-
-    const selectedEls = this.containList(this.stateManager.allElement)
-      .map(m => m.el)
-
+    // 先重置所有元素的选中标识和样式
+    resetStateAndStyle()
+    // 为选中的元素添加选中样式
+    updateRegionStyle()
+    // 被选中的元素列表
+    const selectedEls = this.containList(this.stateManager.allElement).map(m => m.el)
     // 更新选中元素的标识
-    selectedEls.forEach(el => {
-      this.stateManager.setStateByEle(el, 'isSelected', true)
-    })
-    // 为选中的元素添加选中状态
-    selectedEls.forEach(el => {
-      el.style.outline = '1px solid black'
-    })
+    selectedState(selectedEls)
+    // 更新区域选择框的样式
+    selectedStyle(selectedEls)
+
+    function updateRegionStyle() {
+      const offsetX = event.pageX - _this.startCoordinate.x
+      const offsetY = event.pageY - _this.startCoordinate.y
+      const regionalStyle = {
+        width: Math.abs(offsetX),
+        height: Math.abs(offsetY),
+        left: offsetX < 0 ? _this.startCoordinate.x + offsetX : _this.startCoordinate.x,
+        top: offsetY < 0 ? _this.startCoordinate.y + offsetY : _this.startCoordinate.y
+      }
+      setStyle(_this.regionalEl, 'display', 'block')
+      setStyle(_this.regionalEl, numberToStringSize(regionalStyle))
+    }
+    function selectedState(elementList: HTMLElement[]) {
+      selectedEls.forEach(el => {
+        _this.stateManager.setStateByEle(el, 'isSelected', true)
+      })
+    }
+    function selectedStyle(elementList: HTMLElement[]) {
+      selectedEls.forEach(el => {
+        el.style.outline = '1px solid black'
+      })
+    }
+    function resetStateAndStyle() {
+      _this.stateManager.allElement.forEach(el => {
+        el.style.outline = 'none'
+        _this.stateManager.setStateByEle(el, 'isSelected', false)
+      })
+    }
   }
   containList(elList: HTMLElement[]) {
     const regionalRect = this.regionalEl.getBoundingClientRect()
