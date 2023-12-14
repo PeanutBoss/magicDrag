@@ -46,7 +46,7 @@ export type State = {
 	optionParameter: MagicDragOptions
 }
 
-type Callback = (element: HTMLElement, state: any) => void
+type Callback = (element: HTMLElement, key: keyof PrivateState, value: PrivateState[keyof PrivateState]) => void
 
 class StateManager {
 	private _elementRecords: DomElementRecords[] = []
@@ -71,19 +71,13 @@ class StateManager {
 		if (!elementState) console.warn('元素未注册')
 		return elementState ? elementState.state : null
 	}
-	setStateByEle(element: HTMLElement, key: keyof PrivateState, value: any) {
+
+	setStateByEle(element: HTMLElement, key: keyof PrivateState, value: PrivateState[keyof PrivateState]) {
 		const ele = this._elementRecords.find(item => item.element === element)
 		if(ele) ele.state[key] = value
+		this.notifySubscribers('selected', element, key, value)
 	}
 
-	// 更新 DOM 元素的状态
-	updateElementState(element: HTMLElement, newState: any) {
-		const elementState = this._elementRecords.find((es) => es.element === element)
-		if (elementState) {
-			elementState.state = newState
-			this.notifySubscribers(element, newState)
-		}
-	}
 	insertState(element: HTMLElement, state, options) {
 		this._elementRecords.push({
 			element, state, options
@@ -133,7 +127,6 @@ class StateManager {
 		this.selectedElement = element
 		this.selectedState = this.getStateByEle(element!) // 获取选中元素的状态
     this.updatePublicTargetState() // 更新公共状态
-		this.notifySubscribers(this.selectedElement, this.selectedState)
 	}
 
   updatePublicTargetState() {
@@ -158,10 +151,10 @@ class StateManager {
 	}
 
 	// 通知订阅者状态变化
-	private notifySubscribers(element: HTMLElement | null, state: any) {
-		const callbacks = this.subscriptions['selection']
-		if (callbacks) {
-			callbacks.forEach((callback) => callback(element!, state))
+	private notifySubscribers(type: string, element: HTMLElement, key: keyof PrivateState, value: PrivateState[keyof PrivateState]) {
+		if (this.subscriptions[type]) {
+			this.subscriptions[type]
+				.forEach((callback) => callback(element!, key, value))
 		}
 	}
 
