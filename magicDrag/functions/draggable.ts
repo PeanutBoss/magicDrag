@@ -63,12 +63,8 @@ export default class Draggable {
 		return (moveAction, movement) => {
 			const { coordinate, allTarget, privateTarget } = this.stateManager.currentState
 
-			const _updateContourPointPosition = movement => {
-				updateContourPointPosition(downPointPosition, movement, pointElements)
-			}
-			const _updateState = movement => {
-				updateState(targetState, { left: coordinate.left + movement.x, top: coordinate.top + movement.y })
-			}
+			const _updateContourPointPosition = movement => updateContourPointPosition(downPointPosition, movement, pointElements)
+			const _updateState = movement => updateState(targetState, { left: coordinate.left + movement.x, top: coordinate.top + movement.y })
 
 			// Wrap the action to move the target element as a separate new function, and if the user defines a callback
 			// use moveTargetAction as an argument to that callback

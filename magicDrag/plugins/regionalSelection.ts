@@ -48,6 +48,7 @@ class RegionalSelection implements Plugin {
     }
     setStyle(this.regionalEl, regionalStyle)
     document.body.appendChild(this.regionalEl)
+    this.resetStateAndStyle()
   }
   _mouseup() {
     if (!this.isPress) return
@@ -59,7 +60,7 @@ class RegionalSelection implements Plugin {
     const _this = this
 
     // 先重置所有元素的选中标识和样式
-    resetStateAndStyle()
+    this.resetStateAndStyle()
     // 为选中的元素添加选中样式
     updateRegionStyle()
     // 被选中的元素列表
@@ -91,12 +92,12 @@ class RegionalSelection implements Plugin {
         el.style.outline = '1px solid black'
       })
     }
-    function resetStateAndStyle() {
-      _this.stateManager.allElement.forEach(el => {
-        el.style.outline = 'none'
-        _this.stateManager.setStateByEle(el, 'regionSelected', false)
-      })
-    }
+  }
+  resetStateAndStyle() {
+    this.stateManager.allElement.forEach(el => {
+      el.style.outline = 'none'
+      this.stateManager.setStateByEle(el, 'regionSelected', false)
+    })
   }
   containList(elList: HTMLElement[]) {
     const regionalRect = this.regionalEl.getBoundingClientRect()
