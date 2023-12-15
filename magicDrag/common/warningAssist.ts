@@ -1,8 +1,8 @@
 
 // check that the type of options passed in is correct
 // 检查传入的选项类型是否正确
-import {baseErrorTips, baseWarnTips, isNullOrUndefined} from '../utils/tools'
-import {MagicDragOptions} from './globalData'
+import { baseErrorTips, baseWarnTips, isNullOrUndefined } from '../utils/tools'
+import { MagicDragOptions } from './globalData'
 
 export function checkParameterType (defaultOptions, options = {}) {
   for (const key in defaultOptions) {
@@ -25,7 +25,7 @@ export function checkParameterValue(options: MagicDragOptions) {
   checkCustomStyle(options?.customStyle)
 }
 export function checkOptionSize(options: Partial<MagicDragOptions> = {}) {
-  baseWarnTips(errorSize(),`The maximum value cannot be less than the minimum value, and the maximum and minimum values have been replaced with each other.`)
+  baseWarnTips(errorSize(),'The maximum value cannot be less than the minimum value, and the maximum and minimum values have been replaced with each other.')
   // 最大最小值无效时替换最大最小值
   fixMaxAndMin()
   baseWarnTips(lessThanMinimumH() && lessThanMinimumW(), 'The initial size cannot be less than the minimum size.')

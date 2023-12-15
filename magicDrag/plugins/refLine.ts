@@ -1,5 +1,5 @@
 import { Plugin, State } from '../manager'
-import {removeElements, setStyle} from '../utils/tools'
+import { removeElements, setStyle } from '../utils/tools'
 import { mountAssistMethod } from '../common/magicDrag'
 import { MagicDragOptions } from '../common/globalData'
 import RectProcessor from '../utils/rectProcessor'

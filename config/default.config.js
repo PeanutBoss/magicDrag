@@ -1,6 +1,7 @@
 const htmlPlugin = require('html-webpack-plugin')
 const path = require('path')
 const vueLoader = require('vue-loader')
+const ESLintPlugin = require('eslint-webpack-plugin')
 
 function createDefaultConfig (entry, output, templatePath, port = 9001) {
   return {
@@ -39,6 +40,9 @@ function createDefaultConfig (entry, output, templatePath, port = 9001) {
     plugins: [
       new htmlPlugin({
         template: templatePath
+      }),
+      new ESLintPlugin({
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       })
     ],
     resolve: {
@@ -46,7 +50,7 @@ function createDefaultConfig (entry, output, templatePath, port = 9001) {
     },
     devServer: {
       port,
-      open: true
+      open: false
     },
     mode: 'development',
     devtool: 'source-map'

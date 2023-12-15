@@ -1,9 +1,8 @@
 /* strong correlation functional - 强相关的功能 */
 
-import {reactive} from '@vue/reactivity'
-import {conditionExecute, generateID, getObjectIntValue, memoize, numberToStringSize, setStyle} from '../utils/tools'
-import {getTargetZIndex, TargetStatus} from '../style/className'
-import {MagicDragOptions} from './globalData'
+import { conditionExecute, generateID, getObjectIntValue, memoize, numberToStringSize, setStyle } from '../utils/tools'
+import { getTargetZIndex, TargetStatus } from '../style/className'
+import { MagicDragOptions } from './globalData'
 
 export type Direction = 'lt' | 'lb' | 'rt' | 'rb' | 'l' | 'r' | 't' | 'b'
 interface DirectionDescription {
@@ -233,7 +232,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 
 	// skill.resize关闭时不需要显示轮廓点，就不需要更新位置
   const pointPosition = skill.resize && updatePointPosition(
-    { direction: "t", movementX: 0, movementY: 0 },
+    { direction: 't', movementX: 0, movementY: 0 },
     { coordinate, pointElements, pointSize, pointState },
     { excludeCurPoint: false, updateDirection: false }
   )

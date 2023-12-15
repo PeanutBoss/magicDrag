@@ -1,9 +1,9 @@
 import { watch } from '@vue/runtime-core'
-import {numberToStringSize, setStyle, transferControl} from '../utils/tools'
+import { numberToStringSize, setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
-import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../common/magicDrag'
+import { saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState } from '../common/magicDrag'
 import { State, PluginManager } from '../manager'
-import {addGlobalUnmountCb} from '../common/globalData'
+import { addGlobalUnmountCb } from '../common/globalData'
 
 export default class Draggable {
 	// regionSelected start coordinate

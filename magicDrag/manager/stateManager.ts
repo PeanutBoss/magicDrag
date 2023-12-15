@@ -1,7 +1,7 @@
 import { Ref } from 'vue'
 import { MagicDragOptions } from '../common/globalData'
 import type { MagicState, PrivateState } from '../common/buildState'
-import {mergeObject} from "../utils/tools";
+import { mergeObject } from '../utils/tools'
 
 export type DomElementRecords = {
 	element: HTMLElement
