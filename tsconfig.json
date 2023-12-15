@@ -6,7 +6,8 @@
     "declaration": true, // 不生成生命文件
     "composite": false,
     "outDir": "./lib",
-//    "noEmit": false, // 生成js文件
+//    "types": ["cypress"],
+    //    "noEmit": false, // 生成js文件
     /* Projects */
     // "incremental": true,                              /* Enable incremental compilation */
     // "composite": true,                                /* Enable constraints that allow a TypeScript project to be used with project references. */

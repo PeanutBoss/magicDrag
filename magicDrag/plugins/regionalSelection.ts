@@ -49,6 +49,7 @@ class RegionalSelection implements Plugin {
     // 确保已经创建了选择框
     if (!this.regionalEl) {
       this.regionalEl = document.createElement('div')
+      this.regionalEl.classList.add('regional-selection')
       document.body.appendChild(this.regionalEl)
     }
 

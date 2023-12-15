@@ -24,9 +24,7 @@ describe('拖拽功能测试', () => {
 
     cy.get('body')
       .trigger('mousemove', { pageX: 209, pageY: 199 })
-
-    // 鼠标抬起
-    cy.get('body').trigger('mouseup')
+      .trigger('mouseup')
 
     // box元素的位置被移动到 200,200
     cy.get('.box').then(els => {
@@ -143,9 +141,6 @@ describe('拖拽功能测试', () => {
     // 移动到 300,300 的位置
     cy.get('body')
       .trigger('mousemove', { pageX: 300, pageY: 300 })
-
-    // 抬起鼠标
-    cy.get('body')
       .trigger('mouseup')
 
     // 按下左上角的轮廓点
@@ -181,9 +176,6 @@ describe('拖拽功能测试', () => {
     // 将box移动到 600,600 的位置
     cy.get('body')
       .trigger('mousemove', { pageX: 650, pageY: 650 })
-
-    // 抬起鼠标
-    cy.get('body')
       .trigger('mouseup')
 
     // 按下右下角的轮廓点
@@ -226,9 +218,6 @@ describe('拖拽功能测试', () => {
     // 移动到 700,700 的位置
     cy.get('body')
       .trigger('mousemove', { pageX: 750, pageY: 750 })
-
-    // 抬起鼠标
-    cy.get('body')
       .trigger('mouseup')
 
     // 按下右下角的轮廓点
@@ -254,7 +243,54 @@ describe('拖拽功能测试', () => {
       .trigger('mouseup')
   })
 
-  // 需要放到最后一个
+  it('多选功能测试', () => {
+    cy.visit('http://localhost:9001/')
+
+    // 选中两个组件
+    cy.get('.wrap')
+      .trigger('mousedown', { which: 1, pageX: 800, pageY: 800 })
+    cy.get('body')
+      .trigger('mousemove', { pageX: 175, pageY: 175 })
+
+    // 检查区域提示的dom是否显示
+    cy.get('.regional-selection')
+      .should('be.visible')
+
+    // 鼠标抬起
+    cy.get('body')
+      .trigger('mouseup')
+
+    // 检查被选中的元素是否出现被选中的样式
+    cy.get('.box').then(els => {
+      const outline = els[0].style.outline
+      cy.wrap(outline).should('have.string', '1px')
+      cy.wrap(outline).should('have.string', 'black')
+      cy.wrap(outline).should('have.string', 'solid')
+    })
+
+    // 移动box元素
+    cy.get('.box')
+      .trigger('mousedown', 'center')
+    cy.get('body')
+      .trigger('mousemove', { pageX: 450, pageY: 450 })
+      .trigger('mouseup')
+
+    // box2元素也移动了相同的距离
+    cy.get('.box2').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.left).should('eq', 675)
+      cy.wrap(rect.top).should('eq', 675)
+    })
+
+    cy.get('.wrap')
+      .trigger('mousedown', 'bottomLeft')
+
+    // 检查区域提示的dom是否隐藏
+    cy.get('.regional-selection')
+      .should('not.be.visible')
+  })
+
+  // 放到最后一个
   it('辅助线、距离提示功能', async () => {
     cy.visit('http://localhost:9001/')
 
