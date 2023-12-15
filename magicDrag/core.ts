@@ -182,7 +182,7 @@ export function useMagicDragAPI (
     pointMovementX: toRef(pointState, 'movementX'),
     pointMovementY: toRef(pointState, 'movementY'),
     getStateList() {
-      return stateManager.elementStates.map(m => m.state)
+      return stateManager.elementRecords.map(m => m.state)
     },
     getTargetState() {
       return stateManager.currentState
@@ -202,7 +202,7 @@ export function useMagicDragAPI (
     // 清除状态信息
     stateManager.clear()
     function removeListener() {
-      stateManager.elementStates
+      stateManager.elementRecords
         .map(m => m.element)
         .forEach(el => el.removeEventListener('mousedown', updateTargetPointTo))
     }

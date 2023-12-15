@@ -108,7 +108,7 @@ class StateManager {
 		return this.currentState?.containerInfo?.offsetTop || 0
 	}
 
-	get elementStates() {
+	get elementRecords() {
 		return this._elementRecords.slice()
 	}
   get targetState() {

@@ -51,7 +51,8 @@ const state = useMagicList(
     customClass: {},
     gap: 10,
     skill: {
-      regionalSelection: true
+      regionalSelection: true,
+      multipleChoice: true
     },
     customStyle: {
       tipStyle: {

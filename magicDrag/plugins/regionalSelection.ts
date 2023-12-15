@@ -1,5 +1,8 @@
 import { Plugin, StateManager } from '../manager'
 import { getElement, numberToStringSize, setStyle } from '../utils/tools'
+import { useSpecialKey } from './shortcut'
+
+const { ctrlIsPress } = useSpecialKey()
 
 /*
 * 获取容器元素可以在按下鼠标的时候获取，这个时候DOM必然已经插入完毕
@@ -16,6 +19,7 @@ class RegionalSelection implements Plugin {
     this.bindMouseDown = this._mousedown.bind(this)
     this.bindMouseMove = this._mouseMove.bind(this)
     this.bindMouseUp = this._mouseup.bind(this)
+    this.bindClickSelection = this._clickSelection.bind(this)
   }
   init() {
     window.addEventListener('mousedown', this.bindMouseDown)
@@ -23,14 +27,18 @@ class RegionalSelection implements Plugin {
     window.addEventListener('mouseup', this.bindMouseUp)
   }
   unbind() {
-    this.containerSelector = null
     window.removeEventListener('mousedown', this.bindMouseDown)
     window.removeEventListener('mousemove', this.bindMouseMove)
     window.removeEventListener('mouseup', this.bindMouseUp)
+    this.containerEl?.removeEventListener('click', this.bindClickSelection)
+    this.containerSelector = null
+    this.containerEl = null
   }
   getContainer() {
     if (this.containerEl) return this.containerEl
     this.containerEl = getElement(this.containerSelector)
+    // 添加点击多选
+    this.containerEl.addEventListener('click', this.bindClickSelection)
     return this.containerEl
   }
   _mousedown(event) {
@@ -73,10 +81,8 @@ class RegionalSelection implements Plugin {
     updateRegionStyle()
     // 被选中的元素列表
     const selectedEls = this.containList(this.stateManager.allElement).map(m => m.el)
-    // 更新选中元素的标识
-    selectedState(selectedEls)
-    // 更新区域选择框的样式
-    selectedStyle(selectedEls)
+    // 更新选中元素的状态和样式
+    changeSelected(selectedEls)
 
     function updateRegionStyle() {
       const offsetX = event.pageX - _this.startCoordinate.x
@@ -90,22 +96,23 @@ class RegionalSelection implements Plugin {
       setStyle(_this.regionalEl, 'display', 'block')
       setStyle(_this.regionalEl, numberToStringSize(regionalStyle))
     }
-    function selectedState(elementList: HTMLElement[]) {
-      selectedEls.forEach(el => {
-        _this.stateManager.setStateByEle(el, 'regionSelected', true)
-      })
-    }
-    function selectedStyle(elementList: HTMLElement[]) {
-      selectedEls.forEach(el => {
-        el.style.outline = '1px solid black'
-      })
+    function changeSelected(elementList: HTMLElement[]) {
+      selectedEls.forEach(el => _this.setSelected(el, true))
     }
   }
+  _clickSelection(e) {
+    // 没有按下ctrl
+    if (!ctrlIsPress.value) return
+    // 点击的不是拖拽元素
+    if (e.target === this.containerEl) return
+    if (this.stateManager.allElement.includes(e.target)) this.setSelected(e.target, true)
+  }
   resetStateAndStyle() {
-    this.stateManager.allElement.forEach(el => {
-      el.style.outline = 'none'
-      this.stateManager.setStateByEle(el, 'regionSelected', false)
-    })
+    this.stateManager.allElement.forEach(el => this.setSelected(el, false))
+  }
+  setSelected(el: HTMLElement, isSelected: boolean) {
+    setStyle(el, 'outline', isSelected ? '1px solid black' : 'none')
+    this.stateManager.setStateByEle(el, 'regionSelected', isSelected)
   }
   containList(elList: HTMLElement[]) {
     const regionalRect = this.regionalEl.getBoundingClientRect()
@@ -119,6 +126,7 @@ class RegionalSelection implements Plugin {
       && rect.bottom <= referRect.bottom
   }
 
+  bindClickSelection
   bindMouseDown
   bindMouseUp
   bindMouseMove

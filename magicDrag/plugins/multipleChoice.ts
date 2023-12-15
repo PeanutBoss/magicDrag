@@ -1,4 +1,4 @@
-import { Plugin } from '../manager'
+import { Plugin, StateManager } from '../manager'
 import { useSpecialKey } from './shortcut'
 const { ctrlIsPress } = useSpecialKey()
 
@@ -6,7 +6,7 @@ class MultipleChoice implements Plugin {
   private _checkedList
   private initialPosList
   public name: string
-  constructor() {
+  constructor(private stateManager: StateManager) {
     this.name = 'multipleChecked'
   }
   init() {
