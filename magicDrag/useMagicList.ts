@@ -8,8 +8,8 @@ import { useMagicDragAPI } from './core'
 
 export interface SelectDescribe {
 	selector: string
-	initialPosition: Record<'left' | 'top', number>
-	initialSize: Record<'width' | 'height', number>
+	initialPosition?: Record<'left' | 'top', number>
+	initialSize?: Record<'width' | 'height', number>
 }
 type MagicSelector = string | HTMLElement | SelectDescribe
 
