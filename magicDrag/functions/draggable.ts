@@ -16,9 +16,10 @@ export default class Draggable {
 		const {
 			pointElements, targetState, containerInfo, publicTarget,
 			downPointPosition, allTarget, privateTarget,
-			drag, limitDragDirection, dragCallback,
+			drag, dragCallback,
 			coordinate
 		} = currentState
+		const { limitDragDirection } = currentState.options.skill
 
 		// modify the icon for the hover state - 修改悬停状态的图标
 		drag && setStyle(publicTarget.value, 'cursor', 'all-scroll')
