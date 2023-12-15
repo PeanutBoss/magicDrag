@@ -76,8 +76,10 @@ class StateManager {
 	setStateByEle(element: HTMLElement, key: keyof PrivateState, value: PrivateState[keyof PrivateState]) {
 		const ele = this._elementRecords.find(item => item.element === element)
 		if(ele && typeof value === 'object') {
+			const settingObj = ele.state[key]
 			for (const innerKey in value) {
-				ele.state[key][innerKey] = value[innerKey]
+				if (!innerKey in settingObj) continue
+				settingObj[innerKey] = value[innerKey]
 			}
 		} else {
 			ele.state[key] = value

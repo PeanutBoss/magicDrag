@@ -1,5 +1,5 @@
 import { watch } from '@vue/runtime-core'
-import { setStyle, transferControl } from '../utils/tools'
+import {numberToStringSize, setStyle, transferControl} from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import {saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState} from '../common/magicDrag'
 import { State, PluginManager } from '../manager'
@@ -81,34 +81,36 @@ export default class Draggable {
 				_updateContourPointPosition(movement)
 				// update the state of the target element - 更新目标元素状态
 				_updateState(movement)
-				// 更新被多选的其他元素的状态和样式（位置）
-				updateOtherEl(movement)
+				// 同步被多选的其他元素的状态和样式（位置）
+				syncOtherEl(movement)
 			}
 			// Hand over control (moveTargetAction)
 			// 将控制权（moveTargetAction）交出
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
-			this.plugins.callExtensionPoint('drag', { allTarget, privateTarget }, { movement, _updateContourPointPosition, _updateState, updateOtherEl })
+			this.plugins.callExtensionPoint('drag', { allTarget, privateTarget }, { movement, _updateContourPointPosition, _updateState, syncOtherEl })
 
 			// 需要更新其他元素位置和状态 TODO 其他元素抵达边界时需要限制
-			function updateOtherEl(movement) {
-				if (needMoveOtherEl()) {
+			function syncOtherEl(movement) {
+				if (needSyncOtherEl()) {
 					// 更新其余被区域选中的元素样式
 					updateOtherElStyle()
 					// 更新其余被区域选中的元素状态
 					updateOtherElState()
 				}
-				function needMoveOtherEl() {
+				// 是否需要同步其他选中的元素
+				function needSyncOtherEl() {
+					// 因为选中的组件包含当前选中的元素，所以 > 1时才需要同步
 					return _this.stateManager.regionSelectedElement.length > 1
 				}
 				function updateOtherElStyle() {
 					_this.stateManager.regionSelectedElement.forEach(el => {
 						if (el === _this.stateManager.currentElement) return
 						const startCoordinate = _this.RSStartCoordinate.find(item => item.el === el)
-						if (startCoordinate) {
-							el.style.left = startCoordinate.left + movement.x + 'px'
-							el.style.top = startCoordinate.top + movement.y + 'px'
-						}
+						if (startCoordinate) setStyle(el, numberToStringSize({
+							left: startCoordinate.left + movement.x,
+							top: startCoordinate.top + movement.y })
+						)
 					})
 				}
 				function updateOtherElState() {
