@@ -92,8 +92,6 @@ export default class Draggable {
 
 			// 需要更新其他元素位置和状态 TODO 其他元素抵达边界时需要限制
 			function updateOtherEl(movement) {
-				updateOtherElStyle()
-				updateOtherElState()
 				if (needMoveOtherEl()) {
 					// 更新其余被区域选中的元素样式
 					updateOtherElStyle()
@@ -101,7 +99,7 @@ export default class Draggable {
 					updateOtherElState()
 				}
 				function needMoveOtherEl() {
-					return _this.stateManager.regionSelectedElement.length
+					return _this.stateManager.regionSelectedElement.length > 1
 				}
 				function updateOtherElStyle() {
 					_this.stateManager.regionSelectedElement.forEach(el => {
