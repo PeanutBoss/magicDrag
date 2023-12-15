@@ -68,7 +68,7 @@ class Shortcut implements Plugin {
 	}
 	// 功能键排序
 	functionOrder(shortcut) {
-    if (shortcut.indexOf('++') > -1) {
+    if (shortcut.trim().indexOf('++') > -1) {
       throw Error('+ 不可以做为快捷键操作的key，如有必要请自行实现')
     }
 		const keyList = []
