@@ -6,13 +6,16 @@ import { State, PluginManager } from '../manager'
 import { addGlobalUnmountCb } from '../common/globalData'
 
 export default class Draggable {
-	// regionSelected start coordinate
+	// 所有被选中的元素的坐标
 	private RSStartCoordinate: { left: number, top: number, width: number, height: number, el?: HTMLElement }[] = []
+	// 被选中的元素轮廓的坐标
+	private composeCoordinate: { left: number, top: number, width: number, height: number, el?: HTMLElement }
 	constructor(private plugins: PluginManager = new PluginManager, private stateManager) {
 		this.start(stateManager.currentState)
 	}
 
 	start(currentState) {
+		const _this = this
 		const {
 			pointElements, targetState, containerInfo, publicTarget,
 			downPointPosition, allTarget, privateTarget,
@@ -32,14 +35,33 @@ export default class Draggable {
 				down: downAction => {
 					downAction()
 					// 按下的时候记录被区域选中的组件的初始位置
-					this.stateManager.regionSelectedState.forEach(item => {
-						this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
-					})
+					saveStartCoordinate()
+					function saveStartCoordinate() {
+						_this.stateManager.regionSelectedState.forEach(item => {
+							_this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
+						})
+					}
+					// 计算所有选中元素轮廓的坐标
+					executeComposeCoordinate()
+					function executeComposeCoordinate() {
+						const left = Math.min(..._this.RSStartCoordinate.map(m => m.left))
+						const top = Math.min(..._this.RSStartCoordinate.map(m => m.top))
+						_this.composeCoordinate = {
+							left,
+							top,
+							width: Math.max(..._this.RSStartCoordinate.map(m => m.left + m.width)) - left,
+							height: Math.max(..._this.RSStartCoordinate.map(m => m.top + m.height)) - top
+						}
+					}
 				},
 				up: upAction => {
 					upAction()
-					// 鼠标抬起时候清空记录的数据
-					this.RSStartCoordinate.length = 0
+					// 清除提供给区域选择框的数据
+					resetRegionalSelectionData()
+					function resetRegionalSelectionData() {
+						_this.composeCoordinate = null
+						_this.RSStartCoordinate.length = 0
+					}
 				}
 			},
 			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop }
@@ -74,8 +96,9 @@ export default class Draggable {
 				// perform the default action for movePoint
 				// 执行movePoint的默认动作
 				moveAction()
+
 				// 限制目标元素在容器内移动
-				this.limitTargetMove(coordinate, containerInfo, movement)
+				this.limitTargetMove(executeCoordinate(), containerInfo, movement)
 				// update the position of the contour points
 				// 更新轮廓点位置
 				_updateContourPointPosition(movement)
@@ -83,6 +106,10 @@ export default class Draggable {
 				_updateState(movement)
 				// 同步被多选的其他元素的状态和样式（位置）
 				syncOtherEl(movement)
+				// 获取当前拖拽元素的坐标（多选的情况下需要重新计算坐标，单选直接返回coordinate）
+				function executeCoordinate() {
+					return _this.RSStartCoordinate.length < 2 ? coordinate : _this.composeCoordinate
+				}
 			}
 			// Hand over control (moveTargetAction)
 			// 将控制权（moveTargetAction）交出
@@ -133,21 +160,21 @@ export default class Draggable {
 		const { left, top, width: targetWidth , height: targetHeight } = coordinate
 		const { width: containerWidth, height: containerHeight, offsetLeft, offsetTop } = containerInfo
 
-		comeAcrossLeft() && (movement.x = -left)
-		comeAcrossTop() && (movement.y = -top)
-		comeAcrossRight() && (movement.x = containerWidth + offsetLeft - targetWidth - left)
-		comeAcrossBottom() && (movement.y = containerHeight + offsetTop - targetHeight - top)
+		arriveLeft() && (movement.x = -left)
+		arriveTop() && (movement.y = -top)
+		arriveRight() && (movement.x = containerWidth + offsetLeft - targetWidth - left)
+		arriveBottom() && (movement.y = containerHeight + offsetTop - targetHeight - top)
 		// containerWidth + offsetLeft, containerHeight + offsetTop 是计算过容器元素相对body偏移之后的位置
-		function comeAcrossLeft() {
+		function arriveLeft() {
 			return movement.x + left <= 0
 		}
-		function comeAcrossRight() {
+		function arriveRight() {
 			return movement.x + left + targetWidth >= containerWidth + offsetLeft
 		}
-		function comeAcrossTop() {
+		function arriveTop() {
 			return movement.y + top <= 0
 		}
-		function comeAcrossBottom() {
+		function arriveBottom() {
 			return movement.y + top + targetHeight >= containerHeight + offsetTop
 		}
 	}
