@@ -37,7 +37,10 @@ onMounted(() => {
 </script>
 ```
 
-- moveCallback：元素被拖拽移动时执行的回调，参数为moveAction和movement，moveAction是执行移动操作的方法，在moveCallback中必须执行。
+- callbacks：`Function | { move: Function, down: Function, up: Function }`
+callback是一个对象或函数类型的参数
+  - 当传入一个函数时，该函数作为元素被拖拽移动时的回调
+  - 当传入一个对象时，该对象需要包含 move/down/up 方法，分别作为 元素移动/鼠标在元素上按下/鼠标抬起 的回调
 > 当给useMoveElement传入回调参数时，useMoveElement会将 moveAction 做为回调的第一个参数，将移动的控制权交出给用户。
 > movement是本次移动操作（鼠标按下到抬起的之间的动作）的偏移量。
 
@@ -50,6 +53,7 @@ onMounted(() => {
 
 <script setup>
 import { useMoveElement } from 'magicDrag'
+// 给callbacks传入一个函数
 useMoveElement(
   '.box',
   (moveAction, movement) => {
@@ -58,6 +62,28 @@ useMoveElement(
      console.log(`竖直方向移动了${movement.y}px, 水平方向移动了${movement.x}px`)
      console.log('移动后做一些事')
   }
+)
+
+// 给callbacks传入一个对象
+useMoveElement(
+        '.box',
+        {
+          move(moveAction, movement) {
+            console.log('移动前做一些事')
+            moveAction()
+            console.log(`竖直方向移动了${movement.y}px, 水平方向移动了${movement.x}px`)
+            console.log('移动后做一些事')
+          },
+          down(downAction) {
+            console.log('鼠标按下前做一些事')
+            downAction()
+            console.log('鼠标按下后做一些事')
+          },
+          up(upAction) {
+            console.log('与up用法相同')
+            upAction()
+          }
+        }
 )
 </script>
 ```
@@ -115,16 +141,16 @@ onMounted(() => {
 
 #### 返回值
 
-| 属性名        | 描述                      |
-|------------|-------------------------|
-| left       | 目标元素的left值              |
-| top        | 目标元素的top值               |
-| movementX  | 本次移动X轴偏移量               |
-| movementY  | 本次移动Y轴偏移量               |
-| mouseX     | 鼠标相对目标元素的X轴方向偏移量        |
-| mouseY     | 鼠标相对目标元素的Y轴方向偏移量        |
-| isPress    | 鼠标是否按下                  |
-| destroy    | 解除绑定事件等                 |
+| 属性名        | 描述               |
+|------------|------------------|
+| left       | 目标元素的left值       |
+| top        | 目标元素的top值        |
+| movementX  | 本次移动X轴偏移量        |
+| movementY  | 本次移动Y轴偏移量        |
+| mouseX     | 鼠标相对目标元素的X轴方向偏移量 |
+| mouseY     | 鼠标相对目标元素的Y轴方向偏移量 |
+| isPress    | 鼠标是否按下           |
+| destroy    | 解除绑定事件等重置操作      |
 
 ```vue
 <template>
@@ -226,6 +252,9 @@ interface SelectDescribe {
 | pointTop       | 按下的轮廓点的top值，未按下轮廓点时为null             |
 | pointMovementX | 按下的轮廓点本次移动操作在X轴方向移动的距离，选中或聚焦其他轮廓点时重置 |
 | pointMovementY | 按下的轮廓点本次移动操作在Y轴方向移动的距离，选中或聚焦其他轮廓点时重置 |
+| getStateList   | 获取所有元素的状态信息                          |
+| getTargetState | 获取当前选中元素的状态信息                        |
+| unMount        | 解除事件绑定、清空内存等操作                       |
 
 #### example
 ```vue
