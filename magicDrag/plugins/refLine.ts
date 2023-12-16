@@ -42,6 +42,7 @@ export default class RefLine implements Plugin {
 	private isCenterY = false
 	private rectManager: RectProcessor
 	private refElement: HTMLElement
+	private refElementPosition
 	constructor(private readonly options: RefLineOptions, private stateManager: StateManager) {
 		this.name = 'refLine'
 	}
@@ -62,15 +63,21 @@ export default class RefLine implements Plugin {
 			_updateState(movement)
 			syncOtherEl(movement)
 		}
-		this.startCheck(dragEls, 'drag', adsorbCallback)
+		this.startCheck(dragEls, 'drag', adsorbCallback, movement)
 	}
 	dragStart({ composeCoordinate, publicContainer }) {
+		if (this.stateManager.regionSelectedElement.length <= 1) return
 		const el = document.createElement('div')
 		setStyle(el, {
 			...numberToStringSize(composeCoordinate),
 			position: 'absolute'
 		})
 		this.refElement = el
+		const rect = el.getBoundingClientRect()
+		this.refElementPosition = {
+			left: parseInt(this.refElement.style.left),
+			top: parseInt(this.refElement.style.top)
+		}
 		publicContainer.appendChild(el)
 	}
 	dragEnd({ publicContainer }) {
@@ -119,14 +126,21 @@ export default class RefLine implements Plugin {
 	}
 
 	// 检查是否有达到吸附条件的元素
-	startCheck(dragEls, way, adsorbCallback?) {
+	startCheck(dragEls, way, adsorbCallback?, movement?) {
 		const _this = this
 		// 记录参与本次操作的所有元素
+		const dragEl = this.refElement ? this.refElement : dragEls.privateTarget
 		// 多选的时候还需要排除当前被选中的元素
-		// const allTarget = dragEls.allTarget.filter(item => !this.stateManager.regionSelectedElement.includes(item))
-		this.rectManager.setElement(dragEls.allTarget, dragEls.privateTarget)
+		const allEl = dragEls.allTarget.filter(item => !this.stateManager.regionSelectedElement.includes(item))
+		this.refElement && allEl.push(this.refElement)
+		if (this.refElement) {
+			this.refElement.style.top = this.refElementPosition.top + movement?.y + 'px'
+			this.refElement.style.left = this.refElementPosition.left + movement?.x + 'px'
+		}
+
+		this.rectManager.setElement(allEl, dragEl)
 		// 获取要与dragRect对比的rect对象
-		const checkDragRect = this.rectManager.excludeDragRect(dragEls.privateTarget)
+		const checkDragRect = this.rectManager.excludeDragRect(dragEl)
 		// 开始新一轮的check需要重置上一次check的数据
 		this.checkEnd()
 		// 创建参考线的描述数据
@@ -145,7 +159,7 @@ export default class RefLine implements Plugin {
 		function createRefLineDescribeData() {
 			// 遍历nodeList
 			Array.from(checkDragRect).forEach((item: DragDOMRect) => {
-				if (item === dragEls.privateTarget) return
+				if (item.el === dragEl) return
 
 				// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
 				_this.buildConditions(item)
