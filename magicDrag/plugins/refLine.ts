@@ -90,7 +90,8 @@ export default class RefLine implements Plugin {
 		}
 	}
 	dragEnd({ publicContainer }) {
-		if (this.stateManager.isRegionSelection) removeElements([this.refElement])
+		if (!this.stateManager.isRegionSelection) return
+		this.refElement?.remove()
 		this.refElement = null
 	}
 	resize({ allTarget, privateTarget }: State, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {
