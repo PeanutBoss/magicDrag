@@ -68,7 +68,7 @@ export default class Draggable {
 					this.dragEnd()
 				}
 			},
-			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop }
+			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.paddingLeft, offsetTop: containerInfo.paddingTop }
 		)
 		addGlobalUnmountCb(destroy)
 
@@ -175,24 +175,24 @@ export default class Draggable {
 	// 限制容器内移动
 	limitTargetMove (coordinate, containerInfo, movement) {
 		const { left, top, width: targetWidth , height: targetHeight } = coordinate
-		const { width: containerWidth, height: containerHeight, offsetLeft, offsetTop } = containerInfo
+		const { width: containerWidth, height: containerHeight, paddingTop, paddingLeft } = containerInfo
 
 		arriveLeft() && (movement.x = -left)
 		arriveTop() && (movement.y = -top)
-		arriveRight() && (movement.x = containerWidth + offsetLeft - targetWidth - left)
-		arriveBottom() && (movement.y = containerHeight + offsetTop - targetHeight - top)
+		arriveRight() && (movement.x = containerWidth + paddingLeft - targetWidth - left)
+		arriveBottom() && (movement.y = containerHeight + paddingTop - targetHeight - top)
 		// containerWidth + offsetLeft, containerHeight + offsetTop 是计算过容器元素相对body偏移之后的位置
 		function arriveLeft() {
 			return movement.x + left <= 0
 		}
 		function arriveRight() {
-			return movement.x + left + targetWidth >= containerWidth + offsetLeft
+			return movement.x + left + targetWidth >= containerWidth + paddingLeft
 		}
 		function arriveTop() {
 			return movement.y + top <= 0
 		}
 		function arriveBottom() {
-			return movement.y + top + targetHeight >= containerHeight + offsetTop
+			return movement.y + top + targetHeight >= containerHeight + paddingTop
 		}
 	}
 

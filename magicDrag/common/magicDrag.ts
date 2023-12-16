@@ -82,18 +82,18 @@ const limitSizeTasks = {
 // 限制目标元素的移动边界
 const limitBoundaryTasks = {
 	left ({ movementX, coordinate, containerInfo }) {
-		movementX.value + coordinate.left - containerInfo.offsetLeft <= 0 && (movementX.value = containerInfo.offsetLeft - coordinate.left)
+		movementX.value + coordinate.left - containerInfo.paddingLeft <= 0 && (movementX.value = containerInfo.paddingLeft - coordinate.left)
 	},
 	right ({ movementX, coordinate, containerInfo }) {
-		movementX.value + coordinate.left + coordinate.width >= containerInfo.width + containerInfo.offsetLeft &&
-		(movementX.value = containerInfo.width - coordinate.left - coordinate.width + containerInfo.offsetLeft)
+		movementX.value + coordinate.left + coordinate.width >= containerInfo.width + containerInfo.paddingLeft &&
+		(movementX.value = containerInfo.width - coordinate.left - coordinate.width + containerInfo.paddingLeft)
 	},
 	top ({ movementY, coordinate, containerInfo }) {
-		movementY.value + coordinate.top - containerInfo.offsetTop <= 0 && (movementY.value = containerInfo.offsetTop - coordinate.top)
+		movementY.value + coordinate.top - containerInfo.paddingTop <= 0 && (movementY.value = containerInfo.paddingTop - coordinate.top)
 	},
 	bottom ({ movementY, coordinate, containerInfo }) {
-		movementY.value + coordinate.top + coordinate.height >= containerInfo.height + containerInfo.offsetTop &&
-		(movementY.value = containerInfo.height - coordinate.top - coordinate.height + containerInfo.offsetTop)
+		movementY.value + coordinate.top + coordinate.height >= containerInfo.height + containerInfo.paddingTop &&
+		(movementY.value = containerInfo.height - coordinate.top - coordinate.height + containerInfo.paddingTop)
 	}
 }
 // create a policy to limit the minimum size when resizing the target
@@ -457,6 +457,9 @@ export function mountAssistMethod(element: HTMLElement) {
 			this.style.top = coordinate.top + 'px'
 		}
 		this.style.display = 'block'
+	}
+	element.showLong = function (coordinate, offset) {
+		console.log(coordinate, offset)
 	}
 	element.hide = function() {
 		this.style.display = 'none'

@@ -8,7 +8,7 @@ interface PublicState {
 	allContainer: HTMLElement[]
 	pointElements: { [key in Direction]?: HTMLElement }
 	downPointPosition: { [key in Direction]?: [number, number] }
-	containerInfo: Partial<Record<'width' | 'height' | 'offsetLeft' | 'offsetTop', number>>
+	containerInfo: Partial<Record<'width' | 'height' | 'offsetLeft' | 'offsetTop' | 'paddingLeft' | 'paddingTop', number>>
 	// publicCoordinate: {} // 选中元素的坐标信息 - initialTarget
 	publicTarget: Ref<HTMLElement>  // 处于选中状态的目标元素 - $target
 	publicContainer: Ref<HTMLElement> // 容器元素 - $container
