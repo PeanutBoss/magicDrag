@@ -139,6 +139,10 @@ class StateManager {
 		return this._elementRecords.filter(record => record.state.regionSelected)
 			.map(m => m.element)
 	}
+	// 当选中的元素个数大于1说明是多选操作
+	get isRegionSelection() {
+		return this.regionSelectedElement.length > 1
+	}
 
 	// 设置当前选中的 DOM 元素和状态
 	setCurrentElement(element: HTMLElement | null) {

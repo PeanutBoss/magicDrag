@@ -67,9 +67,11 @@ export default class RefLine implements Plugin {
 	}
 	dragStart({ composeCoordinate, publicContainer }) {
 		// 如果被选中的元素数量小于等于1，则不需要创建多选的盒子
-		if (this.stateManager.regionSelectedElement.length <= 1) return
+		if (!this.stateManager.isRegionSelection) return
 		const _this = this
+		// 创建多选的包裹元素
 		createSelectionBox()
+		// 保存包裹元素的位置信息
 		saveBoxStartPos()
 		function createSelectionBox() {
 			const el = document.createElement('div')
@@ -88,7 +90,7 @@ export default class RefLine implements Plugin {
 		}
 	}
 	dragEnd({ publicContainer }) {
-		if (this.refElement) removeElements([this.refElement])
+		if (this.stateManager.isRegionSelection) removeElements([this.refElement])
 		this.refElement = null
 	}
 	resize({ allTarget, privateTarget }: State, { movementX, movementY, _updateTargetStyle, _updatePointPosition }) {

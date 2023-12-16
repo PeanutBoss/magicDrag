@@ -140,16 +140,12 @@ export default class Draggable {
 
 			// 需要更新其他元素位置和状态 TODO 其他元素抵达边界时需要限制
 			function syncOtherEl(movement) {
-				if (needSyncOtherEl()) {
+				// 多选的情况下才需要做同步操作
+				if (_this.stateManager.isRegionSelection) {
 					// 更新其余被区域选中的元素样式
 					updateOtherElStyle()
 					// 更新其余被区域选中的元素状态
 					updateOtherElState()
-				}
-				// 是否需要同步其他选中的元素
-				function needSyncOtherEl() {
-					// 因为选中的组件包含当前选中的元素，所以 > 1时才需要同步
-					return _this.stateManager.regionSelectedElement.length > 1
 				}
 				function updateOtherElStyle() {
 					_this.stateManager.regionSelectedElement.forEach(el => {
