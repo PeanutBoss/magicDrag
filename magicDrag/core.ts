@@ -27,6 +27,7 @@ window.stateManager = stateManager
 *  30.多选按下不显示resize
 *  31.按下未选中的元素，其他元素取消选中
 *  32.多选的吸附可能会超出边界
+*  33.setCurrentElement需要放到mousedown的第一个回调中
 * */
 
 // default configuration

@@ -2,7 +2,7 @@ import { watch } from '@vue/runtime-core'
 import { numberToStringSize, setStyle, transferControl } from '../utils/tools'
 import { useMoveElement } from '../useMoveElement'
 import { saveDownPointPosition, updateContourPointPosition, updateInitialTarget, updateState } from '../common/magicDrag'
-import { State, PluginManager } from '../manager'
+import { PluginManager } from '../manager'
 import { addGlobalUnmountCb } from '../common/globalData'
 
 export default class Draggable {
@@ -36,16 +36,11 @@ export default class Draggable {
 					downAction()
 					// 按下的时候记录被区域选中的组件的初始位置
 					saveStartCoordinate()
-					function saveStartCoordinate() {
-						_this.stateManager.regionSelectedState.forEach(item => {
-							_this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
-						})
-					}
 					// 计算所有选中元素轮廓的坐标
 					executeComposeCoordinate()
 					function executeComposeCoordinate() {
 						// 如果RSStartCoordinate.length <= 1 说明没有多选元素
-						if (_this.RSStartCoordinate.length <= 1) return
+						if (!_this.stateManager.isRegionSelection) return
 						const left = Math.min(..._this.RSStartCoordinate.map(m => m.left))
 						const top = Math.min(..._this.RSStartCoordinate.map(m => m.top))
 						_this.composeCoordinate = {
@@ -55,7 +50,12 @@ export default class Draggable {
 							height: Math.max(..._this.RSStartCoordinate.map(m => m.top + m.height)) - top
 						}
 					}
-					this.dragStart()
+          function saveStartCoordinate() {
+            _this.stateManager.regionSelectedState.forEach(item => {
+              _this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
+            })
+          }
+          this.dragStart()
 				},
 				up: upAction => {
 					upAction()
@@ -65,7 +65,7 @@ export default class Draggable {
 						_this.composeCoordinate = null
 						_this.RSStartCoordinate.length = 0
 					}
-					this.dragEnd()
+          this.dragEnd()
 				}
 			},
 			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.paddingLeft, offsetTop: containerInfo.paddingTop }
@@ -125,7 +125,7 @@ export default class Draggable {
 				syncOtherEl(movement)
 				// 获取当前拖拽元素的坐标（多选的情况下需要重新计算坐标，单选直接返回coordinate）
 				function executeCoordinate() {
-					return _this.RSStartCoordinate.length < 2 ? coordinate : _this.composeCoordinate
+					return _this.stateManager.isRegionSelection ? _this.composeCoordinate : coordinate
 				}
 			}
 			// Hand over control (moveTargetAction)
