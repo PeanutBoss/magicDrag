@@ -180,12 +180,12 @@ export default class RefLine implements Plugin {
 		function dragElement() {
 			return _this.refElement ? _this.refElement : dragEls.privateTarget
 		}
-		// 对比的其他元素
+		// 参与对比的所有元素
 		function allElements() {
 			// 多选的时候还需要排除当前被选中的元素
 			const notSelectedEls = dragEls.allTarget.filter(item => !_this.stateManager.regionSelectedElement.includes(item))
 			// 非多选的情况下allElements中包含当前拖拽的元素，多选的情况下与其保持一致
-			return [...notSelectedEls, _this.refElement]
+			return _this.refElement ? [...notSelectedEls, _this.refElement] : notSelectedEls
 		}
 		function updateSelectionBoxPos() {
 			if (_this.refElement) {
