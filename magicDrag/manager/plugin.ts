@@ -9,7 +9,7 @@ import StateManager from './stateManager'
 export const pluginManager = new PluginManager()
 
 export function usePlugin(options: MagicDragOptions) {
-	options.skill.refLine && enableRefLine(tidyRefLineOptions(options))
+	options.skill.refLine && enableRefLine(tidyRefLineOptions(options), stateManager)
 	options.skill.shortcut && enableShortcut()
   options.skill.regionalSelection && enableRegionalSelection(options.containerSelector, stateManager)
 	pluginManager.installPlugin()
@@ -25,8 +25,8 @@ function tidyRefLineOptions(options: MagicDragOptions) {
 	return result
 }
 
-function enableRefLine(options: RefLineOptions) {
-	const refLine = new RefLine(options)
+function enableRefLine(options: RefLineOptions, stateManager: StateManager) {
+	const refLine = new RefLine(options, stateManager)
 	pluginManager.registerPlugin(refLine.name, refLine)
 }
 

@@ -44,6 +44,8 @@ export default class Draggable {
 					// 计算所有选中元素轮廓的坐标
 					executeComposeCoordinate()
 					function executeComposeCoordinate() {
+						// 如果RSStartCoordinate.length <= 1 说明没有多选元素
+						if (_this.RSStartCoordinate.length <= 1) return
 						const left = Math.min(..._this.RSStartCoordinate.map(m => m.left))
 						const top = Math.min(..._this.RSStartCoordinate.map(m => m.top))
 						_this.composeCoordinate = {
@@ -53,6 +55,7 @@ export default class Draggable {
 							height: Math.max(..._this.RSStartCoordinate.map(m => m.top + m.height)) - top
 						}
 					}
+					this.dragStart()
 				},
 				up: upAction => {
 					upAction()
@@ -62,6 +65,7 @@ export default class Draggable {
 						_this.composeCoordinate = null
 						_this.RSStartCoordinate.length = 0
 					}
+					this.dragEnd()
 				}
 			},
 			{ limitDirection: limitDragDirection, offsetLeft: containerInfo.offsetLeft, offsetTop: containerInfo.offsetTop }
@@ -78,7 +82,20 @@ export default class Draggable {
 
 	dragStart() {
 		// 在拖拽开始时触发扩展点，通知插件
-		this.plugins.callExtensionPoint('onDragStart')
+		this.plugins.callExtensionPoint(
+			'dragStart',
+			{
+				composeCoordinate: this.composeCoordinate,
+				publicContainer: this.stateManager.currentState.publicContainer.value,
+				privateTarget: this.stateManager.currentElement
+			}
+		)
+	}
+	dragEnd() {
+		this.plugins.callExtensionPoint(
+			'dragEnd',
+			{ publicContainer: this.stateManager.currentState.publicContainer.value }
+		)
 	}
 
 	moveTargetCallback(dragCallback, { downPointPosition, pointElements, targetState, containerInfo }) {
@@ -115,7 +132,11 @@ export default class Draggable {
 			// 将控制权（moveTargetAction）交出
 			transferControl(moveTargetAction, dragCallback, { movementX: movement.x, movementY: movement.y })
 
-			this.plugins.callExtensionPoint('drag', { allTarget, privateTarget }, { movement, _updateContourPointPosition, _updateState, syncOtherEl })
+			this.plugins.callExtensionPoint(
+				'drag',
+				{ allTarget, privateTarget },
+				{ movement, _updateContourPointPosition, _updateState, syncOtherEl }
+			)
 
 			// 需要更新其他元素位置和状态 TODO 其他元素抵达边界时需要限制
 			function syncOtherEl(movement) {

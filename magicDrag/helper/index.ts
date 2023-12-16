@@ -19,3 +19,14 @@ export function useWatchData(data, cb) {
 	})
 }
 
+const cbs = {}
+export function addEventListener(type: any, cb: Function, { priority, ...options }) {
+	if (!cbs[type]) {
+		cbs[type] = []
+		window.addEventListener(type, event => {
+			cbs[type].forEach(cb => cb(event))
+		})
+	}
+	cbs[type].push({ priority, cb })
+}
+

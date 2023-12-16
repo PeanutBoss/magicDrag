@@ -21,7 +21,7 @@ export default class PluginManager {
   }
 
   // MARK 5.扩展点触发 - 在关键时刻触发扩展点，通知注册在该扩展点上的插件。
-  callExtensionPoint(extensionPoint: string, ...args: any[]) {
+  callExtensionPoint(extensionPoint: Exclude<keyof Plugin, 'name'>, ...args: any[]) {
     this.plugins.forEach((plugin) => {
       if (typeof plugin[extensionPoint] === 'function') {
         plugin[extensionPoint](...args)
@@ -35,6 +35,8 @@ export interface Plugin {
   init: () => void
   unbind: () => void
   drag?: (...args: any[]) => void
+  dragStart?: (...args: any[]) => void
+  dragEnd?: (...args: any[]) => void
   resize?: (...args: any[]) => void
   targetPressChange?: (...args: any[]) => void
   pointPressChange?: (...args: any[]) => void

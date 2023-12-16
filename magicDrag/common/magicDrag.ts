@@ -249,7 +249,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 }
 // control the focus and out-of-focus display of the target element's outline points
 // 控制目标元素轮廓点的焦点和失焦显示
-export function blurOrFocus (pointElements, targetState, stateManager) {
+export function blurOrFocus(pointElements, targetState, stateManager) {
   let checkIsContainsTarget
   return (target: HTMLElement, isBind = true) => {
     if (isBind) {
