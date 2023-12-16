@@ -24,6 +24,9 @@ window.stateManager = stateManager
 *  27.style类控制样式
 *  28.包裹、容器元素位置信息兼容
 *  29.重构创建初始状态的代码
+*  30.多选按下不显示resize
+*  31.按下未选中的元素，其他元素取消选中
+*  32.多选的吸附可能会超出边界
 * */
 
 // default configuration
