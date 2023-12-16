@@ -66,19 +66,26 @@ export default class RefLine implements Plugin {
 		this.startCheck(dragEls, 'drag', adsorbCallback, movement)
 	}
 	dragStart({ composeCoordinate, publicContainer }) {
+		// 如果被选中的元素数量小于等于1，则不需要创建多选的盒子
 		if (this.stateManager.regionSelectedElement.length <= 1) return
-		const el = document.createElement('div')
-		setStyle(el, {
-			...numberToStringSize(composeCoordinate),
-			position: 'absolute'
-		})
-		this.refElement = el
-		const rect = el.getBoundingClientRect()
-		this.refElementPosition = {
-			left: parseInt(this.refElement.style.left),
-			top: parseInt(this.refElement.style.top)
+		const _this = this
+		createSelectionBox()
+		saveBoxStartPos()
+		function createSelectionBox() {
+			const el = document.createElement('div')
+			setStyle(el, {
+				...numberToStringSize(composeCoordinate),
+				position: 'absolute'
+			})
+			_this.refElement = el
+			publicContainer.appendChild(el)
 		}
-		publicContainer.appendChild(el)
+		function saveBoxStartPos() {
+			_this.refElementPosition = {
+				left: parseInt(_this.refElement.style.left),
+				top: parseInt(_this.refElement.style.top)
+			}
+		}
 	}
 	dragEnd({ publicContainer }) {
 		if (this.refElement) removeElements([this.refElement])
@@ -128,19 +135,13 @@ export default class RefLine implements Plugin {
 	// 检查是否有达到吸附条件的元素
 	startCheck(dragEls, way, adsorbCallback?, movement?) {
 		const _this = this
-		// 记录参与本次操作的所有元素
-		const dragEl = this.refElement ? this.refElement : dragEls.privateTarget
-		// 多选的时候还需要排除当前被选中的元素
-		const allEl = dragEls.allTarget.filter(item => !this.stateManager.regionSelectedElement.includes(item))
-		this.refElement && allEl.push(this.refElement)
-		if (this.refElement) {
-			this.refElement.style.top = this.refElementPosition.top + movement?.y + 'px'
-			this.refElement.style.left = this.refElementPosition.left + movement?.x + 'px'
-		}
 
-		this.rectManager.setElement(allEl, dragEl)
+		// 如果是多选需要主动更新包裹盒子的位置
+		updateSelectionBoxPos()
+		// 记录参与本次操作的所有元素
+		this.rectManager.setElement(allElements(), dragElement())
 		// 获取要与dragRect对比的rect对象
-		const checkDragRect = this.rectManager.excludeDragRect(dragEl)
+		const checkDragRect = this.rectManager.excludeDragRect(dragElement())
 		// 开始新一轮的check需要重置上一次check的数据
 		this.checkEnd()
 		// 创建参考线的描述数据
@@ -149,6 +150,7 @@ export default class RefLine implements Plugin {
 		this.options.showRefLine && this.executeShowRefLine()
 		// 执行吸附操作
 		this.options.adsorb && this.executeAdsorb({ way, adsorbCallback })
+		// 显示距离提示
 		this.options.showDistance && showDistanceTip()
 		function showDistanceTip() {
 			// 计算距离信息
@@ -159,7 +161,7 @@ export default class RefLine implements Plugin {
 		function createRefLineDescribeData() {
 			// 遍历nodeList
 			Array.from(checkDragRect).forEach((item: DragDOMRect) => {
-				if (item.el === dragEl) return
+				if (item.el === dragElement()) return
 
 				// 构建 dragRect 与其他rect对象的关系（是否达成吸附条件）
 				_this.buildConditions(item)
@@ -171,6 +173,23 @@ export default class RefLine implements Plugin {
 					conditions: _this.rectManager.compareConditions
 				})
 			})
+		}
+		// 拖拽的元素,多选的情况下是包裹的元素(未显示)
+		function dragElement() {
+			return _this.refElement ? _this.refElement : dragEls.privateTarget
+		}
+		// 对比的其他元素
+		function allElements() {
+			// 多选的时候还需要排除当前被选中的元素
+			const notSelectedEls = dragEls.allTarget.filter(item => !_this.stateManager.regionSelectedElement.includes(item))
+			// 非多选的情况下allElements中包含当前拖拽的元素，多选的情况下与其保持一致
+			return [...notSelectedEls, _this.refElement]
+		}
+		function updateSelectionBoxPos() {
+			if (_this.refElement) {
+				_this.refElement.style.top = _this.refElementPosition.top + movement?.y + 'px'
+				_this.refElement.style.left = _this.refElementPosition.left + movement?.x + 'px'
+			}
 		}
 	}
 	calculateDistance() {
