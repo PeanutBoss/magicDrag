@@ -80,7 +80,7 @@ onBeforeUnmount(state.unMount)
 }
 .wrap {
   margin-left: 100px;
-  margin-top: 100px;
+  margin-top: 90px;
   width: 800px;
   height: 800px;
   padding: 0 1px 1px 0;

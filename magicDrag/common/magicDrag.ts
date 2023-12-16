@@ -458,8 +458,19 @@ export function mountAssistMethod(element: HTMLElement) {
 		}
 		this.style.display = 'block'
 	}
-	element.showLong = function (coordinate, offset) {
-		console.log(coordinate, offset)
+	element.showLong = function (coordinate, containerInfo) {
+		if (coordinate.width === 1) {
+			this.style.width = coordinate.width + 'px'
+			this.style.height = containerInfo.height + 'px'
+			this.style.left = coordinate.left + 'px'
+			this.style.top = containerInfo.relBodyOffsetTop + 'px'
+		} else if (coordinate.height === 1) {
+			this.style.width = containerInfo.width + 'px'
+			this.style.height = coordinate.height + 'px'
+			this.style.left = containerInfo.relBodyOffsetLeft + 'px'
+			this.style.top = coordinate.top + 'px'
+		}
+		this.style.display = 'block'
 	}
 	element.hide = function() {
 		this.style.display = 'none'

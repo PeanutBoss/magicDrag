@@ -12,6 +12,7 @@ declare global {
     show: (coordinate) => void
     hide: () => void
     isShow: () => boolean
+		showLong: (coordinate, offset?) => void
     // 在这里可以添加其他自定义方法
   }
 
@@ -256,10 +257,18 @@ export default class RefLine implements Plugin {
 			})
 		}
 	}
-	// 显示参考线操作
-	executeShowRefLine() {
+
+	/**
+	 * 显示参考线操作
+	 * @param type { 'short' | 'long' }
+	 * short 显示两个元素之间的最短参考线
+	 * long 显示铺满整个容器的参考线
+	 */
+	executeShowRefLine(type: 'short' | 'long' = 'long') {
+		const methodName = type === 'short' ? 'show' : 'showLong'
 		for (const adsorbKey in this.rectManager.showSituation) {
-			[...this.rectManager.showSituation[adsorbKey]].forEach(item => item.lineNode.show(item.position))
+			[...this.rectManager.showSituation[adsorbKey]]
+				.forEach(item => item.lineNode[methodName](item.position, this.stateManager.currentState.containerInfo))
 		}
 	}
 	// 吸附操作

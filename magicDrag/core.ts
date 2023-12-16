@@ -32,7 +32,6 @@ let {
   allTarget, allContainer,
   publicTarget, publicContainer, pointElements, containerInfo, downPointPosition,
   targetState, pointState,
-  // left, top, width, height, id, coordinate // 坐标信息必须是独立的
 } = new BuildState().publicState
 
 let initialTarget
@@ -46,6 +45,8 @@ function initGlobalData () {
   Object.assign(targetState, { left: 0, top: 0, height: 0, width: 0, isPress: false, isLock: false })
   Object.assign(pointState, { left: 0, top: 0, direction: null, isPress: false, movementX: 0, movementY: 0 })
 }
+
+const offsetCache = new Map()
 
 export function useMagicDragAPI (
   targetSelector: string | HTMLElement,
@@ -118,19 +119,28 @@ export function useMagicDragAPI (
     }
     // 容器相对body内容左上角的偏移量（如果容器元素的父级不是body可能出现问题）
     function contentAreaOffset() {
+      if (offsetCache.has(publicContainer.value)) return offsetCache.get(publicContainer.value)
       const { paddingLeft = '0', paddingTop = '0' } = getComputedStyle(publicContainer.value)
 
-      // 如果开启定位，返回偏移量
-      return {
+      const bodyRect = document.body.getBoundingClientRect()
+      const containerRect = publicContainer.value.getBoundingClientRect()
+
+      offsetCache.set(publicContainer.value, {
         paddingLeft: parseInt(paddingLeft),
-        paddingTop: parseInt(paddingTop)
-      }
+        paddingTop: parseInt(paddingTop),
+        relBodyOffsetLeft: containerRect.left - bodyRect.left,
+        relBodyOffsetTop: containerRect.top - bodyRect.top
+      })
+      // 如果开启定位，返回偏移量
+      return offsetCache.get(publicContainer.value)
     }
-    function saveContainerSizeAndOffset({ containerWidth, containerHeight }, { paddingLeft, paddingTop }) {
+    function saveContainerSizeAndOffset({ containerWidth, containerHeight }, { paddingLeft, paddingTop, relBodyOffsetLeft, relBodyOffsetTop }) {
       containerInfo.width = containerWidth
       containerInfo.height = containerHeight
       containerInfo.paddingLeft = paddingLeft
       containerInfo.paddingTop = paddingTop
+      containerInfo.relBodyOffsetLeft = relBodyOffsetLeft
+      containerInfo.relBodyOffsetTop = relBodyOffsetTop
     }
     // 如果容器元素未开启定位，给它开启相对定位
     function guaranteeOpenPosition() {
