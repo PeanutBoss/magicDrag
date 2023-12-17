@@ -5,10 +5,14 @@ import { saveDownPointPosition, updateContourPointPosition, updateInitialTarget,
 import { PluginManager } from '../manager'
 import { addGlobalUnmountCb } from '../common/globalData'
 
+/*
+* RSStartCoordinate composeCoordinate 在draggable中限制边界的时候需要用
+* 但是在regionalSelection中更合理
+* */
 export default class Draggable {
-	// 所有被选中的元素的坐标
+	// 所有被选中的元素的坐标 放到regionalSelection中
 	private RSStartCoordinate: { left: number, top: number, width: number, height: number, el?: HTMLElement }[] = []
-	// 被选中的元素轮廓的坐标
+	// 被选中的元素轮廓的坐标 保留到draggable中
 	private composeCoordinate: { left: number, top: number, width: number, height: number, el?: HTMLElement }
 	constructor(private plugins: PluginManager = new PluginManager, private stateManager) {
 		this.start(stateManager.currentState)
@@ -32,8 +36,10 @@ export default class Draggable {
 				move: this.moveTargetCallback(dragCallback, {
 					downPointPosition, pointElements, targetState, containerInfo
 				}),
-				down: downAction => {
+				down: (downAction, event) => {
 					downAction()
+          this.stateManager.setCurrentElement(event.target)
+          this.dragStart()
 					// 按下的时候记录被区域选中的组件的初始位置
 					saveStartCoordinate()
 					// 计算所有选中元素轮廓的坐标
@@ -55,7 +61,6 @@ export default class Draggable {
               _this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
             })
           }
-          this.dragStart()
 				},
 				up: upAction => {
 					upAction()

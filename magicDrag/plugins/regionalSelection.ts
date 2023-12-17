@@ -34,6 +34,14 @@ class RegionalSelection implements Plugin {
     this.containerSelector = null
     this.containerEl = null
   }
+  dragStart({ privateTarget }) {
+    if (isSelectedEl(this)) {
+      this.resetStateAndStyle()
+    }
+    function isSelectedEl(context) {
+      return context.stateManager.getStateByEle(privateTarget).regionSelected
+    }
+  }
   getContainer() {
     if (this.containerEl) return this.containerEl
     this.containerEl = getElement(this.containerSelector)

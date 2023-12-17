@@ -99,7 +99,7 @@ export function useMoveElement (
 			window.addEventListener('mouseup', mouseUp)
 		}
 		// 如果有回调将控制权交给回调，否则执行默认动作
-		downCallback ? transferControl(downAction, downCallback) : downAction()
+		downCallback ? transferControl(downAction, downCallback, event) : downAction()
 	}
 	function mouseMove (event) {
 		if (!isPress.value) return

@@ -227,9 +227,6 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 	// 判断事件目标与绑定的元素是否相同，如果不同不响应操作
 	if (event.target !== target) return
 
-  // 设置当前选中的target
-	stateManager.setCurrentElement(target)
-
 	// skill.resize关闭时不需要显示轮廓点，就不需要更新位置
   const pointPosition = skill.resize && updatePointPosition(
     { direction: 't', movementX: 0, movementY: 0 },
