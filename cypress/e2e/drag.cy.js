@@ -290,6 +290,47 @@ describe('拖拽功能测试', () => {
       .should('not.be.visible')
   })
 
+  it.only('多选边界限制', () => {
+    cy.visit('http://localhost:9001/')
+
+    // 选中两个组件
+    cy.get('.wrap')
+      .trigger('mousedown', { which: 1, pageX: 800, pageY: 800 })
+    cy.get('body')
+      .trigger('mousemove', { pageX: 175, pageY: 175 })
+      .trigger('mouseup')
+
+    // 移动box元素
+    cy.get('.box2')
+      .trigger('mousedown', 'center')
+    cy.get('body')
+      .trigger('mousemove', { pageX: 100, pageY: 1000 })
+      .trigger('mouseup')
+
+    // box元素位置在容器左下角，没有超出容器
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.left).should('eq', 100)
+      cy.wrap(rect.top).should('eq', 445)
+    })
+
+    // 移动box元素
+    cy.get('.box')
+      .trigger('mousedown', 'center')
+    cy.get('body')
+      .trigger('mousemove', { pageX: 1000, pageY: 0 })
+      .trigger('mouseup')
+
+    // box元素位置在容器左下角，没有超出容器
+    cy.get('.box2').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.left).should('eq', 730)
+      cy.wrap(rect.top).should('eq', 375)
+    })
+  })
+
+  it('多选吸附', () => {})
+
   // 放到最后一个
   it('辅助线、距离提示功能', async () => {
     cy.visit('http://localhost:9001/')

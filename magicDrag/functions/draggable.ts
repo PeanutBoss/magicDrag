@@ -5,10 +5,6 @@ import { saveDownPointPosition, updateContourPointPosition, updateInitialTarget,
 import { PluginManager } from '../manager'
 import { addGlobalUnmountCb } from '../common/globalData'
 
-/*
-* RSStartCoordinate composeCoordinate 在draggable中限制边界的时候需要用
-* 但是在regionalSelection中更合理
-* */
 export default class Draggable {
 	// 所有被选中的元素的坐标 放到regionalSelection中
 	private RSStartCoordinate: { left: number, top: number, width: number, height: number, el?: HTMLElement }[] = []
@@ -37,6 +33,13 @@ export default class Draggable {
 					downPointPosition, pointElements, targetState, containerInfo
 				}),
 				down: (downAction, event) => {
+					/*
+					* 按下后切换选中的元素
+					* 保存选中元素的的初始位置
+					* 计算所有选中元素轮廓的坐标
+					* 触发插件的dragStart扩展点
+					* regionalSelection 如果按下的是未选中的元素，重置已选中的元素
+					* */
 					downAction()
           this.stateManager.setCurrentElement(event.target)
 					// 按下的时候记录被区域选中的组件的初始位置
