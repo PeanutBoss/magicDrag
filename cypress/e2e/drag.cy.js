@@ -87,7 +87,7 @@ describe('拖拽功能测试', () => {
       cy.wrap(rect.top).should('eq', 800)
     })
 
-    // 鼠标抬起
+    // 鼠标释放
     cy.get('body')
       .trigger('mouseup')
   })
@@ -130,7 +130,7 @@ describe('拖拽功能测试', () => {
       cy.wrap(rect.height).should('eq', 100)
     })
 
-    // 抬起鼠标
+    // 释放鼠标
     cy.get('body')
       .trigger('mouseup')
 
@@ -161,7 +161,7 @@ describe('拖拽功能测试', () => {
       cy.wrap(rect.height).should('eq', 250)
     })
 
-    // 抬起鼠标
+    // 释放鼠标
     cy.get('body')
       .trigger('mouseup')
   })
@@ -207,7 +207,7 @@ describe('拖拽功能测试', () => {
       cy.wrap(rect.height).should('eq', 100)
     })
 
-    // 抬起鼠标
+    // 释放鼠标
     cy.get('body')
       .trigger('mouseup')
 
@@ -238,7 +238,7 @@ describe('拖拽功能测试', () => {
       cy.wrap(rect.height).should('eq', 200)
     })
 
-    // 抬起鼠标
+    // 释放鼠标
     cy.get('body')
       .trigger('mouseup')
   })
@@ -256,7 +256,7 @@ describe('拖拽功能测试', () => {
     cy.get('.regional-selection')
       .should('be.visible')
 
-    // 鼠标抬起
+    // 鼠标释放
     cy.get('body')
       .trigger('mouseup')
 
@@ -290,7 +290,7 @@ describe('拖拽功能测试', () => {
       .should('not.be.visible')
   })
 
-  it.only('多选边界限制', () => {
+  it('多选边界限制', () => {
     cy.visit('http://localhost:9001/')
 
     // 选中两个组件
@@ -329,7 +329,54 @@ describe('拖拽功能测试', () => {
     })
   })
 
-  it('多选吸附', () => {})
+  it.only('多选吸附', () => {
+    cy.visit('http://localhost:9001/')
+
+    // 选中两个组件
+    cy.get('.wrap')
+      .trigger('mousedown', { which: 1, pageX: 800, pageY: 800 })
+    cy.get('body')
+      .trigger('mousemove', { pageX: 175, pageY: 175 })
+      .trigger('mouseup')
+
+    // 移动box元素
+    cy.get('.box')
+      .trigger('mousedown', 'topLeft')
+    cy.get('body')
+      .trigger('mousemove', { pageX: 300, pageY: 209 })
+
+    // 显示距离提示
+    cy.get(`.${DISTANCE_TIP_CLASS_NAME}`).should('be.visible')
+
+    // 显示参考线
+    cy.get('.xb').should('be.visible')
+
+    // box2被移动到距离顶部200的位置
+    cy.get('.box2').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.top).should('eq', 475)
+    })
+
+    // 鼠标释放
+    cy.get('body')
+      .trigger('mouseup')
+
+    // 移动box2元素
+    cy.get('.box2')
+      .trigger('mousedown', 'topLeft')
+    cy.get('body')
+      .trigger('mousemove', { pageX: 467, pageY: 575 })
+
+    // box被移动到距离左边200的位置
+    cy.get('.box').then(els => {
+      const rect = els[0].getBoundingClientRect()
+      cy.wrap(rect.left).should('eq', 200)
+    })
+
+    // 释放鼠标
+    cy.get('body')
+      .trigger('mouseup')
+  })
 
   // 放到最后一个
   it('辅助线、距离提示功能', async () => {
@@ -367,7 +414,7 @@ describe('拖拽功能测试', () => {
         cy.wrap(els[0].innerText).should('eq', '300')
       })
 
-    // 鼠标抬起
+    // 鼠标释放
     cy.get('body').trigger('mouseup')
   })
 })
