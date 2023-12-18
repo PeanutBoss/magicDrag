@@ -268,9 +268,15 @@ describe('拖拽功能测试', () => {
       cy.wrap(outline).should('have.string', 'solid')
     })
 
-    // 移动box元素
+    // 按下box元素
     cy.get('.box')
       .trigger('mousedown', 'center')
+
+    // 多选的情况下没有显示轮廓点
+    cy.get('.magic_drag-outline_point')
+      .should('not.be.visible')
+
+    // 移动box
     cy.get('body')
       .trigger('mousemove', { pageX: 450, pageY: 450 })
       .trigger('mouseup')
@@ -329,7 +335,7 @@ describe('拖拽功能测试', () => {
     })
   })
 
-  it.only('多选吸附', () => {
+  it('多选吸附', () => {
     cy.visit('http://localhost:9001/')
 
     // 选中两个组件
