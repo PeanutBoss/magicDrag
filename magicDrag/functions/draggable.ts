@@ -57,7 +57,6 @@ export default class Draggable {
 						}
 					}
           function saveStartCoordinate() {
-						console.log(_this.stateManager.regionSelectedState, '_this.stateManager.regionSelectedState')
             _this.stateManager.regionSelectedState.forEach(item => {
               _this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
             })

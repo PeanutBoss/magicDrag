@@ -142,7 +142,6 @@ export default class RefLine implements Plugin {
 
 		// 如果是多选需要主动更新包裹盒子的位置
 		updateSelectionBoxPos()
-		console.log(allElements(), dragElement().getBoundingClientRect(), 'allElements(), dragElement()')
 		// 记录参与本次操作的所有元素
 		this.rectManager.setElement(allElements(), dragElement())
 		// 获取要与dragRect对比的rect对象
