@@ -129,7 +129,8 @@ class RegionalSelection implements Plugin {
     this.stateManager.allElement.forEach(el => this.setSelected(el, false))
   }
   setSelected(el: HTMLElement, isSelected: boolean) {
-    setStyle(el, 'outline', isSelected ? '1px solid black' : 'none')
+    const selectedStyle: any = this.stateManager.getStateByEle(el).options.customStyle.selectedStyle
+    setStyle(el, isSelected ? selectedStyle : { outline: 'none' })
     this.stateManager.setStateByEle(el, 'regionSelected', isSelected)
   }
   containList(elList: HTMLElement[]) {

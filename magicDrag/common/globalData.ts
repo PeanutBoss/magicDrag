@@ -51,10 +51,11 @@ export interface MagicDragOptions {
     tipStyle?: Partial<CSSStyleDeclaration>
     pointStyle?: Partial<CSSStyleDeclaration>
     refLineStyle?: Partial<CSSStyleDeclaration>
+		selectedStyle?: Partial<CSSStyleDeclaration>
   }
 }
 
-const _defaultOptions = {
+const _defaultOptions: MagicDragOptions = {
 	containerSelector: 'body',
 	minWidth: 10, // minimum width - 最小宽度
 	minHeight: 10, // minimum height - 最小高度
@@ -117,6 +118,9 @@ const _defaultOptions = {
 			opacity: '0.7',
 			background: '#4DAEFF',
 			zIndex: '88888'
+		},
+		selectedStyle: {
+			outline: '1px solid black'
 		}
 	}
 }
