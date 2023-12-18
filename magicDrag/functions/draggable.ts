@@ -39,11 +39,11 @@ export default class Draggable {
 				down: (downAction, event) => {
 					downAction()
           this.stateManager.setCurrentElement(event.target)
-          this.dragStart()
 					// 按下的时候记录被区域选中的组件的初始位置
 					saveStartCoordinate()
 					// 计算所有选中元素轮廓的坐标
 					executeComposeCoordinate()
+          this.dragStart({ resetRegionalSelectionData })
 					function executeComposeCoordinate() {
 						// 如果RSStartCoordinate.length <= 1 说明没有多选元素
 						if (!_this.stateManager.isRegionSelection) return
@@ -57,6 +57,7 @@ export default class Draggable {
 						}
 					}
           function saveStartCoordinate() {
+						console.log(_this.stateManager.regionSelectedState, '_this.stateManager.regionSelectedState')
             _this.stateManager.regionSelectedState.forEach(item => {
               _this.RSStartCoordinate.push({ ...item.coordinate, el: item.privateTarget })
             })
@@ -66,10 +67,6 @@ export default class Draggable {
 					upAction()
 					// 清除提供给区域选择框的数据
 					resetRegionalSelectionData()
-					function resetRegionalSelectionData() {
-						_this.composeCoordinate = null
-						_this.RSStartCoordinate.length = 0
-					}
           this.dragEnd()
 				}
 			},
@@ -83,16 +80,21 @@ export default class Draggable {
 			{ downPointPosition, coordinate },
 			{ movementX, movementY }
 		))
+		function resetRegionalSelectionData() {
+			_this.composeCoordinate = null
+			_this.RSStartCoordinate.length = 0
+		}
 	}
 
-	dragStart() {
+	dragStart({ resetRegionalSelectionData }) {
 		// 在拖拽开始时触发扩展点，通知插件
 		this.plugins.callExtensionPoint(
 			'dragStart',
 			{
 				composeCoordinate: this.composeCoordinate,
 				publicContainer: this.stateManager.currentState.publicContainer.value,
-				privateTarget: this.stateManager.currentElement
+				privateTarget: this.stateManager.currentElement,
+				resetRegionalSelectionData
 			}
 		)
 	}

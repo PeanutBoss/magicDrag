@@ -34,9 +34,11 @@ class RegionalSelection implements Plugin {
     this.containerSelector = null
     this.containerEl = null
   }
-  dragStart({ privateTarget }) {
-    if (isSelectedEl(this)) {
+  dragStart({ privateTarget, resetRegionalSelectionData }) {
+    // 如果按下的是未选中的元素，重置已选中的元素
+    if (!isSelectedEl(this)) {
       this.resetStateAndStyle()
+      resetRegionalSelectionData()
     }
     function isSelectedEl(context) {
       return context.stateManager.getStateByEle(privateTarget).regionSelected

@@ -9,9 +9,9 @@ import StateManager from './stateManager'
 export const pluginManager = new PluginManager()
 
 export function usePlugin(options: MagicDragOptions) {
+	options.skill.regionalSelection && enableRegionalSelection(options.containerSelector, stateManager)
 	options.skill.refLine && enableRefLine(tidyRefLineOptions(options), stateManager)
 	options.skill.shortcut && enableShortcut()
-  options.skill.regionalSelection && enableRegionalSelection(options.containerSelector, stateManager)
 	pluginManager.installPlugin()
 }
 
