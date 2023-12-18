@@ -220,7 +220,7 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
 	if ([...allContainer, document.body, document.documentElement].includes(event.target)) {
 		showOrHideContourPoint(pointElements, false)
     // 隐藏轮廓点时让当前选中的元素的层级恢复到正常状态（因为锁定状态不能被选中，所以不需要判断锁定的状态）
-		privateTarget === publicTarget.value && setStyle(publicTarget.value, 'zIndex', coordinate.zIndex || getTargetZIndex(TargetStatus.Normal, publicTarget.value))
+		privateTarget === publicTarget.value && setStyle(publicTarget.value, 'zIndex', getTargetZIndex(TargetStatus.Normal, publicTarget.value))
 	}
 
 	// 每注册一个元素，window就多绑定一个事件，点击时也会触发window绑定的其他元素对应的mousedown事件，
@@ -239,8 +239,8 @@ function checkIsContains (target, pointElements, targetState, stateManager, even
   }
 
   // outline points are displayed when in focus
-  // 聚焦时将显示轮廓点
-  showOrHideContourPoint(pointElements, true)
+  // 聚焦时将显示轮廓点（多选的情况下不需要显示轮廓点）
+	showOrHideContourPoint(pointElements, !stateManager.isRegionSelection)
   // 设置选中元素的层级
   setStyle(target, 'zIndex', getTargetZIndex(TargetStatus.Checked, target))
 }

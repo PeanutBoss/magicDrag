@@ -78,12 +78,12 @@ export function useMoveElement (
 		guaranteeAbsolute($ele)
 		$ele.addEventListener('mousedown', mouseDown)
 	}
-	function mouseUp () {
+	function mouseUp (event) {
 		const upAction = () => {
 			changePress(false)
 		}
 		// 如果有回调将控制权交给回调，否则执行默认动作
-		upCallback ? transferControl(upAction, upCallback) : upAction()
+		upCallback ? transferControl(upAction, upCallback, event) : upAction()
 	}
 	function mouseDown (event) {
 		event.preventDefault()
@@ -113,7 +113,7 @@ export function useMoveElement (
 			updatePosition()
 		}
 
-		transferControl(moveAction, moveCallback, watchMovement)
+		transferControl(moveAction, moveCallback, watchMovement, event)
 	}
 	function save() {
 		relativeContainer.x = $ele.offsetLeft - startCoordinate.x

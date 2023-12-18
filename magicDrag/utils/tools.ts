@@ -48,9 +48,9 @@ export function isNullOrUndefined (val: unknown): boolean {
 	return val === null || val === undefined
 }
 
-export function conditionExecute (condition, task1, task2?) {
-	if (isNullOrUndefined(task2)) return condition && task1
-	return condition ? task1 : task2
+export function conditionExecute (condition, result1, result2?) {
+	if (isNullOrUndefined(result2)) return condition && result1
+	return condition ? result1 : result2
 }
 
 export function removeElements (elements: HTMLElement[] | Record<string, HTMLElement>) {

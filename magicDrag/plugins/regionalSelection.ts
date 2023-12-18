@@ -35,6 +35,8 @@ class RegionalSelection implements Plugin {
     this.containerEl = null
   }
   dragStart({ privateTarget, resetRegionalSelectionData }) {
+    // 如果按下ctrl键则不需要检查是否选中
+    if (ctrlIsPress.value) return
     // 如果按下的是未选中的元素，重置已选中的元素
     if (!isSelectedEl(this)) {
       this.resetStateAndStyle()
@@ -116,7 +118,12 @@ class RegionalSelection implements Plugin {
     if (!ctrlIsPress.value) return
     // 点击的不是拖拽元素
     if (e.target === this.containerEl) return
-    if (this.stateManager.allElement.includes(e.target)) this.setSelected(e.target, true)
+    // 如果点击的元素是某个拖拽元素
+    if (this.stateManager.allElement.includes(e.target)) {
+      const regionalSelected = this.stateManager.getStateByEle(e.target).regionSelected
+      // 将它设置 选中/非选中 状态
+      this.setSelected(e.target, !regionalSelected)
+    }
   }
   resetStateAndStyle() {
     this.stateManager.allElement.forEach(el => this.setSelected(el, false))
