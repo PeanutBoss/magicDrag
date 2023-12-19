@@ -218,3 +218,11 @@ export function memoize(fn) {
 		return cache[fn.name]
 	}
 }
+
+export function resetObject(raw: Record<string, unknown>, value: unknown = '') {
+	const result = {}
+	for (const key in raw) {
+		result[key] = value
+	}
+	return result
+}

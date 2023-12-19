@@ -1,5 +1,5 @@
 import { Plugin, StateManager } from '../manager'
-import { getElement, numberToStringSize, setStyle } from '../utils/tools'
+import { getElement, numberToStringSize, setStyle, resetObject } from '../utils/tools'
 import { useSpecialKey } from './shortcut'
 
 const { ctrlIsPress } = useSpecialKey()
@@ -124,7 +124,7 @@ class RegionalSelection implements Plugin {
   }
   setSelected(el: HTMLElement, isSelected: boolean) {
     const selectedStyle: any = this.stateManager.getStateByEle(el).options.customStyle.selectedStyle
-    setStyle(el, isSelected ? selectedStyle : { outline: 'none' })
+    setStyle(el, isSelected ? selectedStyle : resetObject(selectedStyle, 'none'))
     this.stateManager.setStateByEle(el, 'regionSelected', isSelected)
   }
   containList(elList: HTMLElement[]) {

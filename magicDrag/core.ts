@@ -22,12 +22,10 @@ window.stateManager = stateManager
 *  23.等比缩放 (需要修改 createCoordinateStrategies 方法)
 *  26.通过调用API的方式来处理配置信息
 *  27.style类控制样式
-*  28.包裹、容器元素位置信息兼容
 *  29.重构创建初始状态的代码
-*  30.多选按下不显示resize
-*  31.按下未选中的元素，其他元素取消选中
 *  32.多选的吸附可能会超出边界
-*  33.卸载时清空重置状态管理器中的数据
+*  34.regionStyle、selectedStyle 参数检查
+*  35.完成insertElement API
 * */
 
 // default configuration
