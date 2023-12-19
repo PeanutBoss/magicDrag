@@ -5,15 +5,12 @@
   "main": "lib/magic_drag.cjs.js",
   "module": "lib/magic_drag-esm.js",
   "scripts": {
-    "build": "webpack --config ./config/magicDrag.config.js",
-    "serve": "webpack serve --config ./config/magicDrag.config.js",
-    "serve:example": "webpack serve --config ./config/example.config.js",
     "serve:move": "webpack serve --config ./config/move.config.js",
-    "serve:list": "webpack serve --config ./config/list.config.js",
+    "serve:develop": "webpack serve --config ./config/develop.config.js",
     "build:drag": "rollup -c rollup.config.js",
-    "build:move": "webpack --config ./config/moveProduct.config.js",
     "unit": "jest test",
-    "e2e": "cypress open"
+    "serve:e2e": "webpack serve --config config/test.config.js",
+    "test:e2e": "cypress open"
   },
   "repository": {
     "type": "git",

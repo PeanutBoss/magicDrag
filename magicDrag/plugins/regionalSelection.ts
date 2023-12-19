@@ -80,6 +80,8 @@ class RegionalSelection implements Plugin {
   }
   _mouseMove(event) {
     if (!this.isPress) return
+    // 取消选中的默认行为
+    event.preventDefault()
     const _this = this
 
     // 先重置所有元素的选中标识和样式
