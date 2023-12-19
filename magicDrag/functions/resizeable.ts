@@ -69,12 +69,12 @@ export default class Resizeable {
   addDragFunctionToPoint (publicTarget, options, runTimeParameter) {
     const { point, pointPosition, direction } = runTimeParameter
     const { resizeCallback } = options.callbacks || {}
-    const { isPress, movementX, movementY } = useMoveElement(point, (moveAction) => {
+    const { isPress, movementX, movementY } = useMoveElement(point, (moveAction, _, event) => {
       const moveResizeAction = () => {
         this.movePointCallback({ direction, movementX, movementY, moveAction, target: publicTarget.value })
       }
       // Hand over control (moveResizeAction) - 将控制权（moveResizeAction）交出
-      transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value })
+      transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value }, event)
     }, { limitDirection: pointPosition[direction][3] })
     return isPress
   }

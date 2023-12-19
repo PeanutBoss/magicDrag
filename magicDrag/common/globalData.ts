@@ -52,6 +52,7 @@ export interface MagicDragOptions {
     pointStyle?: Partial<CSSStyleDeclaration>
     refLineStyle?: Partial<CSSStyleDeclaration>
 		selectedStyle?: Partial<CSSStyleDeclaration>
+		regionStyle?: Partial<CSSStyleDeclaration>
   }
 }
 
@@ -79,7 +80,7 @@ const _defaultOptions: MagicDragOptions = {
 		drag: true, // whether to support dragging - 是否支持拖动
 		refLine: true, // whether to support refLine - 是否支持参考线
 		shortcut: true, // whether to support shortcut - 是否支持快捷键
-		regionalSelection: false, // whether multiple region selection is supported - 是否支持区域多选
+		regionalSelection: true, // whether multiple region selection is supported - 是否支持区域多选
 		limitDragDirection: null // restricted direction of movement - 限制移动方向
 	},
 	customClass: {
@@ -121,6 +122,12 @@ const _defaultOptions: MagicDragOptions = {
 		},
 		selectedStyle: {
 			outline: '1px solid black'
+		},
+		regionStyle: {
+			position: 'absolute',
+			border: '1px solid aqua',
+			zIndex: '88888',
+			backgroundColor: 'rgba(0, 255, 255, 0.1)'
 		}
 	}
 }

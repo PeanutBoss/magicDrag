@@ -2,7 +2,7 @@
 
 ### useMoveElement
 
-接受一个dom元素或一个选择器使其可拖拽，接受可选的两个参数 moveCallback moveOption
+接受一个dom元素或一个选择器使其可拖拽，接受可选的两个参数 callbacks moveOption
 
 #### 参数
 
@@ -56,7 +56,8 @@ import { useMoveElement } from 'magicDrag'
 // 给callbacks传入一个函数
 useMoveElement(
   '.box',
-  (moveAction, movement) => {
+  (moveAction, movement, event) => {
+    console.log(event, '事件对象')
      console.log('移动前做一些事')
      moveAction()
      console.log(`竖直方向移动了${movement.y}px, 水平方向移动了${movement.x}px`)
@@ -68,18 +69,21 @@ useMoveElement(
 useMoveElement(
         '.box',
         {
-          move(moveAction, movement) {
+          move(moveAction, movement, event) {
+            console.log(event, '事件对象')
             console.log('移动前做一些事')
             moveAction()
             console.log(`竖直方向移动了${movement.y}px, 水平方向移动了${movement.x}px`)
             console.log('移动后做一些事')
           },
-          down(downAction) {
+          down(downAction, event) {
+            console.log(event, '事件对象')
             console.log('鼠标按下前做一些事')
             downAction()
             console.log('鼠标按下后做一些事')
           },
-          up(upAction) {
+          up(upAction, event) {
+            console.log(event, '事件对象')
             console.log('与up用法相同')
             upAction()
           }
@@ -202,31 +206,34 @@ interface SelectDescribe {
 
  - options
 
-| 属性                           | 描述                         | 默认值    | 可选值/类型                           | 备注                              |
-|------------------------------|----------------------------|--------|----------------------------------|---------------------------------|
-| containerSelector            | 容器元素的选择器，元素只能在该容器内移动       | body   | 容器元素的选择器                         |                                 |
-| minWidth                     | 容器可以缩放的最小宽度                | 100    | number                           |                                 |
-| minHeight                    | 容器可以缩放的最小高度                | 100    | number                           |                                 |
-| maxWidth                     | 容器可以放大的最大宽度                | 999999 | number                           |                                 |
-| maxHeight                    | 容器可以放大的最大高度                | 999999 | number                           |                                 |
-| initialInfo.width            | 目标元素的初始宽度（如果元素本身设置了尺寸则不生效） | 200    | number                           |                                 |
-| initialInfo.height           | 目标元素的初始高度（如果元素本身设置了尺寸则不生效） | 200    | number                           |                                 |
-| initialInfo.left             | 目标元素的初始的X轴定位               | 0      | number                           |                                 |
-| initialInfo.top              | 目标元素的初始的Y轴定位               | 0      | number                           |                                 |
-| pointSize                    | 调整大小的轮廓点的尺寸（直径）            | 10     | number                           | 即将废弃，建议通过pointStyle设置轮廓点的尺寸     |
-| customClass.customPointClass | 自定义轮廓点的类名                  | -      | string                           | 即将废弃，推荐使用customStyle.pointStyle |
-| showRefLine                  | 是否显示参考线                    | true   | boolean                          |                                 |
-| adsorb                       | 是否开启吸附                     | true   | boolean                          |                                 |
-| gap                          | 参考线吸附的最小距离（单位px）           | 3      | number                           |                                 |
-| showDistance                 | 拖拽时是否显示间距                  | true   | boolean                          |                                 |
-| skill.resize                 | 是否开启调整大小功能                 | true   | boolean                          |                                 |
-| skill.drag                   | 是否开启拖拽功能                   | true   | boolean                          |                                 |
-| skill.limitDragDirection     | 限制目标元素拖拽方向                 | null   | 'X', 'Y'                         |                                 |
-| callbacks.dragCallback       | 拖拽的回调                      | -      | (dragAction, movement) => void   |                                 |
-| callbacks.resizeCallback     | 调整大小的回调                    | -      | (resizeAction, movement) => void |                                 |
-| customStyle.pointStyle       | 轮廓点的样式                     | -      | object                           |                                 |
-| customStyle.tipStyle         | 间距提示的样式                    | -      | object                           |                                 |
-| customStyle.refLineStyle     | 参考线的样式                     | -      | object                           |                                 |
+| 属性                           | 描述                         | 默认值    | 可选值/类型                                             | 备注                          |
+|------------------------------|----------------------------|--------|----------------------------------------------------|-----------------------------|
+| containerSelector            | 容器元素的选择器，元素只能在该容器内移动       | body   | 容器元素的选择器                                           |                             |
+| minWidth                     | 容器可以缩放的最小宽度                | 100    | number                                             |                             |
+| minHeight                    | 容器可以缩放的最小高度                | 100    | number                                             |                             |
+| maxWidth                     | 容器可以放大的最大宽度                | 999999 | number                                             |                             |
+| maxHeight                    | 容器可以放大的最大高度                | 999999 | number                                             |                             |
+| initialInfo.width            | 目标元素的初始宽度（如果元素本身设置了尺寸则不生效） | 200    | number                                             |                             |
+| initialInfo.height           | 目标元素的初始高度（如果元素本身设置了尺寸则不生效） | 200    | number                                             |                             |
+| initialInfo.left             | 目标元素的初始的X轴定位               | 0      | number                                             |                             |
+| initialInfo.top              | 目标元素的初始的Y轴定位               | 0      | number                                             |                             |
+| pointSize                    | 调整大小的轮廓点的尺寸（直径）            | 10     | number                                             | 即将废弃，建议通过pointStyle设置轮廓点的尺寸 |
+| customClass.customPointClass | 自定义轮廓点的类名                  | -      | string                                             | 废弃                          |
+| showRefLine                  | 是否显示参考线                    | true   | boolean                                            |                             |
+| adsorb                       | 是否开启吸附                     | true   | boolean                                            |                             |
+| gap                          | 参考线吸附的最小距离（单位px）           | 3      | number                                             |                             |
+| showDistance                 | 拖拽时是否显示间距                  | true   | boolean                                            |                             |
+| skill.resize                 | 是否开启调整大小功能                 | true   | boolean                                            |                             |
+| skill.drag                   | 是否开启拖拽功能                   | true   | boolean                                            |                             |
+| skill.limitDragDirection     | 限制目标元素拖拽方向                 | null   | 'X', 'Y'                                           |                             |
+| skill.regionalSelection      | 是否开启多选（支持鼠标画框勾选和ctrl+左键）   | true   | boolean                                            |                             |
+| callbacks.dragCallback       | 拖拽的回调                      | -      | (dragAction, movement, event) => void              |                             |
+| callbacks.resizeCallback     | 调整大小的回调                    | -      | (resizeAction, direction, movement, event) => void |                             |
+| customStyle.pointStyle       | 轮廓点的样式                     | -      | object                                             |                             |
+| customStyle.tipStyle         | 间距提示的样式                    | -      | object                                             |                             |
+| customStyle.refLineStyle     | 参考线的样式                     | -      | object                                             |                             |
+| customStyle.selectedStyle    | 被多选选中的样式                   | -      | object                                             |                             |
+| customStyle.regionStyle      | 鼠标勾选多选框的样式                 | -      | object                                             |                             |
 
 ##### 注意事项
 - options.callbacks.dragCallback(options.callbacks.resizeCallback同理)
@@ -320,6 +327,15 @@ const state = useMagicList(
       },
       refLineStyle: {
         backgroundColor: 'yellowgreen'
+      },
+      selectedStyle: {
+        outline: '1px solid black'
+      },
+      regionStyle: {
+        position: 'absolute',
+        border: '1px solid aqua',
+        zIndex: '88888',
+        backgroundColor: 'rgba(0, 255, 255, 0.1)'
       }
     }
   }

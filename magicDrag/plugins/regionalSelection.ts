@@ -68,13 +68,7 @@ class RegionalSelection implements Plugin {
     // 计算并设置元素样式
     this.startCoordinate.x = event.pageX
     this.startCoordinate.y = event.pageY
-    const regionalStyle = {
-      position: 'absolute',
-      border: '1px solid aqua',
-      zIndex: '88888',
-      backgroundColor: 'rgba(0, 255, 255, 0.1)'
-    }
-    setStyle(this.regionalEl, regionalStyle)
+    setStyle(this.regionalEl, this.stateManager.currentState.options.customStyle.regionStyle as {})
 
     // 重置选中元素的状态和样式
     this.resetStateAndStyle()
