@@ -61,13 +61,6 @@ export function useMagicDragAPI (
   // 初始化全局数据
   initGlobalData()
   initGlobalStyle()
-  const elementParameter: ElementParameter = {
-    pointElements, allTarget, allContainer,
-    target: publicTarget,
-    container: publicContainer,
-    privateTarget: null as HTMLElement,
-    privateContainer: null as HTMLElement
-  }
 
   // 显示或隐藏轮廓点的方法
   const processBlurOrFocus = blurOrFocus(pointElements, targetState, stateManager)

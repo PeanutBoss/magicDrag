@@ -61,12 +61,12 @@ function checkOptionPosition(initialInfo: MagicDragOptions['initialInfo']) {
   if (!initialInfo) return
   baseWarnTips(posBeNegative(), 'It is not recommended that the initial location information be set to a negative value.')
   fixInitialPos()
+
+  fixInitialPos()
   function fixInitialPos() {
     initialInfo.top = initialInfo.top > 0 ? initialInfo.top : 0
     initialInfo.left = initialInfo.left > 0 ? initialInfo.left : 0
   }
-
-  fixInitialPos()
   function posBeNegative() {
     return initialInfo.left < 0 || initialInfo.top < 0
   }

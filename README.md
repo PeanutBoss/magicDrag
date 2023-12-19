@@ -262,6 +262,7 @@ interface SelectDescribe {
 | getStateList   | 获取所有元素的状态信息                          |
 | getTargetState | 获取当前选中元素的状态信息                        |
 | unMount        | 解除事件绑定、清空内存等操作                       |
+| insertElement  | 为一个HTML元素开启拖拽功能，拖拽的配置与创建该state的配置相同  |
 
 #### example
 ```vue

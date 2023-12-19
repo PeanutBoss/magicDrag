@@ -74,9 +74,18 @@ export function useMagicList(
 	})
 
 	// 参数检查
-	function insertElement(selector, initialInfo) {
-		return useMagicDragAPI(selector, mergeObject(options, { initialInfo }))
+	function insertElement(selector: MagicSelector) {
+		if (typeof selector === 'string' || selector instanceof HTMLElement)
+			return useMagicDragAPI(selector, options)
+
+		if (typeof selector === 'object') {
+			const initialInfo = { ...selector.initialSize, ...selector.initialPosition }
+			checkOptionSize(mergeObject(options, initialInfo))
+			return useMagicDragAPI(selector.selector, { ...options, initialInfo })
+		}
 	}
+
+	state.insertElement = insertElement
 
 	return state
 }
