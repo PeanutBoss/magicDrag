@@ -27,6 +27,7 @@ window.stateManager = stateManager
 *  30.多选按下不显示resize
 *  31.按下未选中的元素，其他元素取消选中
 *  32.多选的吸附可能会超出边界
+*  33.卸载时清空重置状态管理器中的数据
 * */
 
 // default configuration
@@ -214,6 +215,8 @@ export function useMagicDragAPI (
     removeListener()
     // 清除状态信息
     stateManager.clear()
+    // 重置公共数据
+    resetPublicData()
     function removeListener() {
       stateManager.elementRecords
         .map(m => m.element)
@@ -230,6 +233,10 @@ export function useMagicDragAPI (
       targetState, pointState,
       ...privateState, options
     }
+  }
+  function resetPublicData() {
+    allContainer.length = 0
+    allTarget.length = 0
   }
   function enableDragFunc() {
     options.skill.drag && new Draggable(pluginManager, stateManager)

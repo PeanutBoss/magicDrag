@@ -147,7 +147,7 @@ export default class Draggable {
 				{ movement, _updateContourPointPosition, _updateState, syncOtherEl }
 			)
 
-			// 需要更新其他元素位置和状态 TODO 其他元素抵达边界时需要限制
+			// 需要更新其他元素位置和状态
 			function syncOtherEl(movement) {
 				// 多选的情况下才需要做同步操作
 				if (_this.stateManager.isRegionSelection) {
