@@ -1,6 +1,6 @@
 {
   "name": "magic_drag",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A simple drag and resizing tool",
   "main": "lib/magic_drag-esm.js",
   "module": "lib/magic_drag-esm.js",
@@ -22,10 +22,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "^5.1.5",
     "@babel/core": "^7.22.15",
-    "@babel/preset-env": "^7.22.15",
-    "@babel/preset-typescript": "^7.22.15"
+    "@babel/preset-env": "^7.22.15"
   },
   "dependencies": {
     "@vue/reactivity": "^3.3.4",
