@@ -75,7 +75,7 @@ export default class Resizeable {
       }
       // Hand over control (moveResizeAction) - 将控制权（moveResizeAction）交出
       transferControl(moveResizeAction, resizeCallback, direction, { movementX: movementX.value, movementY: movementY.value }, event)
-    }, { limitDirection: pointPosition[direction][3] })
+    }, { limitDirection: pointPosition[direction][3], offsetLeft: -options.pointSize, offsetTop: -options.pointSize })
     return isPress
   }
 
