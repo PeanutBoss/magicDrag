@@ -209,10 +209,10 @@ interface SelectDescribe {
 | 属性                           | 描述                         | 默认值    | 可选值/类型                                             | 备注                          |
 |------------------------------|----------------------------|--------|----------------------------------------------------|-----------------------------|
 | containerSelector            | 容器元素的选择器，元素只能在该容器内移动       | body   | 容器元素的选择器                                           |                             |
-| minWidth                     | 容器可以缩放的最小宽度                | 100    | number                                             |                             |
-| minHeight                    | 容器可以缩放的最小高度                | 100    | number                                             |                             |
-| maxWidth                     | 容器可以放大的最大宽度                | 999999 | number                                             |                             |
-| maxHeight                    | 容器可以放大的最大高度                | 999999 | number                                             |                             |
+| minWidth                     | 目标元素可以缩小的最小宽度              | 100    | number                                             |                             |
+| minHeight                    | 目标元素可以缩小的最小高度              | 100    | number                                             |                             |
+| maxWidth                     | 目标元素可以放大的最大宽度              | 999999 | number                                             |                             |
+| maxHeight                    | 目标元素可以放大的最大高度              | 999999 | number                                             |                             |
 | initialInfo.width            | 目标元素的初始宽度（如果元素本身设置了尺寸则不生效） | 200    | number                                             |                             |
 | initialInfo.height           | 目标元素的初始高度（如果元素本身设置了尺寸则不生效） | 200    | number                                             |                             |
 | initialInfo.left             | 目标元素的初始的X轴定位               | 0      | number                                             |                             |

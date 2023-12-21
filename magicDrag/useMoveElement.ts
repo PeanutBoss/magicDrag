@@ -115,10 +115,6 @@ export function useMoveElement (
 
 		transferControl(moveAction, moveCallback, watchMovement, event)
 	}
-	function save() {
-		relativeContainer.x = $ele.offsetLeft - startCoordinate.x
-		relativeContainer.y = $ele.offsetTop - startCoordinate.y
-	}
 	function destroy() {
 		$ele.removeEventListener('mousedown', mouseDown)
 		window.removeEventListener('mousemove', throttleMouseMove)

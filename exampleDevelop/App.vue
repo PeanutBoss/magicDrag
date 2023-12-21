@@ -4,7 +4,9 @@
       <div class="box"></div>
       <div class="box1"></div>
       <div class="box2"></div>
-      <div class="box3" style="width: 100px;height: 100px"></div>
+<!--      <div class="box3" style="width: 100px;height: 100px;position: relative">-->
+<!--        <div style="position:absolute;left: 0;top: 0;right: 0;bottom: 0"></div>-->
+<!--      </div>-->
 <!--      <div class="box4"></div>-->
 <!--      <div class="box5"></div>-->
     </div>
