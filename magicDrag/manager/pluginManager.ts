@@ -40,6 +40,8 @@ export interface Plugin {
   resize?: (...args: any[]) => void
   targetPressChange?: (...args: any[]) => void
   pointPressChange?: (...args: any[]) => void
+  interveneDrag?: (movement: { x: number, y: number }) => void
+  interveneResize?: (movement: { x: number, y: number }) => void
 }
 /*
 * MARK 当设计插件机制时，可以遵循以下一般的工作流程：

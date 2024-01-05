@@ -88,6 +88,9 @@ export default class Resizeable {
 
     moveAction()
 
+    // 通知插件，可以干涉movement的扩展点
+    this.plugins.callExtensionPoint('interveneResize')
+
     const _updateTargetStyle = ({ movementX, movementY }) => {
       updateTargetStyle(target, { direction, movementX, movementY }, { targetState, coordinate })
     }

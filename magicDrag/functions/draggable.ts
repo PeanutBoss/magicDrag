@@ -123,6 +123,9 @@ export default class Draggable {
 				// 执行movePoint的默认动作
 				moveAction()
 
+				// 通知插件，可以干涉movement的扩展点
+				this.plugins.callExtensionPoint('interveneDrag', movement)
+
 				// 限制目标元素在容器内移动
 				this.limitTargetMove(executeCoordinate(), containerInfo, movement)
 				// update the position of the contour points

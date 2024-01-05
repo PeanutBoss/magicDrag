@@ -3,7 +3,6 @@ import { nextTick } from './helper'
 import { getElement, removeElements, baseErrorTips, setStyle } from './utils/tools'
 import { pluginManager, setInitialState, stateManager } from './manager'
 import { Draggable, Resizeable } from './functions'
-import { ElementParameter } from './manager'
 import { addGlobalUnmountCb, MagicDragOptions, MagicDragState, unMountGlobalCb } from './common/globalData'
 import { fixContourExceed } from './common/magicDrag'
 import {

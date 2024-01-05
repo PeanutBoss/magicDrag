@@ -1,10 +1,11 @@
-import PluginManager from '../manager/pluginManager'
-import { MagicDragOptions } from '../common/globalData'
-import RefLine, { RefLineOptions } from '../plugins/refLine'
-import Shortcut from '../plugins/shortcut'
-import RegionalSelection from '../plugins/regionalSelection'
 import { stateManager } from './state'
 import StateManager from './stateManager'
+import PluginManager from '../manager/pluginManager'
+import { MagicDragOptions } from '../common/globalData'
+import Shortcut from '../plugins/shortcut'
+import RefLine, { RefLineOptions } from '../plugins/refLine'
+import RegionalSelection from '../plugins/regionalSelection'
+import InterveneResize from '../plugins/interveneResize'
 
 export const pluginManager = new PluginManager()
 
@@ -12,6 +13,7 @@ export function usePlugin(options: MagicDragOptions) {
 	options.skill.regionalSelection && enableRegionalSelection(options.containerSelector, stateManager)
 	options.skill.refLine && enableRefLine(tidyRefLineOptions(options), stateManager)
 	options.skill.shortcut && enableShortcut()
+	enableInterveneResize()
 	pluginManager.installPlugin()
 }
 
@@ -38,4 +40,9 @@ function enableShortcut() {
 function enableRegionalSelection(container: string, stateManager: StateManager) {
   const regionalSelection = new RegionalSelection(container, stateManager)
   pluginManager.registerPlugin(regionalSelection.name, regionalSelection)
+}
+
+function enableInterveneResize() {
+	const interveneResize = new InterveneResize()
+	pluginManager.registerPlugin(interveneResize.name, interveneResize)
 }
