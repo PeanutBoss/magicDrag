@@ -9,7 +9,7 @@ const ctrlIsPress = ref(false)
 type TriggerType = 'KEY_UP' | 'KEY_DOWN'
 type ShortcutCons = ((e: MouseEvent) => void) | {
 	action: (e: MouseEvent) => void,
-	type?: TriggerType,
+	triggerType?: TriggerType,
 	continuous?: boolean
 }
 
@@ -19,7 +19,7 @@ const defaultShortcut: Record<string, ShortcutCons> = {
 			event.preventDefault()
 			console.log('全选')
 		},
-		type: 'KEY_DOWN'
+		triggerType: 'KEY_DOWN'
 	},
 	'ctrl + c': {
 		action: event => {
@@ -94,31 +94,40 @@ class Shortcut implements Plugin {
 		this.shortcutCache[this.getDescribeFromEvent(event)] = null
 	}
 	// 触发快捷键操作
-	triggerAction(event, shortcut: string, type: TriggerType) {
+	triggerAction(event, shortcut: string, triggerType: TriggerType) {
+		const _this = this
+
 		// 如果禁用快捷键，不执行操作
 		if (!this.enableMap[shortcut]) return
 
 		// 快捷键没有对应操作
 		if (!this.shortcuts[shortcut] || !this.shortcuts[shortcut].length) return
 
-		if (type === Shortcut.KEY_DOWN) {
+		triggerType === Shortcut.KEY_DOWN ?
+			triggerKeydown() :
+			triggerKeyup()
+
+		function triggerKeydown() {
 			packShortcut()
-			this.shortcutCache[shortcut]
-				.forEach(item => item.action(event))
-			return
+			execute(_this.shortcutCache[shortcut])
 		}
-
-		this.shortcuts[shortcut]
-			.filter(item => item.type === type)
-			.forEach(item => item.action(event))
-
-		const _this = this
+		function triggerKeyup() {
+			execute(getTypeShortcut(_this.shortcuts[shortcut]))
+		}
+		// 执行回调任务
+		function execute(shortcuts) {
+			shortcuts.forEach(item => item.action(event))
+		}
+		// 获取triggerType对应的操作
+		function getTypeShortcut(shortcuts) {
+			return shortcuts
+				.filter(item => item.triggerType === triggerType)
+		}
 		// 对快捷键对象进行包装
 		function packShortcut() {
 			// 如果没有缓存（被包装的数据）
 			if (!_this.shortcutCache[shortcut]) {
-				_this.shortcutCache[shortcut] = _this.shortcuts[shortcut]
-					.filter(item => item.type === type)
+				_this.shortcutCache[shortcut] = getTypeShortcut(_this.shortcuts[shortcut])
 					// 如果操作不允许连续执行，使用onceExecute对action进行包装，否则使用原有的action
 					.map(m => !m.continuous ? { ...m, action: onceExecute(m.action, event) } : m)
 			}
@@ -137,7 +146,7 @@ class Shortcut implements Plugin {
 	 * @param action 触发快捷键的操作
 	 * @param options type: 事件在按下还是抬起时触发, continuous: 按键一直按下时是否允许连续触发（只有按下可以连续触发）
 	 */
-	registerShortcut(shortcut: string, action: (...args: any[]) => void, { type, continuous }) {
+	registerShortcut(shortcut: string, action: (...args: any[]) => void, { triggerType, continuous }) {
 		shortcut = this.functionOrder(shortcut)
 
 		this.enableMap[shortcut] = this.enableMap[shortcut] ?? true
@@ -147,7 +156,7 @@ class Shortcut implements Plugin {
 
 		this.shortcuts[shortcut].push({
 			action,
-			type,
+			triggerType,
 			continuous
 		})
 	}
@@ -184,10 +193,10 @@ class Shortcut implements Plugin {
 	configureShortcuts(shortcuts: Record<string, ShortcutCons>) {
 		for (const SK in shortcuts) {
 			if (typeof shortcuts[SK] === 'function') {
-				this.registerShortcut(SK, shortcuts[SK] as Function, { type: Shortcut.KEY_DOWN, continuous: false })
+				this.registerShortcut(SK, shortcuts[SK] as Function, { triggerType: Shortcut.KEY_DOWN, continuous: false })
 			} else {
-				const { action, type = Shortcut.KEY_DOWN, continuous = false } = shortcuts[SK]
-				this.registerShortcut(SK, action, { type, continuous })
+				const { action, triggerType = Shortcut.KEY_DOWN, continuous = false } = shortcuts[SK]
+				this.registerShortcut(SK, action, { triggerType, continuous })
 			}
 		}
 	}
