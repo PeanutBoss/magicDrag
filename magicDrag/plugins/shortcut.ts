@@ -13,7 +13,7 @@ type ShortcutCons = ((e: MouseEvent) => void) | {
 	continuous?: boolean
 }
 
-const defaultShortcut: Record<string, ShortcutCons> = {
+const shortcutConfig: Record<string, ShortcutCons> = {
 	'ctrl + a': {
 		action: event => {
 			event.preventDefault()
@@ -67,7 +67,7 @@ class Shortcut implements Plugin {
 	bindProcessKeyup
 	constructor() {
 		this.name = 'shortcut'
-		this.configureShortcuts(defaultShortcut)
+		this.configureShortcuts(shortcutConfig)
 
 		this.bindProcessKeydown = this.processKeydown.bind(this)
 		this.bindProcessKeyup = this.processKeyup.bind(this)
@@ -94,14 +94,14 @@ class Shortcut implements Plugin {
 		this.shortcutCache[this.getDescribeFromEvent(event)] = null
 	}
 	// 触发快捷键操作
-	triggerAction(event, shortcut: string, triggerType: TriggerType) {
+	triggerAction(event, shortcutKey: string, triggerType: TriggerType) {
 		const _this = this
 
 		// 如果禁用快捷键，不执行操作
-		if (!this.enableMap[shortcut]) return
+		if (!this.enableMap[shortcutKey]) return
 
 		// 快捷键没有对应操作
-		if (!this.shortcuts[shortcut] || !this.shortcuts[shortcut].length) return
+		if (!this.shortcuts[shortcutKey] || !this.shortcuts[shortcutKey].length) return
 
 		triggerType === Shortcut.KEY_DOWN ?
 			triggerKeydown() :
@@ -109,25 +109,25 @@ class Shortcut implements Plugin {
 
 		function triggerKeydown() {
 			packShortcut()
-			execute(_this.shortcutCache[shortcut])
+			execute(_this.shortcutCache[shortcutKey])
 		}
 		function triggerKeyup() {
-			execute(getTypeShortcut(_this.shortcuts[shortcut]))
+			execute(getTypeShortcut(_this.shortcuts[shortcutKey]))
 		}
 		// 执行回调任务
-		function execute(shortcuts) {
-			shortcuts.forEach(item => item.action(event))
+		function execute(shortcutList) {
+			shortcutList.forEach(item => item.action(event))
 		}
 		// 获取triggerType对应的操作
-		function getTypeShortcut(shortcuts) {
-			return shortcuts
+		function getTypeShortcut(shortcutList) {
+			return shortcutList
 				.filter(item => item.triggerType === triggerType)
 		}
 		// 对快捷键对象进行包装
 		function packShortcut() {
 			// 如果没有缓存（被包装的数据）
-			if (!_this.shortcutCache[shortcut]) {
-				_this.shortcutCache[shortcut] = getTypeShortcut(_this.shortcuts[shortcut])
+			if (!_this.shortcutCache[shortcutKey]) {
+				_this.shortcutCache[shortcutKey] = getTypeShortcut(_this.shortcuts[shortcutKey])
 					// 如果操作不允许连续执行，使用onceExecute对action进行包装，否则使用原有的action
 					.map(m => !m.continuous ? { ...m, action: onceExecute(m.action, event) } : m)
 			}
@@ -142,19 +142,19 @@ class Shortcut implements Plugin {
 
 	/**
 	 * @description 注册快捷键
-	 * @param shortcut 快捷键key
+	 * @param shortcutKey 快捷键key
 	 * @param action 触发快捷键的操作
 	 * @param options type: 事件在按下还是抬起时触发, continuous: 按键一直按下时是否允许连续触发（只有按下可以连续触发）
 	 */
-	registerShortcut(shortcut: string, action: (...args: any[]) => void, { triggerType, continuous }) {
-		shortcut = this.functionOrder(shortcut)
+	registerShortcut(shortcutKey: string, action: (...args: any[]) => void, { triggerType, continuous }) {
+		shortcutKey = this.functionOrder(shortcutKey)
 
-		this.enableMap[shortcut] = this.enableMap[shortcut] ?? true
-		if (!this.shortcuts[shortcut]) {
-			this.shortcuts[shortcut] = []
+		this.enableMap[shortcutKey] = this.enableMap[shortcutKey] ?? true
+		if (!this.shortcuts[shortcutKey]) {
+			this.shortcuts[shortcutKey] = []
 		}
 
-		this.shortcuts[shortcut].push({
+		this.shortcuts[shortcutKey].push({
 			action,
 			triggerType,
 			continuous
@@ -162,20 +162,20 @@ class Shortcut implements Plugin {
 	}
 
 	// 快捷键描述排序
-	functionOrder(shortcut) {
-    if (shortcut.trim().indexOf('++') > -1) {
+	functionOrder(shortcutKey) {
+    if (shortcutKey.trim().indexOf('++') > -1) {
       throw Error('+ 不可以做为快捷键操作的key，如有必要请自行实现')
     }
-		shortcut = shortcut.replaceAll(' ', '').toUpperCase()
+		shortcutKey = shortcutKey.replaceAll(' ', '').toUpperCase()
 		const keyList = []
-		shortcut.indexOf(Shortcut.CTRL) > -1 && keyList.push(Shortcut.CTRL)
-		shortcut = shortcut.replace(Shortcut.CTRL, '')
-		shortcut.indexOf(Shortcut.SHIFT) > -1 && keyList.push(Shortcut.SHIFT)
-		shortcut = shortcut.replace(Shortcut.SHIFT, '')
-		shortcut.indexOf(Shortcut.ALT) > -1 && keyList.push(Shortcut.ALT)
-		shortcut = shortcut.replace(Shortcut.ALT, '')
-		shortcut = shortcut.replaceAll('+', '')
-		keyList.push(shortcut)
+		shortcutKey.indexOf(Shortcut.CTRL) > -1 && keyList.push(Shortcut.CTRL)
+		shortcutKey = shortcutKey.replace(Shortcut.CTRL, '')
+		shortcutKey.indexOf(Shortcut.SHIFT) > -1 && keyList.push(Shortcut.SHIFT)
+		shortcutKey = shortcutKey.replace(Shortcut.SHIFT, '')
+		shortcutKey.indexOf(Shortcut.ALT) > -1 && keyList.push(Shortcut.ALT)
+		shortcutKey = shortcutKey.replace(Shortcut.ALT, '')
+		shortcutKey = shortcutKey.replaceAll('+', '')
+		keyList.push(shortcutKey)
 		return keyList.join('+')
 	}
 
@@ -190,12 +190,12 @@ class Shortcut implements Plugin {
 	}
 
 	// 配置默认快捷键
-	configureShortcuts(shortcuts: Record<string, ShortcutCons>) {
-		for (const SK in shortcuts) {
-			if (typeof shortcuts[SK] === 'function') {
-				this.registerShortcut(SK, shortcuts[SK] as Function, { triggerType: Shortcut.KEY_DOWN, continuous: false })
+	configureShortcuts(shortcutConfig: Record<string, ShortcutCons>) {
+		for (const SK in shortcutConfig) {
+			if (typeof shortcutConfig[SK] === 'function') {
+				this.registerShortcut(SK, shortcutConfig[SK] as Function, { triggerType: Shortcut.KEY_DOWN, continuous: false })
 			} else {
-				const { action, triggerType = Shortcut.KEY_DOWN, continuous = false } = shortcuts[SK]
+				const { action, triggerType = Shortcut.KEY_DOWN, continuous = false } = shortcutConfig[SK]
 				this.registerShortcut(SK, action, { triggerType, continuous })
 			}
 		}
