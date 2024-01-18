@@ -6,13 +6,20 @@ const shiftIsPress = ref(false)
 const altIsPress = ref(false)
 const ctrlIsPress = ref(false)
 
-const defaultShortcut = {
+type TriggerType = 'KEY_UP' | 'KEY_DOWN'
+type ShortcutCons = ((e: MouseEvent) => void) | {
+	action: (e: MouseEvent) => void,
+	type?: TriggerType,
+	continuous?: boolean
+}
+
+const defaultShortcut: Record<string, ShortcutCons> = {
 	'ctrl + a': {
 		action: event => {
 			event.preventDefault()
 			console.log('全选')
 		},
-		type: 'KEY_UP'
+		type: 'KEY_DOWN'
 	},
 	'ctrl + c': {
 		action: event => {
@@ -41,8 +48,6 @@ const defaultShortcut = {
 		console.log('重做')
 	}
 }
-
-type TriggerType = 'KEY_UP' | 'KEY_DOWN'
 
 class Shortcut implements Plugin {
 	name: string
@@ -74,6 +79,9 @@ class Shortcut implements Plugin {
 	unbind() {
 		window.removeEventListener('keydown', this.bindProcessKeydown)
     window.removeEventListener('keyup', this.bindProcessKeyup)
+		this.enableMap = null
+		this.shortcuts = null
+		this.shortcutCache = null
 	}
 
 	processKeydown(event) {
@@ -94,11 +102,7 @@ class Shortcut implements Plugin {
 		if (!this.shortcuts[shortcut] || !this.shortcuts[shortcut].length) return
 
 		if (type === Shortcut.KEY_DOWN) {
-			if (!this.shortcutCache[shortcut]) {
-				this.shortcutCache[shortcut] = this.shortcuts[shortcut]
-					.filter(item => item.type === type)
-					.map(m => !m.continuous ? { ...m, action: onceExecute(m.action, event) } : m)
-			}
+			packShortcut()
 			this.shortcutCache[shortcut]
 				.forEach(item => item.action(event))
 			return
@@ -107,6 +111,18 @@ class Shortcut implements Plugin {
 		this.shortcuts[shortcut]
 			.filter(item => item.type === type)
 			.forEach(item => item.action(event))
+
+		const _this = this
+		// 对快捷键对象进行包装
+		function packShortcut() {
+			// 如果没有缓存（被包装的数据）
+			if (!_this.shortcutCache[shortcut]) {
+				_this.shortcutCache[shortcut] = _this.shortcuts[shortcut]
+					.filter(item => item.type === type)
+					// 如果操作不允许连续执行，使用onceExecute对action进行包装，否则使用原有的action
+					.map(m => !m.continuous ? { ...m, action: onceExecute(m.action, event) } : m)
+			}
+		}
 	}
 	// 监听功能键
 	listenSpecialKey(event) {
@@ -165,10 +181,10 @@ class Shortcut implements Plugin {
 	}
 
 	// 配置默认快捷键
-	configureShortcuts(shortcuts) {
+	configureShortcuts(shortcuts: Record<string, ShortcutCons>) {
 		for (const SK in shortcuts) {
 			if (typeof shortcuts[SK] === 'function') {
-				this.registerShortcut(SK, shortcuts[SK], { type: Shortcut.KEY_DOWN, continuous: false })
+				this.registerShortcut(SK, shortcuts[SK] as Function, { type: Shortcut.KEY_DOWN, continuous: false })
 			} else {
 				const { action, type = Shortcut.KEY_DOWN, continuous = false } = shortcuts[SK]
 				this.registerShortcut(SK, action, { type, continuous })
@@ -183,10 +199,24 @@ class Shortcut implements Plugin {
 	disableShortcut(shortcut) {
 		this.enableMap[this.functionOrder(shortcut)] = false
 	}
+
+	/**
+	 * @description 开启或关闭全部快捷键
+	 * @param isEnable 开启或关闭
+	 */
+	wholeDisOrEn(isEnable: boolean) {
+		Object.keys(this.shortcuts)
+			.forEach(item => {
+				isEnable ?
+					this.enableShortcut(item) :
+					this.disableShortcut(item)
+			})
+	}
 }
 
 export default Shortcut
 
+// 应该将功能键监听移出去
 export function useSpecialKey() {
 	return { ctrlIsPress, shiftIsPress, altIsPress }
 }
