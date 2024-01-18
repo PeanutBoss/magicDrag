@@ -226,3 +226,13 @@ export function resetObject(raw: Record<string, unknown>, value: unknown = '') {
 	}
 	return result
 }
+
+// 包装一个函数并使被包装的函数只能执行一次
+export function onceExecute(fn: Function, ...rest) {
+	let isExecute = false
+	return () => {
+		if (isExecute) return
+		fn(...rest)
+		isExecute = true
+	}
+}

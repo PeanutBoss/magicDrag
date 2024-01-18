@@ -34,6 +34,7 @@ function enableRefLine(options: RefLineOptions, stateManager: StateManager) {
 
 function enableShortcut() {
 	const shortcut = new Shortcut()
+	window.shortcut = shortcut
 	pluginManager.registerPlugin(shortcut.name, shortcut)
 }
 
