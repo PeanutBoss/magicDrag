@@ -149,13 +149,13 @@ describe('Some tool methods', () => {
 	})
 
 	it.skip('调整大小后，更新轮廓点的位置信息', () => {
-		const initialTarget = { width: 100, height: 100, top: 20, left: 20 }
+		const coordinate = { width: 100, height: 100, top: 20, left: 20 }
 		const pointElements = createPointElements()
 		const pointState = createPointState()
 		// 尺寸为100 * 100，在 20, 20 位置的元素以左上角为基点，在x和y轴方向各缩小了10px
 		updatePointPosition(
 			{ direction: 'lt', movementX: 10, movementY: 10 },
-			{ initialTarget, pointElements, pointSize: 10, pointState }
+			{ coordinate, pointElements, pointSize: 10, pointState }
 		)
 		console.log(pointElements)
 		console.log(pointState)

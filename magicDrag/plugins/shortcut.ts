@@ -123,7 +123,7 @@ class Shortcut implements Plugin {
 			return shortcutList
 				.filter(item => item.triggerType === triggerType)
 		}
-		// 对快捷键对象进行包装
+		// 对只需要执行一次的操作进行包装
 		function packShortcut() {
 			// 如果没有缓存（被包装的数据）
 			if (!_this.shortcutCache[shortcutKey]) {

@@ -10,7 +10,6 @@ class InterveneResize implements Plugin {
 	unbind() {}
 	interveneDrag(movement) {
 		this.resizeAfterMovement(movement)
-		console.log({ ...movement }, 'movement')
 	}
 	resizeAfterMovement(movement: { x: number, y: number }) {
 		movement.x *= this.multiple
