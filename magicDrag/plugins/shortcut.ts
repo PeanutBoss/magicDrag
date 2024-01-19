@@ -7,8 +7,8 @@ const altIsPress = ref(false)
 const ctrlIsPress = ref(false)
 
 type TriggerType = 'KEY_UP' | 'KEY_DOWN'
-type ShortcutCons = ((e: MouseEvent) => void) | {
-	action: (e: MouseEvent) => void,
+type ShortcutCons = ((e: MouseEvent) => void) | { action: (e: MouseEvent) => void } & ShortcutOptions
+type ShortcutOptions = {
 	triggerType?: TriggerType,
 	continuous?: boolean
 }
@@ -60,7 +60,7 @@ class Shortcut implements Plugin {
 	private shortcuts: Record<string, Array<{
 		action: (...args: any[]) => void,
 		continuous?: boolean,
-		type?: TriggerType
+		triggerType?: TriggerType
 	}>> = {}
 	private shortcutCache = {}
 	bindProcessKeydown
@@ -146,7 +146,8 @@ class Shortcut implements Plugin {
 	 * @param action 触发快捷键的操作
 	 * @param options type: 事件在按下还是抬起时触发, continuous: 按键一直按下时是否允许连续触发（只有按下可以连续触发）
 	 */
-	registerShortcut(shortcutKey: string, action: (...args: any[]) => void, { triggerType, continuous }) {
+	registerShortcut(shortcutKey: string, action: (...args: any[]) => void, options: ShortcutOptions = {}) {
+		const { triggerType = Shortcut.KEY_DOWN, continuous = false } = options
 		shortcutKey = this.functionOrder(shortcutKey)
 
 		this.enableMap[shortcutKey] = this.enableMap[shortcutKey] ?? true

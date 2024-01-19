@@ -26,10 +26,10 @@ const HAS_NOT_RECORDS = -1
 /**
  * 创建UndoRedo
  * @param actions { Record<'remove' | 'copy' | 'append', Function> }
- * @param callbacks
+ * @param searchMethod
  * @returns {{new(*): UndoRedo, _initialSnapshot: *, _snapshotIndex: number, _snapshotRecords: [], prototype: UndoRedo}}
  */
-function createUndoRedo(actions, callbacks) {
+function createUndoRedo(actions, { findPreSnapshot, findNextSnapshot }) {
 	return class UndoRedo {
 		private _initialSnapshot
 		private _snapshotIndex
@@ -42,25 +42,12 @@ function createUndoRedo(actions, callbacks) {
 		}
 		startListen() {
 			const shortcut = new Shortcut()
-			shortcut.registerShortcut('z', event => {
-				if (!event.ctrlKey) return
+			shortcut.registerShortcut('ctrl + z', event => {
 				this.undo()
-			}, { type: Shortcut.KEY_UP })
-			shortcut.registerShortcut('y', event => {
-				if (!event.ctrlKey) return
+			}, { triggerType: Shortcut.KEY_UP })
+			shortcut.registerShortcut('ctrl + y', event => {
 				this.redo()
-			}, { type: Shortcut.KEY_UP })
-
-			// 阻止默认操作
-			shortcut.registerShortcut('z', event => {
-				if (!event.ctrlKey) return
-				event.preventDefault()
-			}, { type: Shortcut.KEY_DOWN })
-			shortcut.registerShortcut('y', event => {
-				if (!event.ctrlKey) return
-				event.preventDefault()
-			}, { type: Shortcut.KEY_DOWN })
-			shortcut.startListen()
+			}, { triggerType: Shortcut.KEY_DOWN })
 		}
 		push(chartData, type) {
 			// 添加一条新的记录
@@ -86,8 +73,6 @@ function createUndoRedo(actions, callbacks) {
 			}
 
 			await actions[actionType](snapshot.chartData, true, { ...nextChartData })
-			const updateIds = nextChartData.effectList ? [snapshot.chartData.tableId, ...nextChartData.effectList.map(m => m.tableId)] : [snapshot.chartData.tableId]
-			callbacks.redoCallback(updateIds)
 		}
 		async undo() {
 			if (this._snapshotIndex < 0) return
@@ -95,7 +80,7 @@ function createUndoRedo(actions, callbacks) {
 			// 去操作记录中操作类型的相反操作
 			const actionType = SnapshotType[snapshot.type]
 			// 上一次的状态
-			let preChartData = this.findPreSnapshot(snapshot.chartData, 'actionType')
+			let preChartData = this.findPreSnapshot(snapshot.chartData)
 
 			if (snapshot.chartData.effectList?.length) {
 				const updateEffectList = []
@@ -108,9 +93,7 @@ function createUndoRedo(actions, callbacks) {
 			}
 
 			await actions[actionType](snapshot.chartData, true, { ...preChartData })
-			const updateIds = preChartData?.effectList ? [snapshot.chartData.tableId, ...preChartData.effectList.map(m => m.tableId)] : [snapshot.chartData.tableId]
 			this._snapshotIndex--
-			callbacks.undoCallback(updateIds)
 		}
 		// 获取上一次的快照
 		findPreSnapshot(chartData) {
